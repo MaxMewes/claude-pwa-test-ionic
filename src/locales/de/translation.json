@@ -138,6 +138,7 @@
     "title": "Einstellungen",
     "account": "Konto",
     "profile": "Profil",
+    "darkMode": "Dunkelmodus",
     "changePassword": "Passwort aendern",
     "notifications": {
       "title": "Benachrichtigungen",

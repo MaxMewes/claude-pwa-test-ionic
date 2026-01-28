@@ -85,47 +85,30 @@ import { ROUTES } from './config/routes';
 
 setupIonicReact();
 
-const ProtectedRoute: React.FC<{
-  component: React.ComponentType;
-  path: string;
-  exact?: boolean;
-}> = ({ component: Component, ...rest }) => {
-  const { isAuthenticated } = useAuthStore();
-
-  return (
-    <Route
-      {...rest}
-      render={() =>
-        isAuthenticated ? <Component /> : <Redirect to={ROUTES.LOGIN} />
-      }
-    />
-  );
-};
-
 const MainTabs: React.FC = () => {
   const { t } = useTranslation();
 
   return (
     <IonTabs>
       <IonRouterOutlet>
-        <ProtectedRoute exact path={ROUTES.RESULTS} component={ResultsPage} />
-        <ProtectedRoute path="/results/:id" component={ResultDetailPage} />
+        <Route exact path={ROUTES.RESULTS} component={ResultsPage} />
+        <Route path="/results/:id" component={ResultDetailPage} />
 
-        <ProtectedRoute exact path={ROUTES.PATIENTS} component={PatientsPage} />
-        <ProtectedRoute path="/patients/:id" component={PatientDetailPage} />
+        <Route exact path={ROUTES.PATIENTS} component={PatientsPage} />
+        <Route path="/patients/:id" component={PatientDetailPage} />
 
-        <ProtectedRoute exact path={ROUTES.LABORATORIES} component={LaboratoriesPage} />
-        <ProtectedRoute path="/laboratories/:id" component={LaboratoryDetailPage} />
+        <Route exact path={ROUTES.LABORATORIES} component={LaboratoriesPage} />
+        <Route path="/laboratories/:id" component={LaboratoryDetailPage} />
 
-        <ProtectedRoute exact path={ROUTES.NEWS} component={NewsPage} />
-        <ProtectedRoute path="/news/:id" component={NewsDetailPage} />
+        <Route exact path={ROUTES.NEWS} component={NewsPage} />
+        <Route path="/news/:id" component={NewsDetailPage} />
 
-        <ProtectedRoute exact path={ROUTES.SETTINGS} component={SettingsPage} />
-        <ProtectedRoute path={ROUTES.SETTINGS_NOTIFICATIONS} component={NotificationSettingsPage} />
-        <ProtectedRoute path={ROUTES.SETTINGS_BIOMETRIC} component={BiometricSettingsPage} />
-        <ProtectedRoute path={ROUTES.SETTINGS_PASSWORD} component={PasswordChangePage} />
-        <ProtectedRoute path={ROUTES.SETTINGS_PRIVACY} component={PrivacyPolicyPage} />
-        <ProtectedRoute path={ROUTES.SETTINGS_FAQ} component={FAQPage} />
+        <Route exact path={ROUTES.SETTINGS} component={SettingsPage} />
+        <Route path={ROUTES.SETTINGS_NOTIFICATIONS} component={NotificationSettingsPage} />
+        <Route path={ROUTES.SETTINGS_BIOMETRIC} component={BiometricSettingsPage} />
+        <Route path={ROUTES.SETTINGS_PASSWORD} component={PasswordChangePage} />
+        <Route path={ROUTES.SETTINGS_PRIVACY} component={PrivacyPolicyPage} />
+        <Route path={ROUTES.SETTINGS_FAQ} component={FAQPage} />
 
         <Route exact path="/">
           <Redirect to={ROUTES.RESULTS} />
@@ -162,6 +145,26 @@ const MainTabs: React.FC = () => {
   );
 };
 
+const AppContent: React.FC = () => {
+  const { isAuthenticated } = useAuthStore();
+
+  // If not authenticated, show auth routes
+  if (!isAuthenticated) {
+    return (
+      <IonRouterOutlet>
+        <Route exact path={ROUTES.LOGIN} component={LoginPage} />
+        <Route exact path={ROUTES.TWO_FACTOR} component={TwoFactorPage} />
+        <Route>
+          <Redirect to={ROUTES.LOGIN} />
+        </Route>
+      </IonRouterOutlet>
+    );
+  }
+
+  // If authenticated, show main app with tabs
+  return <MainTabs />;
+};
+
 const App: React.FC = () => {
   // Auto logout on inactivity
   useAutoLogout();
@@ -170,11 +173,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <IonApp>
         <IonReactRouter>
-          <IonRouterOutlet>
-            <Route exact path={ROUTES.LOGIN} component={LoginPage} />
-            <Route exact path={ROUTES.TWO_FACTOR} component={TwoFactorPage} />
-            <Route path="/" component={MainTabs} />
-          </IonRouterOutlet>
+          <AppContent />
         </IonReactRouter>
       </IonApp>
     </ErrorBoundary>

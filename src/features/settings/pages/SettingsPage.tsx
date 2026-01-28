@@ -11,6 +11,7 @@ import {
   IonIcon,
   IonText,
   IonAvatar,
+  IonToggle,
 } from '@ionic/react';
 import {
   notificationsOutline,
@@ -19,17 +20,19 @@ import {
   shieldCheckmarkOutline,
   helpCircleOutline,
   logOutOutline,
-  chevronForwardOutline,
+  moonOutline,
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { ROUTES } from '../../../config/routes';
+import { useTheme } from '../../../shared/hooks/useTheme';
 
 export const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { user, logout, isLoggingOut } = useAuth();
+  const { isDark, toggleDarkMode } = useTheme();
 
   const settingsItems = [
     {
@@ -98,6 +101,19 @@ export const SettingsPage: React.FC = () => {
             </IonText>
           </div>
         )}
+
+        {/* Appearance */}
+        <IonList>
+          <IonItem>
+            <IonIcon icon={moonOutline} slot="start" color="primary" />
+            <IonLabel>{t('settings.darkMode')}</IonLabel>
+            <IonToggle
+              checked={isDark}
+              onIonChange={toggleDarkMode}
+              slot="end"
+            />
+          </IonItem>
+        </IonList>
 
         {/* Settings List */}
         <IonList>

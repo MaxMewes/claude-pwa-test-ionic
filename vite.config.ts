@@ -12,6 +12,14 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       port: parseInt(env.VITE_PORT) || 3000,
+      proxy: {
+        // Proxy API requests to avoid CORS issues during development
+        '/api/v3': {
+          target: env.VITE_API_URL || 'https://demo.labgate.net',
+          changeOrigin: true,
+          secure: true,
+        },
+      },
     },
     plugins: [
       react(),

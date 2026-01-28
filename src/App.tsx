@@ -44,6 +44,8 @@ import { useAuthStore } from './features/auth/store/authStore';
 import { useAutoLogout } from './features/auth/hooks/useAutoLogout';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { TwoFactorPage } from './features/auth/pages/TwoFactorPage';
+import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 
 /* Results */
 import { ResultsPage } from './features/results/pages/ResultsPage';
@@ -60,6 +62,15 @@ import { LaboratoryDetailPage } from './features/laboratories/pages/LaboratoryDe
 /* News */
 import { NewsPage } from './features/news/pages/NewsPage';
 import { NewsDetailPage } from './features/news/pages/NewsDetailPage';
+
+/* Senders */
+import { SendersPage } from './features/senders/pages/SendersPage';
+import { SenderDetailPage } from './features/senders/pages/SenderDetailPage';
+
+/* Help */
+import { HelpPage } from './features/help/pages/HelpPage';
+import { FeedbackPage } from './features/help/pages/FeedbackPage';
+import { AboutPage } from './features/help/pages/AboutPage';
 
 /* Settings */
 import { SettingsPage } from './features/settings/pages/SettingsPage';
@@ -96,12 +107,20 @@ const MainTabs: React.FC = () => {
         <Route exact path={ROUTES.NEWS} component={NewsPage} />
         <Route path="/news/:id" component={NewsDetailPage} />
 
+        <Route exact path={ROUTES.SENDERS} component={SendersPage} />
+        <Route path="/senders/:id" component={SenderDetailPage} />
+
         <Route exact path={ROUTES.SETTINGS} component={SettingsPage} />
         <Route path={ROUTES.SETTINGS_NOTIFICATIONS} component={NotificationSettingsPage} />
         <Route path={ROUTES.SETTINGS_BIOMETRIC} component={BiometricSettingsPage} />
         <Route path={ROUTES.SETTINGS_PASSWORD} component={PasswordChangePage} />
         <Route path={ROUTES.SETTINGS_PRIVACY} component={PrivacyPolicyPage} />
         <Route path={ROUTES.SETTINGS_FAQ} component={FAQPage} />
+
+        <Route exact path={ROUTES.HELP} component={HelpPage} />
+        <Route path={ROUTES.HELP_ABOUT} component={AboutPage} />
+        <Route path={ROUTES.HELP_PRIVACY} component={PrivacyPolicyPage} />
+        <Route path={ROUTES.HELP_FEEDBACK} component={FeedbackPage} />
 
         <Route exact path="/">
           <Redirect to={ROUTES.RESULTS} />
@@ -146,6 +165,8 @@ const AppContent: React.FC = () => {
     return (
       <IonRouterOutlet>
         <Route exact path={ROUTES.LOGIN} component={LoginPage} />
+        <Route exact path={ROUTES.REGISTER} component={RegisterPage} />
+        <Route exact path={ROUTES.RESET_PASSWORD} component={ResetPasswordPage} />
         <Route exact path={ROUTES.TWO_FACTOR} component={TwoFactorPage} />
         <Route>
           <Redirect to={ROUTES.LOGIN} />

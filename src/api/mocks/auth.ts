@@ -1,5 +1,16 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { LoginRequest, LoginResponse, TwoFactorRequest, TwoFactorResponse, User } from '../types';
+import {
+  LoginRequest,
+  LoginResponse,
+  TwoFactorRequest,
+  TwoFactorResponse,
+  User,
+  RegisterRequest,
+  RegisterResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  PasswordRules,
+} from '../types';
 import { createMockResponse, createMockError } from '../client/mockAdapter';
 
 const mockUser: User = {
@@ -82,5 +93,46 @@ export const mockAuthHandlers = {
     }
 
     throw createMockError('Aktuelles Passwort ist falsch', 400, 'INVALID_PASSWORD');
+  },
+
+  register: async (config: AxiosRequestConfig): Promise<AxiosResponse<RegisterResponse>> => {
+    const data = config.data as RegisterRequest;
+
+    // Check if email already exists
+    if (data.email === 'demo@labgate.de') {
+      throw createMockError('Diese E-Mail-Adresse ist bereits registriert', 400, 'EMAIL_EXISTS');
+    }
+
+    // Validate password
+    if (data.password.length < 8) {
+      throw createMockError('Passwort muss mindestens 8 Zeichen lang sein', 400, 'PASSWORD_TOO_SHORT');
+    }
+
+    return createMockResponse<RegisterResponse>({
+      success: true,
+      message: 'Registrierung erfolgreich. Bitte pruefen Sie Ihre E-Mail zur Bestaetigung.',
+    });
+  },
+
+  resetPassword: async (config: AxiosRequestConfig): Promise<AxiosResponse<ResetPasswordResponse>> => {
+    const data = config.data as ResetPasswordRequest;
+
+    // Simulate sending reset email
+    console.log('Password reset requested for:', data.email);
+
+    return createMockResponse<ResetPasswordResponse>({
+      success: true,
+      message: 'Falls ein Konto mit dieser E-Mail existiert, erhalten Sie in Kuerze eine E-Mail mit weiteren Anweisungen.',
+    });
+  },
+
+  getPasswordRules: async (): Promise<AxiosResponse<PasswordRules>> => {
+    return createMockResponse<PasswordRules>({
+      minLength: 8,
+      requireUppercase: true,
+      requireLowercase: true,
+      requireNumbers: true,
+      requireSpecialChars: false,
+    });
   },
 };

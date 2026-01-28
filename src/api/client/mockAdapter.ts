@@ -5,6 +5,9 @@ import { mockPatientsHandlers } from '../mocks/patients';
 import { mockLaboratoriesHandlers } from '../mocks/laboratories';
 import { mockNewsHandlers } from '../mocks/news';
 import { mockSettingsHandlers } from '../mocks/settings';
+import { mockSendersHandlers } from '../mocks/senders';
+import { mockFAQHandlers } from '../mocks/faq';
+import { mockFeedbackHandlers } from '../mocks/feedback';
 
 type MockHandler = (config: AxiosRequestConfig) => Promise<AxiosResponse>;
 
@@ -22,12 +25,23 @@ const mockRoutes: MockRoute[] = [
   { method: 'post', pattern: /\/auth\/logout$/, handler: mockAuthHandlers.logout },
   { method: 'get', pattern: /\/auth\/me$/, handler: mockAuthHandlers.getMe },
   { method: 'post', pattern: /\/auth\/change-password$/, handler: mockAuthHandlers.changePassword },
+  { method: 'post', pattern: /\/auth\/register$/, handler: mockAuthHandlers.register },
+  { method: 'post', pattern: /\/auth\/reset-password$/, handler: mockAuthHandlers.resetPassword },
+  { method: 'get', pattern: /\/auth\/password-rules$/, handler: mockAuthHandlers.getPasswordRules },
 
   // Results routes
   { method: 'get', pattern: /\/results$/, handler: mockResultsHandlers.getResults },
+  { method: 'get', pattern: /\/results\/counter$/, handler: mockResultsHandlers.getCounter },
+  { method: 'get', pattern: /\/results\/[^/]+\/cumulative$/, handler: mockResultsHandlers.getCumulative },
   { method: 'get', pattern: /\/results\/[^/]+$/, handler: mockResultsHandlers.getResultById },
   { method: 'get', pattern: /\/results\/[^/]+\/trend\/[^/]+$/, handler: mockResultsHandlers.getTrend },
   { method: 'patch', pattern: /\/results\/[^/]+\/read$/, handler: mockResultsHandlers.markAsRead },
+  { method: 'patch', pattern: /\/results\/mark-as-read$/, handler: mockResultsHandlers.markAsRead },
+  { method: 'patch', pattern: /\/results\/mark-as-unread$/, handler: mockResultsHandlers.markAsUnread },
+  { method: 'patch', pattern: /\/results\/mark-as-favorite$/, handler: mockResultsHandlers.markAsFavorite },
+  { method: 'patch', pattern: /\/results\/mark-as-not-favorite$/, handler: mockResultsHandlers.markAsNotFavorite },
+  { method: 'patch', pattern: /\/results\/mark-as-archived$/, handler: mockResultsHandlers.markAsArchived },
+  { method: 'patch', pattern: /\/results\/mark-as-not-archived$/, handler: mockResultsHandlers.markAsNotArchived },
   { method: 'patch', pattern: /\/results\/[^/]+\/pin$/, handler: mockResultsHandlers.togglePin },
 
   // Patients routes
@@ -37,16 +51,33 @@ const mockRoutes: MockRoute[] = [
 
   // Laboratories routes
   { method: 'get', pattern: /\/laboratories$/, handler: mockLaboratoriesHandlers.getLaboratories },
+  { method: 'get', pattern: /\/laboratories\/service-catalog$/, handler: mockLaboratoriesHandlers.getServiceCatalog },
+  { method: 'get', pattern: /\/laboratories\/service-catalog\/[^/]+$/, handler: mockLaboratoriesHandlers.getServiceItem },
+  { method: 'get', pattern: /\/laboratories\/[^/]+\/messages$/, handler: mockLaboratoriesHandlers.getMessages },
+  { method: 'post', pattern: /\/laboratories\/send-message$/, handler: mockLaboratoriesHandlers.sendMessage },
+  { method: 'patch', pattern: /\/messages\/[^/]+$/, handler: mockLaboratoriesHandlers.markMessageAsRead },
   { method: 'get', pattern: /\/laboratories\/[^/]+$/, handler: mockLaboratoriesHandlers.getLaboratoryById },
+
+  // Senders routes
+  { method: 'get', pattern: /\/senders$/, handler: mockSendersHandlers.getSenders },
+  { method: 'get', pattern: /\/senders\/[^/]+$/, handler: mockSendersHandlers.getSenderById },
 
   // News routes
   { method: 'get', pattern: /\/news$/, handler: mockNewsHandlers.getNews },
   { method: 'get', pattern: /\/news\/[^/]+$/, handler: mockNewsHandlers.getNewsById },
   { method: 'patch', pattern: /\/news\/[^/]+\/read$/, handler: mockNewsHandlers.markAsRead },
 
+  // FAQ routes
+  { method: 'get', pattern: /\/faqs$/, handler: mockFAQHandlers.getFAQs },
+  { method: 'get', pattern: /\/faqs\/[^/]+$/, handler: mockFAQHandlers.getFAQById },
+
+  // Feedback routes
+  { method: 'post', pattern: /\/feedbacks$/, handler: mockFeedbackHandlers.sendFeedback },
+
   // Settings routes
   { method: 'get', pattern: /\/settings$/, handler: mockSettingsHandlers.getSettings },
   { method: 'patch', pattern: /\/settings$/, handler: mockSettingsHandlers.updateSettings },
+  { method: 'put', pattern: /\/settings$/, handler: mockSettingsHandlers.updateSettings },
 ];
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

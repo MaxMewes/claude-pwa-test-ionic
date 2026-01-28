@@ -5,6 +5,9 @@ import { createMockResponse } from '../client/mockAdapter';
 let mockUserSettings: UserSettings = {
   notifications: {
     enabled: true,
+    push: true,
+    email: true,
+    sms: false,
     newResults: true,
     criticalResults: true,
     news: true,
@@ -12,14 +15,31 @@ let mockUserSettings: UserSettings = {
     sound: true,
     vibration: true,
   },
+  pushSettings: {
+    normalResults: true,
+    urgentResults: true,
+    confirmableResults: true,
+    pathologicalResults: true,
+    highPathologicalResults: true,
+    news: true,
+  },
   biometric: {
     enabled: false,
     type: 'none',
+  },
+  auth: {
+    biometricEnabled: false,
+    autoLogoutMinutes: 15,
+    rememberDevice: true,
   },
   display: {
     language: 'de',
     theme: 'system',
     fontSize: 'medium',
+    compactMode: false,
+    showAvatars: true,
+    animationsEnabled: true,
+    dateFormat: 'DD.MM.YYYY',
   },
   privacy: {
     shareAnalytics: true,
@@ -42,10 +62,22 @@ export const mockSettingsHandlers = {
         ...updates.notifications,
       };
     }
+    if (updates.pushSettings) {
+      mockUserSettings.pushSettings = {
+        ...mockUserSettings.pushSettings,
+        ...updates.pushSettings,
+      };
+    }
     if (updates.biometric) {
       mockUserSettings.biometric = {
         ...mockUserSettings.biometric,
         ...updates.biometric,
+      };
+    }
+    if (updates.auth) {
+      mockUserSettings.auth = {
+        ...mockUserSettings.auth,
+        ...updates.auth,
       };
     }
     if (updates.display) {

@@ -1,5 +1,5 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { LabResult, PaginatedResponse, TrendDataPoint, ResultFilter } from '../types';
+import { LabResult, PaginatedResponse, TrendDataPoint, ResultFilter, ResultCounter, CumulativeResult } from '../types';
 import { createMockResponse, createMockError } from '../client/mockAdapter';
 
 const mockResultsData: LabResult[] = [
@@ -9,12 +9,17 @@ const mockResultsData: LabResult[] = [
     patientName: 'Max Mustermann',
     laboratoryId: 'lab-001',
     laboratoryName: 'Labor Berlin',
+    senderId: 'sender-001',
+    senderName: 'Dr. Thomas Mueller',
     orderNumber: 'ORD-2024-001',
     collectionDate: '2024-01-15T08:30:00Z',
     reportDate: '2024-01-15T14:00:00Z',
     status: 'final',
+    resultType: 'E',
     category: 'hematology',
     isRead: false,
+    isFavorite: false,
+    isArchived: false,
     isPinned: true,
     tests: [
       {
@@ -64,12 +69,17 @@ const mockResultsData: LabResult[] = [
     patientName: 'Max Mustermann',
     laboratoryId: 'lab-002',
     laboratoryName: 'MVZ Labordiagnostik',
+    senderId: 'sender-002',
+    senderName: 'Dr. Anna Schmidt',
     orderNumber: 'ORD-2024-002',
     collectionDate: '2024-01-14T09:00:00Z',
     reportDate: '2024-01-14T16:30:00Z',
     status: 'final',
+    resultType: 'E',
     category: 'chemistry',
     isRead: true,
+    isFavorite: true,
+    isArchived: false,
     isPinned: false,
     tests: [
       {
@@ -115,12 +125,17 @@ const mockResultsData: LabResult[] = [
     patientName: 'Erika Musterfrau',
     laboratoryId: 'lab-001',
     laboratoryName: 'Labor Berlin',
+    senderId: 'sender-001',
+    senderName: 'Dr. Thomas Mueller',
     orderNumber: 'ORD-2024-003',
     collectionDate: '2024-01-13T10:15:00Z',
     reportDate: '2024-01-13T18:00:00Z',
     status: 'partial',
+    resultType: 'T',
     category: 'immunology',
     isRead: false,
+    isFavorite: false,
+    isArchived: false,
     isPinned: false,
     tests: [
       {
@@ -153,12 +168,17 @@ const mockResultsData: LabResult[] = [
     patientName: 'Hans Schmidt',
     laboratoryId: 'lab-003',
     laboratoryName: 'Synlab Muenchen',
+    senderId: 'sender-003',
+    senderName: 'Dr. Peter Weber',
     orderNumber: 'ORD-2024-004',
     collectionDate: '2024-01-12T07:45:00Z',
     reportDate: '2024-01-12T15:30:00Z',
     status: 'final',
+    resultType: 'E',
     category: 'coagulation',
     isRead: true,
+    isFavorite: false,
+    isArchived: false,
     isPinned: false,
     tests: [
       {
@@ -191,12 +211,17 @@ const mockResultsData: LabResult[] = [
     patientName: 'Max Mustermann',
     laboratoryId: 'lab-001',
     laboratoryName: 'Labor Berlin',
+    senderId: 'sender-001',
+    senderName: 'Dr. Thomas Mueller',
     orderNumber: 'ORD-2024-005',
     collectionDate: '2024-01-10T08:00:00Z',
     reportDate: '2024-01-10T12:00:00Z',
     status: 'corrected',
+    resultType: 'N',
     category: 'urinalysis',
     isRead: true,
+    isFavorite: false,
+    isArchived: true,
     isPinned: false,
     tests: [
       {
@@ -236,12 +261,17 @@ const mockResultsData: LabResult[] = [
     patientName: 'Anna Weber',
     laboratoryId: 'lab-002',
     laboratoryName: 'MVZ Labordiagnostik',
+    senderId: 'sender-002',
+    senderName: 'Dr. Anna Schmidt',
     orderNumber: 'ORD-2024-006',
     collectionDate: '2024-01-08T11:30:00Z',
     reportDate: '2024-01-09T09:00:00Z',
     status: 'final',
+    resultType: 'E',
     category: 'microbiology',
     isRead: false,
+    isFavorite: false,
+    isArchived: false,
     isPinned: false,
     tests: [
       {
@@ -282,22 +312,57 @@ const trendData: Record<string, TrendDataPoint[]> = {
 };
 
 function applyFilter(results: LabResult[], filter: ResultFilter): LabResult[] {
-  return results.filter((result) => {
+  let filtered = results.filter((result) => {
     if (filter.patientId && result.patientId !== filter.patientId) return false;
+    if (filter.patientIds?.length && !filter.patientIds.includes(result.patientId)) return false;
     if (filter.laboratoryId && result.laboratoryId !== filter.laboratoryId) return false;
+    if (filter.senderId && result.senderId !== filter.senderId) return false;
+    if (filter.senderIds?.length && !filter.senderIds.includes(result.senderId || '')) return false;
     if (filter.status?.length && !filter.status.includes(result.status)) return false;
+    if (filter.resultType?.length && !filter.resultType.includes(result.resultType)) return false;
     if (filter.category?.length && !filter.category.includes(result.category)) return false;
     if (filter.isRead !== undefined && result.isRead !== filter.isRead) return false;
+    if (filter.isFavorite !== undefined && result.isFavorite !== filter.isFavorite) return false;
+    if (filter.isArchived !== undefined && result.isArchived !== filter.isArchived) return false;
     if (filter.isPinned !== undefined && result.isPinned !== filter.isPinned) return false;
+    if (filter.dateFrom && new Date(result.reportDate) < new Date(filter.dateFrom)) return false;
+    if (filter.dateTo && new Date(result.reportDate) > new Date(filter.dateTo)) return false;
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
       const matchesPatient = result.patientName.toLowerCase().includes(searchLower);
       const matchesLab = result.laboratoryName.toLowerCase().includes(searchLower);
       const matchesOrder = result.orderNumber.toLowerCase().includes(searchLower);
-      if (!matchesPatient && !matchesLab && !matchesOrder) return false;
+      const matchesSender = result.senderName?.toLowerCase().includes(searchLower);
+      if (!matchesPatient && !matchesLab && !matchesOrder && !matchesSender) return false;
+    }
+    // Area filter
+    if (filter.area) {
+      const hasAbnormal = result.tests.some(t => t.flag !== 'normal');
+      const hasCritical = result.tests.some(t => t.flag === 'critical_low' || t.flag === 'critical_high');
+      switch (filter.area) {
+        case 'new': if (result.isRead) return false; break;
+        case 'pathological': if (!hasAbnormal) return false; break;
+        case 'urgent': if (!hasCritical) return false; break;
+      }
     }
     return true;
   });
+
+  // Sorting
+  if (filter.sortColumn) {
+    filtered.sort((a, b) => {
+      let aVal: any, bVal: any;
+      switch (filter.sortColumn) {
+        case 'reportDate': aVal = new Date(a.reportDate); bVal = new Date(b.reportDate); break;
+        case 'patientName': aVal = a.patientName; bVal = b.patientName; break;
+        default: aVal = a.reportDate; bVal = b.reportDate;
+      }
+      const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      return filter.sortDirection === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  return filtered;
 }
 
 export const mockResultsHandlers = {
@@ -355,5 +420,80 @@ export const mockResultsHandlers = {
       return createMockResponse({ isPinned: result.isPinned });
     }
     throw createMockError('Befund nicht gefunden', 404, 'NOT_FOUND');
+  },
+
+  markAsFavorite: async (config: AxiosRequestConfig): Promise<AxiosResponse<{ success: boolean }>> => {
+    const ids = config.data as string[];
+    ids.forEach(id => {
+      const result = mockResultsData.find(r => r.id === id);
+      if (result) result.isFavorite = true;
+    });
+    return createMockResponse({ success: true });
+  },
+
+  markAsNotFavorite: async (config: AxiosRequestConfig): Promise<AxiosResponse<{ success: boolean }>> => {
+    const ids = config.data as string[];
+    ids.forEach(id => {
+      const result = mockResultsData.find(r => r.id === id);
+      if (result) result.isFavorite = false;
+    });
+    return createMockResponse({ success: true });
+  },
+
+  markAsArchived: async (config: AxiosRequestConfig): Promise<AxiosResponse<{ success: boolean }>> => {
+    const ids = config.data as string[];
+    ids.forEach(id => {
+      const result = mockResultsData.find(r => r.id === id);
+      if (result) result.isArchived = true;
+    });
+    return createMockResponse({ success: true });
+  },
+
+  markAsNotArchived: async (config: AxiosRequestConfig): Promise<AxiosResponse<{ success: boolean }>> => {
+    const ids = config.data as string[];
+    ids.forEach(id => {
+      const result = mockResultsData.find(r => r.id === id);
+      if (result) result.isArchived = false;
+    });
+    return createMockResponse({ success: true });
+  },
+
+  markAsUnread: async (config: AxiosRequestConfig): Promise<AxiosResponse<{ success: boolean }>> => {
+    const ids = config.data as string[];
+    ids.forEach(id => {
+      const result = mockResultsData.find(r => r.id === id);
+      if (result) result.isRead = false;
+    });
+    return createMockResponse({ success: true });
+  },
+
+  getCounter: async (): Promise<AxiosResponse<ResultCounter>> => {
+    const counter: ResultCounter = {
+      total: mockResultsData.length,
+      new: mockResultsData.filter(r => !r.isRead).length,
+      pathological: mockResultsData.filter(r => r.tests.some(t => t.flag !== 'normal')).length,
+      urgent: mockResultsData.filter(r => r.tests.some(t => t.flag === 'critical_low' || t.flag === 'critical_high')).length,
+      highPathological: mockResultsData.filter(r => r.tests.some(t => t.flag === 'critical_low' || t.flag === 'critical_high')).length,
+    };
+    return createMockResponse(counter);
+  },
+
+  getCumulative: async (config: AxiosRequestConfig): Promise<AxiosResponse<CumulativeResult[]>> => {
+    const resultId = config.url?.split('/')[3];
+    const result = mockResultsData.find(r => r.id === resultId);
+
+    if (!result) {
+      throw createMockError('Befund nicht gefunden', 404, 'NOT_FOUND');
+    }
+
+    const cumulative: CumulativeResult[] = result.tests.map(test => ({
+      testName: test.name,
+      unit: test.unit,
+      referenceMin: test.referenceMin,
+      referenceMax: test.referenceMax,
+      history: trendData[test.id] || [{ date: result.reportDate.split('T')[0], value: parseFloat(test.value) || 0 }],
+    }));
+
+    return createMockResponse(cumulative);
   },
 };

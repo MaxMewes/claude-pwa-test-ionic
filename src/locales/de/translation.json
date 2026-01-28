@@ -24,6 +24,7 @@
     "registerDescription": "Erstellen Sie ein neues Konto",
     "firstName": "Vorname",
     "lastName": "Nachname",
+    "username": "Benutzername",
     "email": "E-Mail-Adresse",
     "password": "Passwort",
     "confirmPassword": "Passwort bestaetigen",

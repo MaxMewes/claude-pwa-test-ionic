@@ -14,7 +14,8 @@ export function usePatients(filter?: PatientsFilter) {
   return useQuery({
     queryKey: [PATIENTS_KEY, filter],
     queryFn: async () => {
-      const response = await axiosInstance.get<PaginatedResponse<Patient>>('/patients', {
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<PaginatedResponse<Patient>>('/api/v3/patients', {
         params: filter,
       });
       return response.data;
@@ -26,7 +27,8 @@ export function usePatient(id: string | undefined) {
   return useQuery({
     queryKey: [PATIENTS_KEY, id],
     queryFn: async () => {
-      const response = await axiosInstance.get<Patient>(`/patients/${id}`);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<Patient>(`/api/v3/patients/${id}`);
       return response.data;
     },
     enabled: !!id,

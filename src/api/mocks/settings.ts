@@ -1,5 +1,5 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { UserSettings } from '../types';
+import { UserSettings, PushNotificationSettings, PushSubscription } from '../types';
 import { createMockResponse } from '../client/mockAdapter';
 
 let mockUserSettings: UserSettings = {
@@ -46,6 +46,8 @@ let mockUserSettings: UserSettings = {
     showProfilePhoto: true,
   },
 };
+
+let pushSubscriptions: PushSubscription[] = [];
 
 export const mockSettingsHandlers = {
   getSettings: async (): Promise<AxiosResponse<UserSettings>> => {
@@ -94,5 +96,39 @@ export const mockSettingsHandlers = {
     }
 
     return createMockResponse(mockUserSettings);
+  },
+
+  // Push notification settings - labGate API v3
+  getPushSettings: async (): Promise<AxiosResponse<PushNotificationSettings>> => {
+    return createMockResponse(mockUserSettings.pushSettings);
+  },
+
+  updatePushSettings: async (config: AxiosRequestConfig): Promise<AxiosResponse<PushNotificationSettings>> => {
+    const updates = config.data as Partial<PushNotificationSettings>;
+    mockUserSettings.pushSettings = {
+      ...mockUserSettings.pushSettings,
+      ...updates,
+    };
+    return createMockResponse(mockUserSettings.pushSettings);
+  },
+
+  subscribePush: async (config: AxiosRequestConfig): Promise<AxiosResponse<{ success: boolean }>> => {
+    const subscription = config.data as PushSubscription;
+    // Store the subscription
+    const existingIndex = pushSubscriptions.findIndex(s => s.endpoint === subscription.endpoint);
+    if (existingIndex >= 0) {
+      pushSubscriptions[existingIndex] = subscription;
+    } else {
+      pushSubscriptions.push(subscription);
+    }
+    console.log('Push subscription registered:', subscription.endpoint);
+    return createMockResponse({ success: true });
+  },
+
+  unsubscribePush: async (config: AxiosRequestConfig): Promise<AxiosResponse<{ success: boolean }>> => {
+    const { endpoint } = config.params as { endpoint: string };
+    pushSubscriptions = pushSubscriptions.filter(s => s.endpoint !== endpoint);
+    console.log('Push subscription removed:', endpoint);
+    return createMockResponse({ success: true });
   },
 };

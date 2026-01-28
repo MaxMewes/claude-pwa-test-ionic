@@ -80,12 +80,12 @@ export const mockFAQHandlers = {
     const params = config.params || {};
     const pageSize = params.itemsPerPage || 100;
 
+    // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<FAQ>>({
-      data: mockFAQData.sort((a, b) => (a.order || 0) - (b.order || 0)),
-      total: mockFAQData.length,
-      page: 1,
-      pageSize,
-      totalPages: 1,
+      Items: mockFAQData.sort((a, b) => (a.order || 0) - (b.order || 0)),
+      CurrentPage: 1,
+      ItemsPerPage: pageSize,
+      TotalItemsCount: mockFAQData.length,
     });
   },
 

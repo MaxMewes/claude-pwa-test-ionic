@@ -1,85 +1,87 @@
 import React from 'react';
 import { IonList, IonItem, IonLabel, IonText, IonIcon, IonBadge } from '@ionic/react';
-import { arrowUpOutline, arrowDownOutline, removeOutline } from 'ionicons/icons';
-import { TestResult, ResultFlag } from '../../../api/types';
+import { alertCircleOutline } from 'ionicons/icons';
+import { TestResult } from '../../../api/types';
 
 interface CumulativeViewProps {
   tests: TestResult[];
   onTestClick?: (test: TestResult) => void;
 }
 
-const getFlagInfo = (flag: ResultFlag): { color: string; label: string } => {
-  switch (flag) {
-    case 'low':
+// labGate API v3 uses IsPathological and PathologyIndicator
+const getPathologyInfo = (test: TestResult): { color: string; label: string } => {
+  if (!test.IsPathological) {
+    return { color: 'success', label: 'Normal' };
+  }
+
+  switch (test.PathologyIndicator) {
+    case 'L':
       return { color: 'primary', label: 'Niedrig' };
-    case 'high':
-      return { color: 'warning', label: 'Hoch' };
-    case 'critical_low':
+    case 'LL':
       return { color: 'danger', label: 'Kritisch niedrig' };
-    case 'critical_high':
+    case 'H':
+      return { color: 'warning', label: 'Hoch' };
+    case 'HH':
       return { color: 'danger', label: 'Kritisch hoch' };
-    case 'abnormal':
+    case 'A':
       return { color: 'warning', label: 'Auffaellig' };
     default:
-      return { color: 'success', label: 'Normal' };
-  }
-};
-
-const getTrendIcon = (trend?: 'up' | 'down' | 'stable') => {
-  switch (trend) {
-    case 'up':
-      return <IonIcon icon={arrowUpOutline} color="warning" />;
-    case 'down':
-      return <IonIcon icon={arrowDownOutline} color="primary" />;
-    default:
-      return <IonIcon icon={removeOutline} color="medium" />;
+      return { color: 'warning', label: 'Auffaellig' };
   }
 };
 
 export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestClick }) => {
-  // Group tests by category (for now, just show all)
-  const normalTests = tests.filter((t) => t.flag === 'normal');
-  const abnormalTests = tests.filter((t) => t.flag !== 'normal');
+  // labGate API v3 uses IsPathological
+  const normalTests = tests.filter((t) => !t.IsPathological);
+  const abnormalTests = tests.filter((t) => t.IsPathological);
 
   const renderTest = (test: TestResult) => {
-    const flagInfo = getFlagInfo(test.flag);
+    const pathologyInfo = getPathologyInfo(test);
 
     return (
       <IonItem
-        key={test.id}
+        key={test.Id}
         button
         onClick={() => onTestClick?.(test)}
-        detail={!!test.previousValue}
+        detail
       >
         <IonLabel>
-          <h2 style={{ fontWeight: test.flag !== 'normal' ? 600 : 400 }}>{test.name}</h2>
-          <p>{test.referenceRange} {test.unit}</p>
+          {/* labGate API v3 uses TestName */}
+          <h2 style={{ fontWeight: test.IsPathological ? 600 : 400 }}>{test.TestName}</h2>
+          {/* labGate API v3 uses ReferenceRange and Unit */}
+          <p>{test.ReferenceRange} {test.Unit || ''}</p>
         </IonLabel>
 
         <div slot="end" style={{ textAlign: 'right' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {test.trend && getTrendIcon(test.trend)}
+            {test.IsPathological && (
+              <IonIcon
+                icon={alertCircleOutline}
+                color={pathologyInfo.color}
+              />
+            )}
             <IonText
               style={{
                 fontSize: '16px',
                 fontWeight: 600,
                 color:
-                  test.flag !== 'normal'
-                    ? `var(--ion-color-${flagInfo.color})`
+                  test.IsPathological
+                    ? `var(--ion-color-${pathologyInfo.color})`
                     : 'var(--ion-text-color)',
               }}
             >
-              {test.value} {test.unit}
+              {/* labGate API v3 uses Value and Unit */}
+              {test.Value} {test.Unit || ''}
             </IonText>
           </div>
-          {test.flag !== 'normal' && (
-            <IonBadge color={flagInfo.color} style={{ marginTop: '4px' }}>
-              {flagInfo.label}
+          {test.IsPathological && (
+            <IonBadge color={pathologyInfo.color} style={{ marginTop: '4px' }}>
+              {pathologyInfo.label}
             </IonBadge>
           )}
-          {test.previousValue && (
+          {test.Comment && (
             <IonText color="medium" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
-              Vorher: {test.previousValue}
+              {test.Comment}
             </IonText>
           )}
         </div>

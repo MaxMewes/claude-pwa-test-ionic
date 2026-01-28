@@ -262,12 +262,12 @@ export const mockLaboratoriesHandlers = {
     const start = (page - 1) * pageSize;
     const paginatedLabs = filtered.slice(start, start + pageSize);
 
+    // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<Laboratory>>({
-      data: paginatedLabs,
-      total: filtered.length,
-      page,
-      pageSize,
-      totalPages: Math.ceil(filtered.length / pageSize),
+      Items: paginatedLabs,
+      CurrentPage: page,
+      ItemsPerPage: pageSize,
+      TotalItemsCount: filtered.length,
     });
   },
 

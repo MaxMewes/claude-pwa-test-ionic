@@ -16,9 +16,12 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { PasswordInput } from '../../../shared/components';
+import { ROUTES } from '../../../config/routes';
+import { useIonRouter } from '@ionic/react';
 
+// labGate API v3 uses Username instead of email
 const loginSchema = z.object({
-  email: z.string().email('Bitte geben Sie eine gueltige E-Mail-Adresse ein'),
+  username: z.string().min(1, 'Bitte geben Sie Ihren Benutzernamen ein'),
   password: z.string().min(1, 'Bitte geben Sie Ihr Passwort ein'),
 });
 
@@ -26,6 +29,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
+  const router = useIonRouter();
   const { login, isLoggingIn, loginError } = useAuth();
 
   const {
@@ -37,7 +41,7 @@ export const LoginPage: React.FC = () => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      username: '',
       password: '',
     },
   });
@@ -45,7 +49,11 @@ export const LoginPage: React.FC = () => {
   const password = watch('password');
 
   const onSubmit = (data: LoginFormData) => {
-    login(data);
+    // labGate API v3 format with Username and Password
+    login({
+      Username: data.username,
+      Password: data.password,
+    });
   };
 
   return (
@@ -88,17 +96,17 @@ export const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)}>
             <IonList>
-              <IonItem className={errors.email ? 'ion-invalid' : ''}>
-                <IonLabel position="stacked">{t('auth.email')}</IonLabel>
+              <IonItem className={errors.username ? 'ion-invalid' : ''}>
+                <IonLabel position="stacked">{t('auth.username')}</IonLabel>
                 <IonInput
-                  type="email"
-                  placeholder="name@example.de"
-                  {...register('email')}
-                  onIonInput={(e) => setValue('email', e.detail.value || '')}
+                  type="text"
+                  placeholder="Benutzername"
+                  {...register('username')}
+                  onIonInput={(e) => setValue('username', e.detail.value || '')}
                 />
-                {errors.email && (
+                {errors.username && (
                   <div slot="error" style={{ color: 'var(--ion-color-danger)', fontSize: '12px', padding: '4px 0' }}>
-                    {errors.email.message}
+                    {errors.username.message}
                   </div>
                 )}
               </IonItem>
@@ -131,8 +139,22 @@ export const LoginPage: React.FC = () => {
             </IonButton>
 
             {/* Forgot Password Link */}
-            <IonButton fill="clear" expand="block" style={{ marginTop: '8px' }}>
+            <IonButton
+              fill="clear"
+              expand="block"
+              style={{ marginTop: '8px' }}
+              onClick={() => router.push(ROUTES.RESET_PASSWORD)}
+            >
               {t('auth.forgotPassword')}
+            </IonButton>
+
+            {/* Register Link */}
+            <IonButton
+              fill="clear"
+              expand="block"
+              onClick={() => router.push(ROUTES.REGISTER)}
+            >
+              {t('auth.register')}
             </IonButton>
           </form>
 
@@ -150,7 +172,7 @@ export const LoginPage: React.FC = () => {
                 Demo-Zugangsdaten:
               </p>
               <p style={{ margin: 0, fontSize: '12px' }}>
-                E-Mail: demo@labgate.de<br />
+                Benutzername: demo<br />
                 Passwort: demo123<br />
                 2FA-Code: 123456
               </p>

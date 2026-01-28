@@ -18,66 +18,72 @@ interface MockRoute {
 }
 
 const mockRoutes: MockRoute[] = [
-  // Auth routes
-  { method: 'post', pattern: /\/auth\/login$/, handler: mockAuthHandlers.login },
-  { method: 'post', pattern: /\/auth\/two-factor$/, handler: mockAuthHandlers.twoFactor },
-  { method: 'post', pattern: /\/auth\/refresh$/, handler: mockAuthHandlers.refresh },
-  { method: 'post', pattern: /\/auth\/logout$/, handler: mockAuthHandlers.logout },
-  { method: 'get', pattern: /\/auth\/me$/, handler: mockAuthHandlers.getMe },
-  { method: 'post', pattern: /\/auth\/change-password$/, handler: mockAuthHandlers.changePassword },
-  { method: 'post', pattern: /\/auth\/register$/, handler: mockAuthHandlers.register },
-  { method: 'post', pattern: /\/auth\/reset-password$/, handler: mockAuthHandlers.resetPassword },
-  { method: 'get', pattern: /\/auth\/password-rules$/, handler: mockAuthHandlers.getPasswordRules },
+  // Auth routes - labGate API v3
+  { method: 'post', pattern: /\/api\/v3\/authentication\/authorize$/, handler: mockAuthHandlers.login },
+  { method: 'post', pattern: /\/api\/v3\/authentication\/authorize2f$/, handler: mockAuthHandlers.twoFactor },
+  { method: 'post', pattern: /\/api\/v3\/authentication\/refresh$/, handler: mockAuthHandlers.refresh },
+  { method: 'post', pattern: /\/api\/v3\/authentication\/logout$/, handler: mockAuthHandlers.logout },
+  { method: 'get', pattern: /\/api\/v3\/authentication\/me$/, handler: mockAuthHandlers.getMe },
+  { method: 'post', pattern: /\/api\/v3\/authentication\/change-password$/, handler: mockAuthHandlers.changePassword },
+  { method: 'post', pattern: /\/api\/v3\/authentication\/register$/, handler: mockAuthHandlers.register },
+  { method: 'post', pattern: /\/api\/v3\/authentication\/reset-password$/, handler: mockAuthHandlers.resetPassword },
+  { method: 'get', pattern: /\/api\/v3\/authentication\/password-rules$/, handler: mockAuthHandlers.getPasswordRules },
 
-  // Results routes
-  { method: 'get', pattern: /\/results$/, handler: mockResultsHandlers.getResults },
-  { method: 'get', pattern: /\/results\/counter$/, handler: mockResultsHandlers.getCounter },
-  { method: 'get', pattern: /\/results\/[^/]+\/cumulative$/, handler: mockResultsHandlers.getCumulative },
-  { method: 'get', pattern: /\/results\/[^/]+$/, handler: mockResultsHandlers.getResultById },
-  { method: 'get', pattern: /\/results\/[^/]+\/trend\/[^/]+$/, handler: mockResultsHandlers.getTrend },
-  { method: 'patch', pattern: /\/results\/[^/]+\/read$/, handler: mockResultsHandlers.markAsRead },
-  { method: 'patch', pattern: /\/results\/mark-as-read$/, handler: mockResultsHandlers.markAsRead },
-  { method: 'patch', pattern: /\/results\/mark-as-unread$/, handler: mockResultsHandlers.markAsUnread },
-  { method: 'patch', pattern: /\/results\/mark-as-favorite$/, handler: mockResultsHandlers.markAsFavorite },
-  { method: 'patch', pattern: /\/results\/mark-as-not-favorite$/, handler: mockResultsHandlers.markAsNotFavorite },
-  { method: 'patch', pattern: /\/results\/mark-as-archived$/, handler: mockResultsHandlers.markAsArchived },
-  { method: 'patch', pattern: /\/results\/mark-as-not-archived$/, handler: mockResultsHandlers.markAsNotArchived },
-  { method: 'patch', pattern: /\/results\/[^/]+\/pin$/, handler: mockResultsHandlers.togglePin },
+  // Results routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/results$/, handler: mockResultsHandlers.getResults },
+  { method: 'get', pattern: /\/api\/v3\/results\/counter$/, handler: mockResultsHandlers.getCounter },
+  { method: 'get', pattern: /\/api\/v3\/results\/[^/]+\/cumulative$/, handler: mockResultsHandlers.getCumulative },
+  { method: 'get', pattern: /\/api\/v3\/results\/[^/]+$/, handler: mockResultsHandlers.getResultById },
+  { method: 'get', pattern: /\/api\/v3\/results\/[^/]+\/trend\/[^/]+$/, handler: mockResultsHandlers.getTrend },
+  { method: 'patch', pattern: /\/api\/v3\/results\/[^/]+\/read$/, handler: mockResultsHandlers.markAsRead },
+  { method: 'patch', pattern: /\/api\/v3\/results\/mark-as-read$/, handler: mockResultsHandlers.markAsRead },
+  { method: 'patch', pattern: /\/api\/v3\/results\/mark-as-unread$/, handler: mockResultsHandlers.markAsUnread },
+  { method: 'patch', pattern: /\/api\/v3\/results\/mark-as-favorite$/, handler: mockResultsHandlers.markAsFavorite },
+  { method: 'patch', pattern: /\/api\/v3\/results\/mark-as-not-favorite$/, handler: mockResultsHandlers.markAsNotFavorite },
+  { method: 'patch', pattern: /\/api\/v3\/results\/mark-as-archived$/, handler: mockResultsHandlers.markAsArchived },
+  { method: 'patch', pattern: /\/api\/v3\/results\/mark-as-not-archived$/, handler: mockResultsHandlers.markAsNotArchived },
+  { method: 'patch', pattern: /\/api\/v3\/results\/[^/]+\/pin$/, handler: mockResultsHandlers.togglePin },
 
-  // Patients routes
-  { method: 'get', pattern: /\/patients$/, handler: mockPatientsHandlers.getPatients },
-  { method: 'get', pattern: /\/patients\/[^/]+$/, handler: mockPatientsHandlers.getPatientById },
-  { method: 'get', pattern: /\/patients\/[^/]+\/results$/, handler: mockPatientsHandlers.getPatientResults },
+  // Patients routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/patients$/, handler: mockPatientsHandlers.getPatients },
+  { method: 'get', pattern: /\/api\/v3\/patients\/[^/]+$/, handler: mockPatientsHandlers.getPatientById },
+  { method: 'get', pattern: /\/api\/v3\/patients\/[^/]+\/results$/, handler: mockPatientsHandlers.getPatientResults },
 
-  // Laboratories routes
-  { method: 'get', pattern: /\/laboratories$/, handler: mockLaboratoriesHandlers.getLaboratories },
-  { method: 'get', pattern: /\/laboratories\/service-catalog$/, handler: mockLaboratoriesHandlers.getServiceCatalog },
-  { method: 'get', pattern: /\/laboratories\/service-catalog\/[^/]+$/, handler: mockLaboratoriesHandlers.getServiceItem },
-  { method: 'get', pattern: /\/laboratories\/[^/]+\/messages$/, handler: mockLaboratoriesHandlers.getMessages },
-  { method: 'post', pattern: /\/laboratories\/send-message$/, handler: mockLaboratoriesHandlers.sendMessage },
-  { method: 'patch', pattern: /\/messages\/[^/]+$/, handler: mockLaboratoriesHandlers.markMessageAsRead },
-  { method: 'get', pattern: /\/laboratories\/[^/]+$/, handler: mockLaboratoriesHandlers.getLaboratoryById },
+  // Laboratories routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/laboratories$/, handler: mockLaboratoriesHandlers.getLaboratories },
+  { method: 'get', pattern: /\/api\/v3\/laboratories\/service-catalog$/, handler: mockLaboratoriesHandlers.getServiceCatalog },
+  { method: 'get', pattern: /\/api\/v3\/laboratories\/service-catalog\/[^/]+$/, handler: mockLaboratoriesHandlers.getServiceItem },
+  { method: 'get', pattern: /\/api\/v3\/laboratories\/[^/]+\/messages$/, handler: mockLaboratoriesHandlers.getMessages },
+  { method: 'post', pattern: /\/api\/v3\/laboratories\/send-message$/, handler: mockLaboratoriesHandlers.sendMessage },
+  { method: 'patch', pattern: /\/api\/v3\/messages\/[^/]+$/, handler: mockLaboratoriesHandlers.markMessageAsRead },
+  { method: 'get', pattern: /\/api\/v3\/laboratories\/[^/]+$/, handler: mockLaboratoriesHandlers.getLaboratoryById },
 
-  // Senders routes
-  { method: 'get', pattern: /\/senders$/, handler: mockSendersHandlers.getSenders },
-  { method: 'get', pattern: /\/senders\/[^/]+$/, handler: mockSendersHandlers.getSenderById },
+  // Senders routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/senders$/, handler: mockSendersHandlers.getSenders },
+  { method: 'get', pattern: /\/api\/v3\/senders\/[^/]+$/, handler: mockSendersHandlers.getSenderById },
 
-  // News routes
-  { method: 'get', pattern: /\/news$/, handler: mockNewsHandlers.getNews },
-  { method: 'get', pattern: /\/news\/[^/]+$/, handler: mockNewsHandlers.getNewsById },
-  { method: 'patch', pattern: /\/news\/[^/]+\/read$/, handler: mockNewsHandlers.markAsRead },
+  // News routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/news$/, handler: mockNewsHandlers.getNews },
+  { method: 'get', pattern: /\/api\/v3\/news\/[^/]+$/, handler: mockNewsHandlers.getNewsById },
+  { method: 'patch', pattern: /\/api\/v3\/news\/[^/]+\/read$/, handler: mockNewsHandlers.markAsRead },
 
-  // FAQ routes
-  { method: 'get', pattern: /\/faqs$/, handler: mockFAQHandlers.getFAQs },
-  { method: 'get', pattern: /\/faqs\/[^/]+$/, handler: mockFAQHandlers.getFAQById },
+  // FAQ routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/faqs$/, handler: mockFAQHandlers.getFAQs },
+  { method: 'get', pattern: /\/api\/v3\/faqs\/[^/]+$/, handler: mockFAQHandlers.getFAQById },
 
-  // Feedback routes
-  { method: 'post', pattern: /\/feedbacks$/, handler: mockFeedbackHandlers.sendFeedback },
+  // Feedback routes - labGate API v3
+  { method: 'post', pattern: /\/api\/v3\/feedbacks$/, handler: mockFeedbackHandlers.sendFeedback },
 
-  // Settings routes
-  { method: 'get', pattern: /\/settings$/, handler: mockSettingsHandlers.getSettings },
-  { method: 'patch', pattern: /\/settings$/, handler: mockSettingsHandlers.updateSettings },
-  { method: 'put', pattern: /\/settings$/, handler: mockSettingsHandlers.updateSettings },
+  // Settings routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/settings$/, handler: mockSettingsHandlers.getSettings },
+  { method: 'patch', pattern: /\/api\/v3\/settings$/, handler: mockSettingsHandlers.updateSettings },
+  { method: 'put', pattern: /\/api\/v3\/settings$/, handler: mockSettingsHandlers.updateSettings },
+
+  // Push notifications - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/pushnotifications\/settings$/, handler: mockSettingsHandlers.getPushSettings },
+  { method: 'put', pattern: /\/api\/v3\/pushnotifications\/settings$/, handler: mockSettingsHandlers.updatePushSettings },
+  { method: 'post', pattern: /\/api\/v3\/pushnotifications\/subscribe$/, handler: mockSettingsHandlers.subscribePush },
+  { method: 'delete', pattern: /\/api\/v3\/pushnotifications\/unsubscribe$/, handler: mockSettingsHandlers.unsubscribePush },
 ];
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

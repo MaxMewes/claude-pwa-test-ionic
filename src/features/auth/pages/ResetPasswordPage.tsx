@@ -48,7 +48,8 @@ export const ResetPasswordPage: React.FC = () => {
 
   const resetMutation = useMutation({
     mutationFn: async (data: ResetPasswordRequest) => {
-      const response = await axiosInstance.post<ResetPasswordResponse>('/auth/reset-password', data);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.post<ResetPasswordResponse>('/api/v3/authentication/reset-password', data);
       return response.data;
     },
     onSuccess: (data) => {
@@ -69,7 +70,11 @@ export const ResetPasswordPage: React.FC = () => {
   });
 
   const onSubmit = (data: ResetPasswordFormData) => {
-    resetMutation.mutate(data);
+    // labGate API v3 format - uses Username and Email
+    resetMutation.mutate({
+      Username: data.email, // Use email as username
+      Email: data.email,
+    });
   };
 
   return (

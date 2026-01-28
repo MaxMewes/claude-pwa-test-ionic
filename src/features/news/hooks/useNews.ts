@@ -14,7 +14,8 @@ export function useNews(filter?: NewsFilter) {
   return useQuery({
     queryKey: [NEWS_KEY, filter],
     queryFn: async () => {
-      const response = await axiosInstance.get<PaginatedResponse<NewsArticle>>('/news', {
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<PaginatedResponse<NewsArticle>>('/api/v3/news', {
         params: filter,
       });
       return response.data;
@@ -26,7 +27,8 @@ export function useNewsArticle(id: string | undefined) {
   return useQuery({
     queryKey: [NEWS_KEY, id],
     queryFn: async () => {
-      const response = await axiosInstance.get<NewsArticle>(`/news/${id}`);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<NewsArticle>(`/api/v3/news/${id}`);
       return response.data;
     },
     enabled: !!id,
@@ -38,7 +40,8 @@ export function useMarkNewsAsRead() {
 
   return useMutation({
     mutationFn: async (newsId: string) => {
-      const response = await axiosInstance.patch(`/news/${newsId}/read`);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.patch(`/api/v3/news/${newsId}/read`);
       return response.data;
     },
     onSuccess: () => {

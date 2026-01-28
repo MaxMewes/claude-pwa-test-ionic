@@ -14,7 +14,8 @@ export function useLaboratories(filter?: LaboratoriesFilter) {
   return useQuery({
     queryKey: [LABORATORIES_KEY, filter],
     queryFn: async () => {
-      const response = await axiosInstance.get<PaginatedResponse<Laboratory>>('/laboratories', {
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<PaginatedResponse<Laboratory>>('/api/v3/laboratories', {
         params: filter,
       });
       return response.data;
@@ -26,7 +27,8 @@ export function useLaboratory(id: string | undefined) {
   return useQuery({
     queryKey: [LABORATORIES_KEY, id],
     queryFn: async () => {
-      const response = await axiosInstance.get<Laboratory>(`/laboratories/${id}`);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<Laboratory>(`/api/v3/laboratories/${id}`);
       return response.data;
     },
     enabled: !!id,

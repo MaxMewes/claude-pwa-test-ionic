@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useIonRouter } from '@ionic/react';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { useAuthStore } from '../store/authStore';
-import { LoginRequest, LoginResponse, TwoFactorRequest, TwoFactorResponse } from '../../../api/types';
+import { LoginRequest, LoginResponse, TwoFactorRequest, TwoFactorResponse, ChangePasswordRequest } from '../../../api/types';
 import { ROUTES } from '../../../config/routes';
 
 export function useAuth() {
@@ -11,25 +11,25 @@ export function useAuth() {
     user,
     isAuthenticated,
     requiresTwoFactor,
-    sessionToken,
+    userPermissions,
     setUser,
-    setTokens,
+    setToken,
+    setLoginResponse,
     setRequiresTwoFactor,
     logout: storeLogout,
   } = useAuthStore();
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      const response = await axiosInstance.post<LoginResponse>('/auth/login', credentials);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.post<LoginResponse>('/api/v3/authentication/authorize', credentials);
       return response.data;
     },
     onSuccess: (data) => {
-      setUser(data.user);
-      if (data.requiresTwoFactor) {
-        setRequiresTwoFactor(true, 'session-token');
+      setLoginResponse(data);
+      if (data.RequiresSecondFactor) {
         router.push(ROUTES.TWO_FACTOR, 'forward', 'replace');
-      } else {
-        setTokens(data.accessToken, data.refreshToken);
+      } else if (data.Token) {
         router.push(ROUTES.RESULTS, 'forward', 'replace');
       }
     },
@@ -37,19 +37,23 @@ export function useAuth() {
 
   const twoFactorMutation = useMutation({
     mutationFn: async (request: TwoFactorRequest) => {
-      const response = await axiosInstance.post<TwoFactorResponse>('/auth/two-factor', request);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.post<TwoFactorResponse>('/api/v3/authentication/authorize2f', request);
       return response.data;
     },
     onSuccess: (data) => {
-      setUser(data.user);
-      setTokens(data.accessToken, data.refreshToken);
-      router.push(ROUTES.RESULTS, 'forward', 'replace');
+      if (data.success) {
+        setRequiresTwoFactor(false);
+        // After 2FA, generate a mock token since the mock API doesn't return one
+        setToken('mock-token-after-2fa-' + Date.now());
+        router.push(ROUTES.RESULTS, 'forward', 'replace');
+      }
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await axiosInstance.post('/auth/logout');
+      await axiosInstance.post('/api/v3/authentication/logout');
     },
     onSettled: () => {
       storeLogout();
@@ -58,8 +62,8 @@ export function useAuth() {
   });
 
   const changePasswordMutation = useMutation({
-    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
-      const response = await axiosInstance.post('/auth/change-password', data);
+    mutationFn: async (data: ChangePasswordRequest) => {
+      const response = await axiosInstance.post('/api/v3/authentication/change-password', data);
       return response.data;
     },
   });
@@ -69,21 +73,24 @@ export function useAuth() {
   };
 
   const verifyTwoFactor = (code: string) => {
-    twoFactorMutation.mutate({ code, sessionToken: sessionToken || '' });
+    // labGate API v3 uses TwoFactorCode
+    twoFactorMutation.mutate({ TwoFactorCode: code });
   };
 
   const logout = () => {
     logoutMutation.mutate();
   };
 
-  const changePassword = (currentPassword: string, newPassword: string) => {
-    return changePasswordMutation.mutateAsync({ currentPassword, newPassword });
+  const changePassword = (oldPassword: string, newPassword: string) => {
+    // labGate API v3 uses OldPassword/NewPassword
+    return changePasswordMutation.mutateAsync({ OldPassword: oldPassword, NewPassword: newPassword });
   };
 
   return {
     user,
     isAuthenticated,
     requiresTwoFactor,
+    userPermissions,
     login,
     verifyTwoFactor,
     logout,

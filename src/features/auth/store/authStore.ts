@@ -4,19 +4,27 @@ import { User } from '../../../api/types';
 
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
+  token: string | null; // labGate API v3 uses single Token
   isAuthenticated: boolean;
   requiresTwoFactor: boolean;
-  sessionToken: string | null;
+  passwordExpired: boolean;
+  twoFactorRegistrationIncomplete: boolean;
+  userPermissions: string[];
   lastActivity: number;
   pin: string | null;
   biometricEnabled: boolean;
 
   // Actions
   setUser: (user: User | null) => void;
-  setTokens: (accessToken: string, refreshToken: string) => void;
-  setRequiresTwoFactor: (requires: boolean, sessionToken?: string) => void;
+  setToken: (token: string) => void;
+  setLoginResponse: (response: {
+    Token: string;
+    RequiresSecondFactor: boolean;
+    PasswordExpired: boolean;
+    TwoFactorRegistrationIncomplete: boolean;
+    UserPermissions: string[];
+  }) => void;
+  setRequiresTwoFactor: (requires: boolean) => void;
   setPin: (pin: string | null) => void;
   setBiometricEnabled: (enabled: boolean) => void;
   updateLastActivity: () => void;
@@ -30,11 +38,12 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
+      token: null,
       isAuthenticated: false,
       requiresTwoFactor: false,
-      sessionToken: null,
+      passwordExpired: false,
+      twoFactorRegistrationIncomplete: false,
+      userPermissions: [],
       lastActivity: Date.now(),
       pin: null,
       biometricEnabled: false,
@@ -46,20 +55,28 @@ export const useAuthStore = create<AuthState>()(
           lastActivity: Date.now(),
         }),
 
-      setTokens: (accessToken, refreshToken) =>
+      setToken: (token) =>
         set({
-          accessToken,
-          refreshToken,
+          token,
           isAuthenticated: true,
           requiresTwoFactor: false,
-          sessionToken: null,
           lastActivity: Date.now(),
         }),
 
-      setRequiresTwoFactor: (requires, sessionToken) =>
+      setLoginResponse: (response) =>
+        set({
+          token: response.Token || null,
+          requiresTwoFactor: response.RequiresSecondFactor,
+          passwordExpired: response.PasswordExpired,
+          twoFactorRegistrationIncomplete: response.TwoFactorRegistrationIncomplete,
+          userPermissions: response.UserPermissions,
+          isAuthenticated: !response.RequiresSecondFactor && !!response.Token,
+          lastActivity: Date.now(),
+        }),
+
+      setRequiresTwoFactor: (requires) =>
         set({
           requiresTwoFactor: requires,
-          sessionToken: sessionToken || null,
         }),
 
       setPin: (pin) => set({ pin }),
@@ -71,21 +88,20 @@ export const useAuthStore = create<AuthState>()(
       logout: () =>
         set({
           user: null,
-          accessToken: null,
-          refreshToken: null,
+          token: null,
           isAuthenticated: false,
           requiresTwoFactor: false,
-          sessionToken: null,
+          passwordExpired: false,
+          twoFactorRegistrationIncomplete: false,
+          userPermissions: [],
           lastActivity: Date.now(),
         }),
 
       clearSession: () =>
         set({
-          accessToken: null,
-          refreshToken: null,
+          token: null,
           isAuthenticated: false,
           requiresTwoFactor: false,
-          sessionToken: null,
         }),
     }),
     {
@@ -93,9 +109,9 @@ export const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
+        token: state.token,
         isAuthenticated: state.isAuthenticated,
+        userPermissions: state.userPermissions,
         pin: state.pin,
         biometricEnabled: state.biometricEnabled,
       }),

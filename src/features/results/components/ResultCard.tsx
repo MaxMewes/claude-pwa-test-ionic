@@ -9,11 +9,11 @@ import {
   IonIcon,
   IonText,
 } from '@ionic/react';
-import { pinOutline, alertCircleOutline, checkmarkCircleOutline, timeOutline } from 'ionicons/icons';
+import { pinOutline, alertCircleOutline, checkmarkCircleOutline, timeOutline, starOutline, star } from 'ionicons/icons';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import { LabResult, ResultFlag } from '../../../api/types';
+import { LabResult, TestResult } from '../../../api/types';
 
 interface ResultCardProps {
   result: LabResult;
@@ -27,32 +27,49 @@ const statusBadgeClass: Record<string, string> = {
   corrected: 'badge-corrected',
 };
 
+// Map labGate API v3 pathology indicators to colors
+const getPathologyColor = (test: TestResult): string => {
+  if (!test.IsPathological) return 'var(--result-normal)';
+
+  switch (test.PathologyIndicator) {
+    case 'L':
+    case 'LL':
+      return 'var(--result-low)';
+    case 'H':
+    case 'HH':
+      return 'var(--result-high)';
+    case 'A':
+      return 'var(--result-abnormal)';
+    default:
+      return test.IsPathological ? 'var(--result-high)' : 'var(--result-normal)';
+  }
+};
+
+const isCritical = (test: TestResult): boolean => {
+  return test.PathologyIndicator === 'LL' || test.PathologyIndicator === 'HH';
+};
+
 export const ResultCard: React.FC<ResultCardProps> = ({ result, onClick }) => {
   const { t } = useTranslation();
 
-  const hasAbnormalValues = result.tests.some(
-    (test) => test.flag !== 'normal'
-  );
+  // labGate API v3 uses ResultData array
+  const tests = result.ResultData || [];
 
-  const hasCriticalValues = result.tests.some(
-    (test) => test.flag === 'critical_low' || test.flag === 'critical_high'
-  );
+  const hasAbnormalValues = tests.some((test) => test.IsPathological);
+  const hasCriticalValues = tests.some((test) => isCritical(test));
 
-  const getFlagColor = (flag: ResultFlag): string => {
-    switch (flag) {
-      case 'low':
-        return 'var(--result-low)';
-      case 'high':
-        return 'var(--result-high)';
-      case 'critical_low':
-      case 'critical_high':
-        return 'var(--result-critical)';
-      case 'abnormal':
-        return 'var(--result-abnormal)';
-      default:
-        return 'var(--result-normal)';
+  // labGate API v3 status mapping
+  const getStatusKey = (status: string): string => {
+    switch (status.toLowerCase()) {
+      case 'final': return 'final';
+      case 'partial': return 'partial';
+      case 'pending': return 'pending';
+      case 'corrected': return 'corrected';
+      default: return 'final';
     }
   };
+
+  const statusKey = getStatusKey(result.Status);
 
   return (
     <IonCard
@@ -64,43 +81,59 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onClick }) => {
           : hasAbnormalValues
           ? '4px solid var(--result-high)'
           : '4px solid transparent',
-        opacity: result.isRead ? 0.85 : 1,
+        opacity: result.IsRead ? 0.85 : 1,
       }}
     >
       <IonCardHeader>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <IonCardTitle style={{ fontSize: '16px', fontWeight: result.isRead ? 'normal' : 'bold' }}>
-              {result.patientName}
+            {/* labGate API v3 uses Patient.Fullname */}
+            <IonCardTitle style={{ fontSize: '16px', fontWeight: result.IsRead ? 'normal' : 'bold' }}>
+              {result.Patient.Fullname}
             </IonCardTitle>
-            <IonCardSubtitle>{result.laboratoryName}</IonCardSubtitle>
+            {/* labGate API v3 uses Laboratory?.Name */}
+            <IonCardSubtitle>{result.Laboratory?.Name || 'Labor'}</IonCardSubtitle>
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {result.IsFavorite && (
+              <IonIcon icon={star} color="warning" style={{ fontSize: '18px' }} />
+            )}
             {result.isPinned && (
               <IonIcon icon={pinOutline} color="primary" style={{ fontSize: '18px' }} />
             )}
-            <IonBadge className={statusBadgeClass[result.status]}>
-              {t(`results.status.${result.status}`)}
+            <IonBadge className={statusBadgeClass[statusKey]}>
+              {t(`results.status.${statusKey}`)}
             </IonBadge>
           </div>
         </div>
       </IonCardHeader>
 
       <IonCardContent>
-        {/* Date and Order Number */}
+        {/* Date and Lab Number */}
         <div style={{ display: 'flex', gap: '16px', marginBottom: '12px', fontSize: '13px' }}>
           <IonText color="medium">
             <IonIcon icon={timeOutline} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-            {format(new Date(result.reportDate), 'dd.MM.yyyy', { locale: de })}
+            {/* labGate API v3 uses ReportDate */}
+            {format(new Date(result.ReportDate), 'dd.MM.yyyy', { locale: de })}
           </IonText>
-          <IonText color="medium">#{result.orderNumber}</IonText>
+          {/* labGate API v3 uses LabNo */}
+          <IonText color="medium">#{result.LabNo}</IonText>
         </div>
 
-        {/* Test Summary */}
+        {/* Laboratory Section */}
+        {result.LaboratorySection && (
+          <div style={{ marginBottom: '8px' }}>
+            <IonText color="medium" style={{ fontSize: '12px' }}>
+              {result.LaboratorySection}
+            </IonText>
+          </div>
+        )}
+
+        {/* Test Summary - labGate API v3 uses ResultData */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {result.tests.slice(0, 4).map((test) => (
+          {tests.slice(0, 4).map((test) => (
             <div
-              key={test.id}
+              key={test.Id}
               style={{
                 padding: '4px 8px',
                 borderRadius: '4px',
@@ -111,18 +144,19 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onClick }) => {
                 gap: '4px',
               }}
             >
-              {test.flag !== 'normal' && (
+              {test.IsPathological && (
                 <IonIcon
-                  icon={test.flag === 'critical_low' || test.flag === 'critical_high' ? alertCircleOutline : checkmarkCircleOutline}
-                  style={{ color: getFlagColor(test.flag), fontSize: '14px' }}
+                  icon={isCritical(test) ? alertCircleOutline : checkmarkCircleOutline}
+                  style={{ color: getPathologyColor(test), fontSize: '14px' }}
                 />
               )}
-              <span style={{ fontWeight: 500 }}>{test.shortName}:</span>
-              <span style={{ color: getFlagColor(test.flag) }}>{test.value}</span>
-              <span style={{ color: 'var(--ion-color-medium)' }}>{test.unit}</span>
+              {/* labGate API v3 uses TestIdent or TestName */}
+              <span style={{ fontWeight: 500 }}>{test.TestIdent || test.TestName?.substring(0, 6)}:</span>
+              <span style={{ color: getPathologyColor(test) }}>{test.Value}</span>
+              <span style={{ color: 'var(--ion-color-medium)' }}>{test.Unit}</span>
             </div>
           ))}
-          {result.tests.length > 4 && (
+          {tests.length > 4 && (
             <div
               style={{
                 padding: '4px 8px',
@@ -131,7 +165,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onClick }) => {
                 fontSize: '12px',
               }}
             >
-              +{result.tests.length - 4} weitere
+              +{tests.length - 4} weitere
             </div>
           )}
         </div>
@@ -152,6 +186,26 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, onClick }) => {
             <IonIcon icon={alertCircleOutline} color="danger" />
             <IonText color="danger" style={{ fontSize: '13px' }}>
               Kritische Werte vorhanden
+            </IonText>
+          </div>
+        )}
+
+        {/* Confirmable indicator */}
+        {result.IsConfirmable && (
+          <div
+            style={{
+              marginTop: '8px',
+              padding: '8px',
+              borderRadius: '4px',
+              backgroundColor: 'rgba(var(--ion-color-primary-rgb), 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <IonIcon icon={checkmarkCircleOutline} color="primary" />
+            <IonText color="primary" style={{ fontSize: '13px' }}>
+              Bestaetigung erforderlich
             </IonText>
           </div>
         )}

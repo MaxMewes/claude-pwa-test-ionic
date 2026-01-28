@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../../features/auth/store/authStore';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -14,7 +14,8 @@ export const axiosInstance = axios.create({
 // Request interceptor - add auth token
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = useAuthStore.getState().accessToken;
+    // labGate API v3 uses single Token
+    const token = useAuthStore.getState().token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -35,17 +36,18 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken = useAuthStore.getState().refreshToken;
-      if (refreshToken) {
+      const currentToken = useAuthStore.getState().token;
+      if (currentToken) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken,
+          // labGate API v3 refresh endpoint
+          const response = await axios.post(`${API_BASE_URL}/api/v3/authentication/refresh`, {
+            Token: currentToken,
           });
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
-          useAuthStore.getState().setTokens(accessToken, newRefreshToken);
+          const { Token: newToken } = response.data;
+          useAuthStore.getState().setToken(newToken);
 
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           // Refresh failed, logout user
@@ -53,7 +55,7 @@ axiosInstance.interceptors.response.use(
           return Promise.reject(refreshError);
         }
       } else {
-        // No refresh token, logout
+        // No token, logout
         useAuthStore.getState().logout();
       }
     }

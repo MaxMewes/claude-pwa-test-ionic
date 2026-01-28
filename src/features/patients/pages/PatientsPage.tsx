@@ -63,7 +63,7 @@ export const PatientsPage: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader type="list" count={5} />
-        ) : !data?.data.length ? (
+        ) : !data?.Items?.length ? (
           <EmptyState
             type={search ? 'search' : 'patients'}
             actionLabel={search ? t('common.reset') : undefined}
@@ -71,7 +71,7 @@ export const PatientsPage: React.FC = () => {
           />
         ) : (
           <IonList>
-            {data.data.map((patient) => (
+            {data.Items.map((patient) => (
               <IonItem
                 key={patient.id}
                 button

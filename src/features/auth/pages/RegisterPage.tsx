@@ -64,7 +64,8 @@ export const RegisterPage: React.FC = () => {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterRequest) => {
-      const response = await axiosInstance.post<RegisterResponse>('/auth/register', data);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.post<RegisterResponse>('/api/v3/authentication/register', data);
       return response.data;
     },
     onSuccess: (data) => {
@@ -85,11 +86,12 @@ export const RegisterPage: React.FC = () => {
   });
 
   const onSubmit = (data: RegisterFormData) => {
+    // labGate API v3 format with PascalCase field names
     registerMutation.mutate({
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      password: data.password,
+      Username: data.email, // Use email as username
+      Email: data.email,
+      FirstName: data.firstName,
+      LastName: data.lastName,
     });
   };
 

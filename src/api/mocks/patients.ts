@@ -132,12 +132,12 @@ export const mockPatientsHandlers = {
     const start = (page - 1) * pageSize;
     const paginatedPatients = filtered.slice(start, start + pageSize);
 
+    // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<Patient>>({
-      data: paginatedPatients,
-      total: filtered.length,
-      page,
-      pageSize,
-      totalPages: Math.ceil(filtered.length / pageSize),
+      Items: paginatedPatients,
+      CurrentPage: page,
+      ItemsPerPage: pageSize,
+      TotalItemsCount: filtered.length,
     });
   },
 
@@ -157,12 +157,12 @@ export const mockPatientsHandlers = {
     const patientId = urlParts[urlParts.length - 2];
 
     // Return empty results for now - actual implementation would filter results
+    // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<LabResult>>({
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 10,
-      totalPages: 0,
+      Items: [],
+      CurrentPage: 1,
+      ItemsPerPage: 10,
+      TotalItemsCount: 0,
     });
   },
 };

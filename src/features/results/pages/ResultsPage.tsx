@@ -31,7 +31,8 @@ export const ResultsPage: React.FC = () => {
     setFilter((prev) => ({ ...prev, search: value || undefined }));
   }, []);
 
-  const handleResultClick = (resultId: string) => {
+  // labGate API v3 uses numeric Id
+  const handleResultClick = (resultId: number) => {
     history.push(`/results/${resultId}`);
   };
 
@@ -44,6 +45,9 @@ export const ResultsPage: React.FC = () => {
     (filter.category?.length || 0) +
     (filter.isRead !== undefined ? 1 : 0) +
     (filter.isPinned !== undefined ? 1 : 0);
+
+  // labGate API v3 uses Items instead of data
+  const results = data?.Items || [];
 
   return (
     <IonPage>
@@ -69,7 +73,7 @@ export const ResultsPage: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader type="card" count={3} />
-        ) : !data?.data.length ? (
+        ) : !results.length ? (
           <EmptyState
             type={filter.search ? 'search' : 'results'}
             actionLabel={filter.search ? t('common.reset') : undefined}
@@ -77,11 +81,11 @@ export const ResultsPage: React.FC = () => {
           />
         ) : (
           <div style={{ padding: '8px' }}>
-            {data.data.map((result) => (
+            {results.map((result) => (
               <ResultCard
-                key={result.id}
+                key={result.Id}
                 result={result}
-                onClick={() => handleResultClick(result.id)}
+                onClick={() => handleResultClick(result.Id)}
               />
             ))}
           </div>

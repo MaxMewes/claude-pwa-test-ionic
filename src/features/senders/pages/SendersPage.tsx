@@ -72,7 +72,7 @@ export const SendersPage: React.FC = () => {
               </IonItem>
             ))}
           </IonList>
-        ) : data?.data.length === 0 ? (
+        ) : !data?.Items?.length ? (
           <div style={{ textAlign: 'center', padding: '48px 24px' }}>
             <IonText color="medium">
               <p>{t('senders.noSenders')}</p>
@@ -80,7 +80,7 @@ export const SendersPage: React.FC = () => {
           </div>
         ) : (
           <IonList>
-            {data?.data.map((sender) => (
+            {data.Items.map((sender) => (
               <IonItem
                 key={sender.id}
                 button

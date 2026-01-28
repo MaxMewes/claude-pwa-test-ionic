@@ -164,12 +164,12 @@ export const mockNewsHandlers = {
     const start = (page - 1) * pageSize;
     const paginatedNews = filtered.slice(start, start + pageSize);
 
+    // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<NewsArticle>>({
-      data: paginatedNews,
-      total: filtered.length,
-      page,
-      pageSize,
-      totalPages: Math.ceil(filtered.length / pageSize),
+      Items: paginatedNews,
+      CurrentPage: page,
+      ItemsPerPage: pageSize,
+      TotalItemsCount: filtered.length,
     });
   },
 

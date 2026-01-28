@@ -16,12 +16,13 @@ import { useResultTrend } from '../hooks/useResults';
 import { TestResult } from '../../../api/types';
 
 interface TrendChartProps {
-  resultId: string;
+  resultId: string | number;
   test: TestResult;
 }
 
 export const TrendChart: React.FC<TrendChartProps> = ({ resultId, test }) => {
-  const { data: trendData, isLoading, error } = useResultTrend(resultId, test.id);
+  // labGate API v3 uses Id
+  const { data: trendData, isLoading, error } = useResultTrend(resultId, test.Id);
 
   if (isLoading) {
     return (
@@ -39,19 +40,23 @@ export const TrendChart: React.FC<TrendChartProps> = ({ resultId, test }) => {
     );
   }
 
+  // labGate API v3 uses Date and Value (PascalCase)
   const formattedData = trendData.map((point) => ({
     ...point,
-    dateFormatted: format(new Date(point.date), 'dd.MM.yy', { locale: de }),
+    dateFormatted: format(new Date(point.Date), 'dd.MM.yy', { locale: de }),
+    numericValue: point.NumericValue ?? parseFloat(point.Value) ?? 0,
   }));
 
-  const minValue = Math.min(...trendData.map((d) => d.value));
-  const maxValue = Math.max(...trendData.map((d) => d.value));
+  const values = formattedData.map(d => d.numericValue);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
   const padding = (maxValue - minValue) * 0.2 || 1;
 
   return (
     <div style={{ padding: '16px' }}>
       <IonText color="dark">
-        <h3 style={{ margin: '0 0 16px 0' }}>{test.name} - Verlauf</h3>
+        {/* labGate API v3 uses TestName */}
+        <h3 style={{ margin: '0 0 16px 0' }}>{test.TestName} - Verlauf</h3>
       </IonText>
 
       <ResponsiveContainer width="100%" height={250}>
@@ -75,30 +80,30 @@ export const TrendChart: React.FC<TrendChartProps> = ({ resultId, test }) => {
               borderRadius: '8px',
             }}
             labelStyle={{ color: 'var(--ion-text-color)' }}
-            formatter={(value) => [`${value} ${test.unit}`, test.name]}
+            formatter={(value) => [`${value} ${test.Unit || ''}`, test.TestName]}
           />
 
-          {/* Reference lines for normal range */}
-          {test.referenceMin !== undefined && (
+          {/* Reference lines for normal range - labGate API v3 uses ReferenceMin/ReferenceMax */}
+          {test.ReferenceMin !== undefined && (
             <ReferenceLine
-              y={test.referenceMin}
+              y={test.ReferenceMin}
               stroke="var(--result-low)"
               strokeDasharray="5 5"
               label={{
-                value: `Min: ${test.referenceMin}`,
+                value: `Min: ${test.ReferenceMin}`,
                 position: 'left',
                 fontSize: 10,
                 fill: 'var(--result-low)',
               }}
             />
           )}
-          {test.referenceMax !== undefined && (
+          {test.ReferenceMax !== undefined && (
             <ReferenceLine
-              y={test.referenceMax}
+              y={test.ReferenceMax}
               stroke="var(--result-high)"
               strokeDasharray="5 5"
               label={{
-                value: `Max: ${test.referenceMax}`,
+                value: `Max: ${test.ReferenceMax}`,
                 position: 'left',
                 fontSize: 10,
                 fill: 'var(--result-high)',
@@ -108,7 +113,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ resultId, test }) => {
 
           <Line
             type="monotone"
-            dataKey="value"
+            dataKey="numericValue"
             stroke="var(--ion-color-primary)"
             strokeWidth={2}
             dot={{ fill: 'var(--ion-color-primary)', strokeWidth: 2, r: 4 }}
@@ -127,7 +132,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ resultId, test }) => {
         }}
       >
         <IonText color="medium" style={{ fontSize: '13px' }}>
-          Referenzbereich: {test.referenceRange} {test.unit}
+          Referenzbereich: {test.ReferenceRange || '-'} {test.Unit || ''}
         </IonText>
       </div>
     </div>

@@ -86,11 +86,11 @@ export const NewsPage: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader type="card" count={3} />
-        ) : !data?.data.length ? (
+        ) : !data?.Items?.length ? (
           <EmptyState type="news" />
         ) : (
           <div style={{ padding: '8px' }}>
-            {data.data.map((article) => (
+            {data.Items.map((article) => (
               <IonCard
                 key={article.id}
                 onClick={() => handleNewsClick(article.id)}

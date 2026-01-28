@@ -24,37 +24,39 @@ export type Permission =
   | 'manage_news'
   | 'manage_settings';
 
+// labGate API v3 Auth Types
 export interface LoginRequest {
-  email: string;
-  password: string;
-  deviceKey?: string;
-  deviceName?: string;
+  Username: string;
+  Password: string;
+  DeviceKey?: string;
+  OperatingSystem?: 'Ios' | 'Android' | 'Windows' | 'Unknown';
+  OperatingSystemVersion?: string;
+  DeviceModel?: string;
+  DeviceName?: string;
+  AdditionalInformation?: string;
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: User;
-  requiresTwoFactor: boolean;
-  passwordExpired?: boolean;
+  Token: string;
+  PasswordExpired: boolean;
+  RequiresSecondFactor: boolean;
+  TwoFactorRegistrationIncomplete: boolean;
+  UserPermissions: string[];
 }
 
 export interface TwoFactorRequest {
-  code: string;
-  sessionToken: string;
+  TwoFactorCode: string;
 }
 
 export interface TwoFactorResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: User;
+  success: boolean;
 }
 
 export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
+  Username: string;
+  Email: string;
+  FirstName: string;
+  LastName: string;
 }
 
 export interface RegisterResponse {
@@ -63,7 +65,8 @@ export interface RegisterResponse {
 }
 
 export interface ResetPasswordRequest {
-  email: string;
+  Username: string;
+  Email: string;
 }
 
 export interface ResetPasswordResponse {
@@ -72,42 +75,68 @@ export interface ResetPasswordResponse {
 }
 
 export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
+  OldPassword: string;
+  NewPassword: string;
 }
 
 export interface PasswordRules {
-  minLength: number;
-  requireUppercase: boolean;
-  requireLowercase: boolean;
-  requireNumbers: boolean;
-  requireSpecialChars: boolean;
+  MinimumLength: number;
+  RequireUppercase: boolean;
+  RequireLowercase: boolean;
+  RequireNumbers: boolean;
+  RequireSpecialCharacters: boolean;
 }
 
-// Result Types
+// labGate API v3 Result Types
 export interface LabResult {
-  id: string;
-  patientId: string;
-  patientName: string;
-  laboratoryId: string;
-  laboratoryName: string;
-  senderId?: string;
-  senderName?: string;
-  orderNumber: string;
-  collectionDate: string;
-  reportDate: string;
-  status: ResultStatus;
-  resultType: ResultType;
-  category: ResultCategory;
-  tests: TestResult[];
-  isRead: boolean;
-  isFavorite: boolean;
-  isArchived: boolean;
-  isPinned: boolean;
-  isConfirmed?: boolean;
-  pdfUrl?: string;
-  documents?: ResultDocument[];
-  comments?: string;
+  Id: number;
+  LabNo: string;
+  Patient: ResultPatient;
+  Sender?: ResultSender;
+  Laboratory?: ResultLaboratory;
+  ReportDate: string;
+  Status: string;
+  ResultType?: string;
+  LaboratorySection?: string;
+  IsFavorite: boolean;
+  IsRead: boolean;
+  IsArchived: boolean;
+  IsConfirmable?: boolean;
+  ResultData?: TestResult[];
+  // Legacy fields for backwards compatibility
+  id?: string;
+  patientId?: string;
+  patientName?: string;
+  laboratoryId?: string;
+  laboratoryName?: string;
+  orderNumber?: string;
+  collectionDate?: string;
+  reportDate?: string;
+  status?: ResultStatus;
+  category?: ResultCategory;
+  tests?: TestResult[];
+  isRead?: boolean;
+  isFavorite?: boolean;
+  isArchived?: boolean;
+  isPinned?: boolean;
+}
+
+export interface ResultPatient {
+  Id: number;
+  Fullname: string;
+  PatientNumber?: string;
+  DateOfBirth?: string;
+}
+
+export interface ResultSender {
+  Id: number;
+  Name: string;
+  CustomerNo?: string;
+}
+
+export interface ResultLaboratory {
+  Id: number;
+  Name: string;
 }
 
 export type ResultStatus = 'pending' | 'partial' | 'final' | 'corrected';
@@ -124,16 +153,25 @@ export type ResultCategory =
   | 'other';
 
 export interface TestResult {
-  id: string;
-  name: string;
-  shortName: string;
-  value: string;
-  valueText?: string;
-  unit: string;
-  referenceRange: string;
-  referenceMin?: number;
-  referenceMax?: number;
-  flag: ResultFlag;
+  Id: number;
+  TestIdent: string;
+  TestName: string;
+  Value: string;
+  Unit?: string;
+  ReferenceRange?: string;
+  ReferenceMin?: number;
+  ReferenceMax?: number;
+  IsPathological?: boolean;
+  PathologyIndicator?: string;
+  Comment?: string;
+  // Legacy fields
+  id?: string;
+  name?: string;
+  shortName?: string;
+  value?: string;
+  unit?: string;
+  referenceRange?: string;
+  flag?: ResultFlag;
   previousValue?: string;
   previousDate?: string;
   trend?: 'up' | 'down' | 'stable';
@@ -141,10 +179,10 @@ export interface TestResult {
 }
 
 export interface TestResultHistory {
-  date: string;
-  value: string;
-  numericValue?: number;
-  flag: ResultFlag;
+  Date: string;
+  Value: string;
+  NumericValue?: number;
+  IsPathological?: boolean;
 }
 
 export type ResultFlag = 'normal' | 'low' | 'high' | 'critical_low' | 'critical_high' | 'abnormal';
@@ -179,11 +217,11 @@ export interface ResultFilter {
 }
 
 export interface ResultCounter {
-  total: number;
-  new: number;
-  pathological: number;
-  urgent: number;
-  highPathological: number;
+  Total: number;
+  New: number;
+  Pathological: number;
+  Urgent: number;
+  HighPathological?: number;
 }
 
 export interface TrendDataPoint {
@@ -458,12 +496,18 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+// labGate API v3 Paginated Response
 export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+  Items: T[];
+  CurrentPage: number;
+  ItemsPerPage: number;
+  TotalItemsCount: number;
+  // Legacy fields for backwards compatibility
+  data?: T[];
+  total?: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
 }
 
 export interface ApiError {

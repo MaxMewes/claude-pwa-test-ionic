@@ -70,7 +70,7 @@ export const LaboratoriesPage: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader type="list" count={5} />
-        ) : !data?.data.length ? (
+        ) : !data?.Items?.length ? (
           <EmptyState
             type={search ? 'search' : 'laboratories'}
             actionLabel={search ? t('common.reset') : undefined}
@@ -78,7 +78,7 @@ export const LaboratoriesPage: React.FC = () => {
           />
         ) : (
           <IonList>
-            {data.data.map((lab) => {
+            {data.Items.map((lab) => {
               const isOpen = isOpenNow(lab);
               return (
                 <IonItem

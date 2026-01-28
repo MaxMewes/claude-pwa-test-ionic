@@ -17,7 +17,7 @@ import {
   IonText,
   IonModal,
 } from '@ionic/react';
-import { pinOutline, pin, documentOutline, statsChartOutline, listOutline } from 'ionicons/icons';
+import { pinOutline, pin, documentOutline, statsChartOutline, listOutline, star, starOutline } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -34,6 +34,7 @@ type ViewMode = 'cumulative' | 'trend';
 export const ResultDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  // labGate API v3 uses numeric Id
   const { data: result, isLoading } = useResult(id);
   const markAsRead = useMarkResultAsRead();
   const togglePin = useToggleResultPin();
@@ -41,16 +42,16 @@ export const ResultDetailPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('cumulative');
   const [selectedTest, setSelectedTest] = useState<TestResult | null>(null);
 
-  // Mark as read when viewing
+  // Mark as read when viewing - labGate API v3 uses IsRead and Id
   useEffect(() => {
-    if (result && !result.isRead) {
-      markAsRead.mutate(result.id);
+    if (result && !result.IsRead) {
+      markAsRead.mutate([result.Id]);
     }
-  }, [result?.id]);
+  }, [result?.Id]);
 
   const handleTogglePin = () => {
     if (result) {
-      togglePin.mutate(result.id);
+      togglePin.mutate(result.Id);
     }
   };
 
@@ -94,6 +95,9 @@ export const ResultDetailPage: React.FC = () => {
     );
   }
 
+  // labGate API v3 uses ResultData instead of tests
+  const tests = result.ResultData || [];
+
   return (
     <IonPage>
       <IonHeader>
@@ -101,16 +105,17 @@ export const ResultDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref={ROUTES.RESULTS} />
           </IonButtons>
-          <IonTitle>{result.patientName}</IonTitle>
+          {/* labGate API v3 uses Patient.Fullname */}
+          <IonTitle>{result.Patient.Fullname}</IonTitle>
           <IonButtons slot="end">
+            {result.IsFavorite && (
+              <IonButton>
+                <IonIcon icon={star} color="warning" />
+              </IonButton>
+            )}
             <IonButton onClick={handleTogglePin}>
               <IonIcon icon={result.isPinned ? pin : pinOutline} />
             </IonButton>
-            {result.pdfUrl && (
-              <IonButton>
-                <IonIcon icon={documentOutline} />
-              </IonButton>
-            )}
           </IonButtons>
         </IonToolbar>
       </IonHeader>
@@ -122,21 +127,12 @@ export const ResultDetailPage: React.FC = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
                 <IonText color="medium" style={{ fontSize: '12px' }}>
-                  {t('results.collectionDate')}
-                </IonText>
-                <IonText>
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>
-                    {format(new Date(result.collectionDate), 'dd.MM.yyyy HH:mm', { locale: de })}
-                  </p>
-                </IonText>
-              </div>
-              <div>
-                <IonText color="medium" style={{ fontSize: '12px' }}>
                   {t('results.reportDate')}
                 </IonText>
                 <IonText>
                   <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>
-                    {format(new Date(result.reportDate), 'dd.MM.yyyy HH:mm', { locale: de })}
+                    {/* labGate API v3 uses ReportDate */}
+                    {format(new Date(result.ReportDate), 'dd.MM.yyyy HH:mm', { locale: de })}
                   </p>
                 </IonText>
               </div>
@@ -145,17 +141,39 @@ export const ResultDetailPage: React.FC = () => {
                   Labor
                 </IonText>
                 <IonText>
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{result.laboratoryName}</p>
+                  {/* labGate API v3 uses Laboratory?.Name */}
+                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{result.Laboratory?.Name || '-'}</p>
                 </IonText>
               </div>
               <div>
                 <IonText color="medium" style={{ fontSize: '12px' }}>
-                  {t('results.orderNumber')}
+                  Labor-Nr.
                 </IonText>
                 <IonText>
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>#{result.orderNumber}</p>
+                  {/* labGate API v3 uses LabNo */}
+                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>#{result.LabNo}</p>
                 </IonText>
               </div>
+              {result.LaboratorySection && (
+                <div>
+                  <IonText color="medium" style={{ fontSize: '12px' }}>
+                    Bereich
+                  </IonText>
+                  <IonText>
+                    <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{result.LaboratorySection}</p>
+                  </IonText>
+                </div>
+              )}
+              {result.Sender && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <IonText color="medium" style={{ fontSize: '12px' }}>
+                    Einsender
+                  </IonText>
+                  <IonText>
+                    <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{result.Sender.Name}</p>
+                  </IonText>
+                </div>
+              )}
             </div>
           </IonCardContent>
         </IonCard>
@@ -176,11 +194,11 @@ export const ResultDetailPage: React.FC = () => {
 
         {/* Content based on view mode */}
         {viewMode === 'cumulative' ? (
-          <CumulativeView tests={result.tests} onTestClick={handleTestClick} />
+          <CumulativeView tests={tests} onTestClick={handleTestClick} />
         ) : (
           <div style={{ padding: '16px' }}>
-            {result.tests.map((test) => (
-              <TrendChart key={test.id} resultId={result.id} test={test} />
+            {tests.map((test) => (
+              <TrendChart key={test.Id} resultId={result.Id} test={test} />
             ))}
           </div>
         )}
@@ -194,7 +212,7 @@ export const ResultDetailPage: React.FC = () => {
         >
           {selectedTest && (
             <IonContent className="ion-padding">
-              <TrendChart resultId={result.id} test={selectedTest} />
+              <TrendChart resultId={result.Id} test={selectedTest} />
             </IonContent>
           )}
         </IonModal>

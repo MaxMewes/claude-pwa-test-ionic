@@ -14,7 +14,8 @@ export function useSenders(params: UseSendersParams = {}) {
   return useQuery({
     queryKey: ['senders', page, pageSize, query],
     queryFn: async () => {
-      const response = await axiosInstance.get<PaginatedResponse<Sender>>('/senders', {
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<PaginatedResponse<Sender>>('/api/v3/senders', {
         params: { currentPage: page, itemsPerPage: pageSize, query },
       });
       return response.data;
@@ -26,7 +27,8 @@ export function useSender(id: string | undefined) {
   return useQuery({
     queryKey: ['sender', id],
     queryFn: async () => {
-      const response = await axiosInstance.get<Sender>(`/senders/${id}`);
+      // labGate API v3 endpoint
+      const response = await axiosInstance.get<Sender>(`/api/v3/senders/${id}`);
       return response.data;
     },
     enabled: !!id,

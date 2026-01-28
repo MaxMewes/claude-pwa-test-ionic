@@ -14,7 +14,16 @@ export const useTheme = () => {
 
   useEffect(() => {
     const applyTheme = (dark: boolean) => {
-      document.documentElement.classList.toggle('ion-palette-dark', dark);
+      // Remove both classes first
+      document.body.classList.remove('dark', 'light');
+
+      // Add the appropriate class
+      if (theme === 'dark' || (theme === 'system' && dark)) {
+        document.body.classList.add('dark');
+      } else if (theme === 'light') {
+        document.body.classList.add('light');
+      }
+
       setIsDark(dark);
     };
 

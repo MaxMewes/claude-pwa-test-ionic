@@ -36,14 +36,6 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-import '@ionic/react/css/palettes/dark.system.css';
-
 /* Theme variables */
 import './theme/variables.css';
 
@@ -79,6 +71,7 @@ import { FAQPage } from './features/settings/pages/FAQPage';
 
 /* Shared */
 import { ErrorBoundary } from './shared/components';
+import { useTheme } from './shared/hooks/useTheme';
 
 /* Routes */
 import { ROUTES } from './config/routes';
@@ -168,6 +161,8 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   // Auto logout on inactivity
   useAutoLogout();
+  // Initialize theme on app startup
+  useTheme();
 
   return (
     <ErrorBoundary>

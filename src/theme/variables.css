@@ -1,0 +1,186 @@
+/* labGate App Theme */
+/* For information on how to create your own theme, please refer to:
+http://ionicframework.com/docs/theming/ */
+
+:root {
+  /* Primary - Medical Blue */
+  --ion-color-primary: #0066CC;
+  --ion-color-primary-rgb: 0, 102, 204;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #005ab4;
+  --ion-color-primary-tint: #1a75d1;
+
+  /* Secondary - Professional Gray */
+  --ion-color-secondary: #5c6bc0;
+  --ion-color-secondary-rgb: 92, 107, 192;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #515ea9;
+  --ion-color-secondary-tint: #6c7ac6;
+
+  /* Tertiary - Accent */
+  --ion-color-tertiary: #7c4dff;
+  --ion-color-tertiary-rgb: 124, 77, 255;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #6d44e0;
+  --ion-color-tertiary-tint: #895fff;
+
+  /* Success - Medical Green */
+  --ion-color-success: #28a745;
+  --ion-color-success-rgb: 40, 167, 69;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #23933d;
+  --ion-color-success-tint: #3eb058;
+
+  /* Warning - Alert Orange */
+  --ion-color-warning: #ffc107;
+  --ion-color-warning-rgb: 255, 193, 7;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #e0aa06;
+  --ion-color-warning-tint: #ffc720;
+
+  /* Danger - Critical Red */
+  --ion-color-danger: #dc3545;
+  --ion-color-danger-rgb: 220, 53, 69;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #c22f3d;
+  --ion-color-danger-tint: #e04958;
+
+  /* Light */
+  --ion-color-light: #f8f9fa;
+  --ion-color-light-rgb: 248, 249, 250;
+  --ion-color-light-contrast: #000000;
+  --ion-color-light-contrast-rgb: 0, 0, 0;
+  --ion-color-light-shade: #dadcdc;
+  --ion-color-light-tint: #f9fafb;
+
+  /* Medium */
+  --ion-color-medium: #6c757d;
+  --ion-color-medium-rgb: 108, 117, 125;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #5f676e;
+  --ion-color-medium-tint: #7b838a;
+
+  /* Dark */
+  --ion-color-dark: #212529;
+  --ion-color-dark-rgb: 33, 37, 41;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #1d2024;
+  --ion-color-dark-tint: #373b3e;
+
+  /* Custom Result Status Colors */
+  --result-normal: #28a745;
+  --result-low: #17a2b8;
+  --result-high: #ffc107;
+  --result-critical: #dc3545;
+  --result-abnormal: #fd7e14;
+}
+
+/* iOS Specific Styles */
+.ios body {
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: #212529;
+  --ion-text-color-rgb: 33, 37, 41;
+  --ion-border-color: #dee2e6;
+  --ion-toolbar-background: #f8f9fa;
+}
+
+/* Material Design Specific Styles */
+.md body {
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: #212529;
+  --ion-text-color-rgb: 33, 37, 41;
+  --ion-border-color: #dee2e6;
+  --ion-toolbar-background: #0066CC;
+  --ion-toolbar-color: #ffffff;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #4da6ff;
+    --ion-color-primary-rgb: 77, 166, 255;
+    --ion-color-primary-contrast: #000000;
+    --ion-color-primary-contrast-rgb: 0, 0, 0;
+    --ion-color-primary-shade: #4492e0;
+    --ion-color-primary-tint: #5fafff;
+  }
+
+  .ios body,
+  .md body {
+    --ion-background-color: #121212;
+    --ion-background-color-rgb: 18, 18, 18;
+    --ion-text-color: #ffffff;
+    --ion-text-color-rgb: 255, 255, 255;
+    --ion-border-color: #333333;
+    --ion-toolbar-background: #1e1e1e;
+  }
+
+  .ios body {
+    --ion-item-background: #1e1e1e;
+    --ion-card-background: #1e1e1e;
+  }
+
+  .md body {
+    --ion-item-background: #1e1e1e;
+    --ion-card-background: #1e1e1e;
+    --ion-toolbar-color: #ffffff;
+  }
+
+  ion-modal {
+    --ion-background-color: #1e1e1e;
+    --ion-toolbar-background: #1e1e1e;
+    --ion-toolbar-border-color: #333333;
+  }
+}
+
+/* Custom utility classes */
+.result-flag-normal {
+  color: var(--result-normal);
+}
+
+.result-flag-low {
+  color: var(--result-low);
+}
+
+.result-flag-high {
+  color: var(--result-high);
+}
+
+.result-flag-critical {
+  color: var(--result-critical);
+}
+
+.result-flag-abnormal {
+  color: var(--result-abnormal);
+}
+
+/* Badge variants for result status */
+.badge-pending {
+  --background: var(--ion-color-warning);
+  --color: var(--ion-color-warning-contrast);
+}
+
+.badge-partial {
+  --background: var(--ion-color-secondary);
+  --color: var(--ion-color-secondary-contrast);
+}
+
+.badge-final {
+  --background: var(--ion-color-success);
+  --color: var(--ion-color-success-contrast);
+}
+
+.badge-corrected {
+  --background: var(--ion-color-tertiary);
+  --color: var(--ion-color-tertiary-contrast);
+}

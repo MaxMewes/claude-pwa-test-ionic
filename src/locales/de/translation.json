@@ -1,0 +1,204 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "retry": "Erneut versuchen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Loeschen",
+    "edit": "Bearbeiten",
+    "close": "Schliessen",
+    "back": "Zurueck",
+    "next": "Weiter",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "reset": "Zuruecksetzen",
+    "noData": "Keine Daten vorhanden",
+    "offline": "Sie sind offline",
+    "pullToRefresh": "Zum Aktualisieren ziehen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "loginError": "Anmeldung fehlgeschlagen",
+    "invalidCredentials": "Ungueltige Anmeldedaten",
+    "twoFactor": {
+      "title": "Zwei-Faktor-Authentifizierung",
+      "description": "Bitte geben Sie den Code aus Ihrer Authenticator-App ein",
+      "code": "Code",
+      "verify": "Verifizieren",
+      "invalidCode": "Ungueltiger Code"
+    },
+    "pin": {
+      "title": "PIN eingeben",
+      "description": "Bitte geben Sie Ihre PIN ein",
+      "setup": "PIN einrichten",
+      "confirm": "PIN bestaetigen",
+      "mismatch": "PINs stimmen nicht ueberein"
+    },
+    "biometric": {
+      "title": "Biometrische Anmeldung",
+      "useFingerprint": "Mit Fingerabdruck anmelden",
+      "useFaceId": "Mit Face ID anmelden"
+    },
+    "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+    "autoLogout": "Aus Sicherheitsgruenden wurden Sie automatisch abgemeldet."
+  },
+  "results": {
+    "title": "Befunde",
+    "detail": "Befunddetails",
+    "noResults": "Keine Befunde vorhanden",
+    "newResult": "Neuer Befund",
+    "status": {
+      "pending": "Ausstehend",
+      "partial": "Teilweise",
+      "final": "Endgueltig",
+      "corrected": "Korrigiert"
+    },
+    "category": {
+      "hematology": "Haematologie",
+      "chemistry": "Klinische Chemie",
+      "immunology": "Immunologie",
+      "microbiology": "Mikrobiologie",
+      "urinalysis": "Urinstatus",
+      "coagulation": "Gerinnung",
+      "other": "Sonstige"
+    },
+    "flag": {
+      "normal": "Normal",
+      "low": "Niedrig",
+      "high": "Hoch",
+      "critical_low": "Kritisch niedrig",
+      "critical_high": "Kritisch hoch",
+      "abnormal": "Auffaellig"
+    },
+    "filter": {
+      "title": "Filter",
+      "status": "Status",
+      "category": "Kategorie",
+      "dateRange": "Zeitraum",
+      "unread": "Ungelesen",
+      "pinned": "Angepinnt"
+    },
+    "trend": "Verlauf",
+    "cumulative": "Kumulativ",
+    "referenceRange": "Referenzbereich",
+    "previousValue": "Vorheriger Wert",
+    "collectionDate": "Entnahmedatum",
+    "reportDate": "Befunddatum",
+    "orderNumber": "Auftragsnummer",
+    "pdf": "PDF herunterladen"
+  },
+  "patients": {
+    "title": "Patienten",
+    "detail": "Patientendetails",
+    "noPatients": "Keine Patienten vorhanden",
+    "dateOfBirth": "Geburtsdatum",
+    "gender": {
+      "male": "Maennlich",
+      "female": "Weiblich",
+      "other": "Divers"
+    },
+    "insuranceNumber": "Versicherungsnummer",
+    "contact": "Kontakt",
+    "address": "Adresse",
+    "lastVisit": "Letzter Besuch",
+    "resultCount": "Anzahl Befunde"
+  },
+  "laboratories": {
+    "title": "Labore",
+    "detail": "Labordetails",
+    "noLaboratories": "Keine Labore vorhanden",
+    "openingHours": "Oeffnungszeiten",
+    "closed": "Geschlossen",
+    "services": "Leistungen",
+    "contact": "Kontakt",
+    "directions": "Route anzeigen",
+    "call": "Anrufen",
+    "email": "E-Mail senden",
+    "website": "Website oeffnen"
+  },
+  "news": {
+    "title": "Neuigkeiten",
+    "detail": "Artikel",
+    "noNews": "Keine Neuigkeiten vorhanden",
+    "category": {
+      "announcement": "Ankuendigung",
+      "health_tip": "Gesundheitstipp",
+      "laboratory_news": "Labor-News",
+      "app_update": "App-Update"
+    },
+    "readMore": "Weiterlesen",
+    "publishedAt": "Veroeffentlicht am"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "account": "Konto",
+    "profile": "Profil",
+    "changePassword": "Passwort aendern",
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "enabled": "Benachrichtigungen aktiviert",
+      "newResults": "Neue Befunde",
+      "criticalResults": "Kritische Werte",
+      "news": "Neuigkeiten",
+      "reminders": "Erinnerungen",
+      "sound": "Ton",
+      "vibration": "Vibration"
+    },
+    "biometric": {
+      "title": "Biometrische Sicherheit",
+      "enabled": "Biometrische Anmeldung aktiviert",
+      "fingerprint": "Fingerabdruck",
+      "faceId": "Face ID"
+    },
+    "display": {
+      "title": "Anzeige",
+      "language": "Sprache",
+      "theme": "Design",
+      "themeLight": "Hell",
+      "themeDark": "Dunkel",
+      "themeSystem": "System",
+      "fontSize": "Schriftgroesse",
+      "fontSmall": "Klein",
+      "fontMedium": "Mittel",
+      "fontLarge": "Gross"
+    },
+    "privacy": {
+      "title": "Datenschutz",
+      "policy": "Datenschutzerklaerung",
+      "shareAnalytics": "Nutzungsdaten teilen",
+      "showProfilePhoto": "Profilbild anzeigen"
+    },
+    "support": {
+      "title": "Hilfe & Support",
+      "faq": "Haeufige Fragen",
+      "contact": "Kontakt",
+      "feedback": "Feedback geben"
+    },
+    "about": {
+      "title": "Ueber die App",
+      "version": "Version",
+      "terms": "Nutzungsbedingungen",
+      "licenses": "Lizenzen"
+    },
+    "password": {
+      "current": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "confirm": "Passwort bestaetigen",
+      "mismatch": "Passwoerter stimmen nicht ueberein",
+      "success": "Passwort erfolgreich geaendert",
+      "requirements": "Mindestens 8 Zeichen, Gross-/Kleinbuchstaben und Zahlen"
+    }
+  },
+  "errors": {
+    "network": "Netzwerkfehler. Bitte pruefen Sie Ihre Internetverbindung.",
+    "server": "Serverfehler. Bitte versuchen Sie es spaeter erneut.",
+    "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
+    "unauthorized": "Sie sind nicht berechtigt, diese Aktion auszufuehren.",
+    "generic": "Ein unerwarteter Fehler ist aufgetreten."
+  }
+}

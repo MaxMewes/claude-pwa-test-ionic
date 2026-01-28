@@ -1,12 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { useAuthStore } from '../store/authStore';
 import { LoginRequest, LoginResponse, TwoFactorRequest, TwoFactorResponse } from '../../../api/types';
 import { ROUTES } from '../../../config/routes';
 
 export function useAuth() {
-  const history = useHistory();
+  const router = useIonRouter();
   const {
     user,
     isAuthenticated,
@@ -27,10 +27,10 @@ export function useAuth() {
       setUser(data.user);
       if (data.requiresTwoFactor) {
         setRequiresTwoFactor(true, 'session-token');
-        history.push(ROUTES.TWO_FACTOR);
+        router.push(ROUTES.TWO_FACTOR, 'forward', 'replace');
       } else {
         setTokens(data.accessToken, data.refreshToken);
-        history.push(ROUTES.RESULTS);
+        router.push(ROUTES.RESULTS, 'forward', 'replace');
       }
     },
   });
@@ -43,7 +43,7 @@ export function useAuth() {
     onSuccess: (data) => {
       setUser(data.user);
       setTokens(data.accessToken, data.refreshToken);
-      history.push(ROUTES.RESULTS);
+      router.push(ROUTES.RESULTS, 'forward', 'replace');
     },
   });
 
@@ -53,7 +53,7 @@ export function useAuth() {
     },
     onSettled: () => {
       storeLogout();
-      history.push(ROUTES.LOGIN);
+      router.push(ROUTES.LOGIN, 'back', 'replace');
     },
   });
 

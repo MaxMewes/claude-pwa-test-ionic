@@ -7,8 +7,8 @@ import { axiosInstance } from './api/client/axiosInstance';
 import { setupMockAdapter } from './api/client/mockAdapter';
 import './config/i18n';
 
-// Setup mock API for development
-if (import.meta.env.DEV) {
+// Setup mock API only when VITE_USE_MOCK_API is true
+if (import.meta.env.VITE_USE_MOCK_API === 'true') {
   setupMockAdapter(axiosInstance);
 }
 

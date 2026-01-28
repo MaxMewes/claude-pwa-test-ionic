@@ -19,6 +19,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: true,
         },
+        // labGate API V2 endpoints (authentication)
+        '/Api/V2': {
+          target: env.VITE_API_URL || 'https://demo.labgate.net',
+          changeOrigin: true,
+          secure: true,
+        },
       },
     },
     plugins: [

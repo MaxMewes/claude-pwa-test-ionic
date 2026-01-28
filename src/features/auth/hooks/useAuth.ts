@@ -1,8 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useIonRouter } from '@ionic/react';
-import { axiosInstance } from '../../../api/client/axiosInstance';
 import { useAuthStore } from '../store/authStore';
-import { LoginRequest, LoginResponse, TwoFactorRequest, TwoFactorResponse, ChangePasswordRequest } from '../../../api/types';
+import { authService, LoginCredentials } from '../../../api/services/authService';
 import { ROUTES } from '../../../config/routes';
 
 export function useAuth() {
@@ -11,49 +10,53 @@ export function useAuth() {
     user,
     isAuthenticated,
     requiresTwoFactor,
-    userPermissions,
+    tempToken,
+    username,
     setUser,
     setToken,
-    setLoginResponse,
-    setRequiresTwoFactor,
+    setTempToken,
+    setPasswordExpired,
     logout: storeLogout,
   } = useAuthStore();
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginRequest) => {
-      // labGate API v3 endpoint
-      const response = await axiosInstance.post<LoginResponse>('/api/v3/authentication/authorize', credentials);
-      return response.data;
+    mutationFn: async (credentials: LoginCredentials) => {
+      return authService.login(credentials);
     },
     onSuccess: (data) => {
-      setLoginResponse(data);
-      if (data.RequiresSecondFactor) {
+      if (data.requiresTwoFactor && data.tempToken) {
+        // Store tempToken and username for 2FA verification
+        setTempToken(data.tempToken, data.user.username || '');
         router.push(ROUTES.TWO_FACTOR, 'forward', 'replace');
-      } else if (data.Token) {
+      } else if (data.token) {
+        // Login successful without 2FA
+        setUser(data.user);
+        setToken(data.token);
+        if (data.passwordExpired) {
+          setPasswordExpired(true);
+        }
         router.push(ROUTES.RESULTS, 'forward', 'replace');
       }
     },
   });
 
   const twoFactorMutation = useMutation({
-    mutationFn: async (request: TwoFactorRequest) => {
-      // labGate API v3 endpoint
-      const response = await axiosInstance.post<TwoFactorResponse>('/api/v3/authentication/authorize2f', request);
-      return response.data;
+    mutationFn: async (code: string) => {
+      if (!tempToken || !username) {
+        throw new Error('Missing tempToken or username for 2FA');
+      }
+      return authService.verifyTwoFactor(code, username, tempToken);
     },
     onSuccess: (data) => {
-      if (data.success) {
-        setRequiresTwoFactor(false);
-        // After 2FA, generate a mock token since the mock API doesn't return one
-        setToken('mock-token-after-2fa-' + Date.now());
-        router.push(ROUTES.RESULTS, 'forward', 'replace');
-      }
+      setUser(data.user);
+      setToken(data.token);
+      router.push(ROUTES.RESULTS, 'forward', 'replace');
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await axiosInstance.post('/api/v3/authentication/logout');
+      await authService.logout();
     },
     onSettled: () => {
       storeLogout();
@@ -62,19 +65,17 @@ export function useAuth() {
   });
 
   const changePasswordMutation = useMutation({
-    mutationFn: async (data: ChangePasswordRequest) => {
-      const response = await axiosInstance.post('/api/v3/authentication/change-password', data);
-      return response.data;
+    mutationFn: async ({ oldPassword, newPassword }: { oldPassword: string; newPassword: string }) => {
+      await authService.changePassword(oldPassword, newPassword);
     },
   });
 
-  const login = (credentials: LoginRequest) => {
+  const login = (credentials: LoginCredentials) => {
     loginMutation.mutate(credentials);
   };
 
   const verifyTwoFactor = (code: string) => {
-    // labGate API v3 uses TwoFactorCode
-    twoFactorMutation.mutate({ TwoFactorCode: code });
+    twoFactorMutation.mutate(code);
   };
 
   const logout = () => {
@@ -82,15 +83,13 @@ export function useAuth() {
   };
 
   const changePassword = (oldPassword: string, newPassword: string) => {
-    // labGate API v3 uses OldPassword/NewPassword
-    return changePasswordMutation.mutateAsync({ OldPassword: oldPassword, NewPassword: newPassword });
+    return changePasswordMutation.mutateAsync({ oldPassword, newPassword });
   };
 
   return {
     user,
     isAuthenticated,
     requiresTwoFactor,
-    userPermissions,
     login,
     verifyTwoFactor,
     logout,

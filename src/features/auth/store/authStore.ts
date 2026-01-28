@@ -1,15 +1,27 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { User } from '../../../api/types';
+
+export interface User {
+  id: string;
+  email: string;
+  username?: string;
+  firstName: string;
+  lastName: string;
+  role: 'admin' | 'doctor' | 'nurse' | 'patient' | 'lab_technician';
+  permissions: string[];
+  laboratoryId?: string;
+  avatar?: string;
+  createdAt: string;
+}
 
 interface AuthState {
   user: User | null;
-  token: string | null; // labGate API v3 uses single Token
+  token: string | null;
+  tempToken: string | null; // For 2FA flow
+  username: string | null; // Store username for 2FA verification
   isAuthenticated: boolean;
   requiresTwoFactor: boolean;
   passwordExpired: boolean;
-  twoFactorRegistrationIncomplete: boolean;
-  userPermissions: string[];
   lastActivity: number;
   pin: string | null;
   biometricEnabled: boolean;
@@ -17,14 +29,9 @@ interface AuthState {
   // Actions
   setUser: (user: User | null) => void;
   setToken: (token: string) => void;
-  setLoginResponse: (response: {
-    Token: string;
-    RequiresSecondFactor: boolean;
-    PasswordExpired: boolean;
-    TwoFactorRegistrationIncomplete: boolean;
-    UserPermissions: string[];
-  }) => void;
+  setTempToken: (tempToken: string, username: string) => void;
   setRequiresTwoFactor: (requires: boolean) => void;
+  setPasswordExpired: (expired: boolean) => void;
   setPin: (pin: string | null) => void;
   setBiometricEnabled: (enabled: boolean) => void;
   updateLastActivity: () => void;
@@ -39,11 +46,11 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      tempToken: null,
+      username: null,
       isAuthenticated: false,
       requiresTwoFactor: false,
       passwordExpired: false,
-      twoFactorRegistrationIncomplete: false,
-      userPermissions: [],
       lastActivity: Date.now(),
       pin: null,
       biometricEnabled: false,
@@ -58,25 +65,28 @@ export const useAuthStore = create<AuthState>()(
       setToken: (token) =>
         set({
           token,
+          tempToken: null,
           isAuthenticated: true,
           requiresTwoFactor: false,
           lastActivity: Date.now(),
         }),
 
-      setLoginResponse: (response) =>
+      setTempToken: (tempToken, username) =>
         set({
-          token: response.Token || null,
-          requiresTwoFactor: response.RequiresSecondFactor,
-          passwordExpired: response.PasswordExpired,
-          twoFactorRegistrationIncomplete: response.TwoFactorRegistrationIncomplete,
-          userPermissions: response.UserPermissions,
-          isAuthenticated: !response.RequiresSecondFactor && !!response.Token,
-          lastActivity: Date.now(),
+          tempToken,
+          username,
+          requiresTwoFactor: true,
+          isAuthenticated: false,
         }),
 
       setRequiresTwoFactor: (requires) =>
         set({
           requiresTwoFactor: requires,
+        }),
+
+      setPasswordExpired: (expired) =>
+        set({
+          passwordExpired: expired,
         }),
 
       setPin: (pin) => set({ pin }),
@@ -89,17 +99,18 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           token: null,
+          tempToken: null,
+          username: null,
           isAuthenticated: false,
           requiresTwoFactor: false,
           passwordExpired: false,
-          twoFactorRegistrationIncomplete: false,
-          userPermissions: [],
           lastActivity: Date.now(),
         }),
 
       clearSession: () =>
         set({
           token: null,
+          tempToken: null,
           isAuthenticated: false,
           requiresTwoFactor: false,
         }),
@@ -111,7 +122,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
-        userPermissions: state.userPermissions,
         pin: state.pin,
         biometricEnabled: state.biometricEnabled,
       }),

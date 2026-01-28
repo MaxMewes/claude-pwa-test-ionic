@@ -49,10 +49,10 @@ export const LoginPage: React.FC = () => {
   const password = watch('password');
 
   const onSubmit = (data: LoginFormData) => {
-    // labGate API v3 format with Username and Password
+    // authService handles the API format conversion
     login({
-      Username: data.username,
-      Password: data.password,
+      username: data.username,
+      password: data.password,
     });
   };
 
@@ -158,26 +158,6 @@ export const LoginPage: React.FC = () => {
             </IonButton>
           </form>
 
-          {/* Demo Credentials */}
-          <div
-            style={{
-              marginTop: '48px',
-              padding: '16px',
-              backgroundColor: 'var(--ion-color-light)',
-              borderRadius: '8px',
-            }}
-          >
-            <IonText color="medium">
-              <p style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 'bold' }}>
-                Demo-Zugangsdaten:
-              </p>
-              <p style={{ margin: 0, fontSize: '12px' }}>
-                Benutzername: demo<br />
-                Passwort: demo123<br />
-                2FA-Code: 123456
-              </p>
-            </IonText>
-          </div>
         </div>
       </IonContent>
     </IonPage>

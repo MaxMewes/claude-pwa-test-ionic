@@ -22,7 +22,6 @@ import {
   callOutline,
   mailOutline,
   locationOutline,
-  medkitOutline,
   businessOutline,
 } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
@@ -32,10 +31,15 @@ import { useSender } from '../hooks/useSenders';
 export const SenderDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const { data: sender, isLoading } = useSender(id);
+  const { data: sender, isLoading } = useSender(id ? parseInt(id, 10) : undefined);
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase();
+  };
+
+  const getFullName = () => {
+    if (!sender) return '';
+    return `${sender.Firstname} ${sender.Lastname}`.trim();
   };
 
   if (isLoading) {
@@ -89,7 +93,7 @@ export const SenderDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/senders" />
           </IonButtons>
-          <IonTitle>{sender.fullName}</IonTitle>
+          <IonTitle>{getFullName()}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -110,17 +114,14 @@ export const SenderDetailPage: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              {getInitials(sender.firstName, sender.lastName)}
+              {getInitials(sender.Firstname, sender.Lastname)}
             </div>
           </IonAvatar>
-          <h2 style={{ margin: '0 0 4px 0' }}>{sender.fullName}</h2>
-          {sender.specialField && (
-            <p style={{ margin: 0, color: 'var(--ion-color-medium)' }}>{sender.specialField}</p>
-          )}
+          <h2 style={{ margin: '0 0 4px 0' }}>{getFullName()}</h2>
         </div>
 
         {/* Site Info */}
-        {sender.siteName && (
+        {sender.Site?.Name && (
           <IonCard>
             <IonCardHeader>
               <IonCardTitle style={{ fontSize: '16px' }}>
@@ -129,43 +130,38 @@ export const SenderDetailPage: React.FC = () => {
               </IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
-              <p style={{ margin: 0 }}>{sender.siteName}</p>
-              {sender.customerNo && (
-                <p style={{ margin: '8px 0 0', color: 'var(--ion-color-medium)', fontSize: '14px' }}>
-                  {t('senders.customerNo')}: {sender.customerNo}
-                </p>
-              )}
+              <p style={{ margin: 0 }}>{sender.Site.Name}</p>
             </IonCardContent>
           </IonCard>
         )}
 
         {/* Contact */}
-        {sender.contact && (
+        {sender.Contact && (
           <IonList>
-            {sender.contact.phone && (
-              <IonItem button href={`tel:${sender.contact.phone}`}>
+            {sender.Contact.Phone && (
+              <IonItem button href={`tel:${sender.Contact.Phone}`}>
                 <IonIcon icon={callOutline} slot="start" color="primary" />
                 <IonLabel>
                   <p>{t('senders.phone')}</p>
-                  <h2>{sender.contact.phone}</h2>
+                  <h2>{sender.Contact.Phone}</h2>
                 </IonLabel>
               </IonItem>
             )}
-            {sender.contact.mobile && (
-              <IonItem button href={`tel:${sender.contact.mobile}`}>
+            {sender.Contact.Mobile && (
+              <IonItem button href={`tel:${sender.Contact.Mobile}`}>
                 <IonIcon icon={callOutline} slot="start" color="primary" />
                 <IonLabel>
                   <p>{t('senders.mobile')}</p>
-                  <h2>{sender.contact.mobile}</h2>
+                  <h2>{sender.Contact.Mobile}</h2>
                 </IonLabel>
               </IonItem>
             )}
-            {sender.contact.email && (
-              <IonItem button href={`mailto:${sender.contact.email}`}>
+            {sender.Contact.Email && (
+              <IonItem button href={`mailto:${sender.Contact.Email}`}>
                 <IonIcon icon={mailOutline} slot="start" color="primary" />
                 <IonLabel>
                   <p>{t('senders.email')}</p>
-                  <h2>{sender.contact.email}</h2>
+                  <h2>{sender.Contact.Email}</h2>
                 </IonLabel>
               </IonItem>
             )}
@@ -173,14 +169,14 @@ export const SenderDetailPage: React.FC = () => {
         )}
 
         {/* Address */}
-        {sender.address && (
+        {sender.Site?.Address && (
           <IonList>
             <IonItem>
               <IonIcon icon={locationOutline} slot="start" color="primary" />
               <IonLabel>
                 <p>{t('senders.address')}</p>
-                <h2>{sender.address.street}</h2>
-                <p>{sender.address.zipCode} {sender.address.city}</p>
+                <h2>{sender.Site.Address.Street}</h2>
+                <p>{sender.Site.Address.Zip} {sender.Site.Address.City}</p>
               </IonLabel>
             </IonItem>
           </IonList>

@@ -253,9 +253,9 @@ export const mockLaboratoriesHandlers = {
     if (search) {
       filtered = filtered.filter(
         (l) =>
-          l.name.toLowerCase().includes(search) ||
-          l.shortName.toLowerCase().includes(search) ||
-          l.address.city.toLowerCase().includes(search)
+          (l.name ?? '').toLowerCase().includes(search) ||
+          (l.shortName ?? '').toLowerCase().includes(search) ||
+          (l.address?.city ?? '').toLowerCase().includes(search)
       );
     }
 
@@ -264,10 +264,10 @@ export const mockLaboratoriesHandlers = {
 
     // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<Laboratory>>({
-      Items: paginatedLabs,
+      Results: paginatedLabs,
       CurrentPage: page,
       ItemsPerPage: pageSize,
-      TotalItemsCount: filtered.length,
+      TotalCount: filtered.length,
     });
   },
 

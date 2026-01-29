@@ -69,28 +69,58 @@ export const LoginPage: React.FC = () => {
             margin: '0 auto',
           }}
         >
-          {/* Logo and Title */}
+          {/* Logo and Title - Modern Design */}
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <div
               style={{
-                width: '80px',
-                height: '80px',
-                backgroundColor: 'var(--ion-color-primary)',
-                borderRadius: '20px',
+                width: '88px',
+                height: '88px',
+                background: 'linear-gradient(135deg, #70CC60 0%, #5cb84e 100%)',
+                borderRadius: '24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 24px',
+                margin: '0 auto 20px',
+                boxShadow: '0 8px 24px rgba(112, 204, 96, 0.35)',
+                position: 'relative',
               }}
             >
-              <span style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}>LG</span>
+              <span style={{
+                color: '#ffffff',
+                fontSize: '32px',
+                fontWeight: 700,
+                letterSpacing: '-1px'
+              }}>
+                LG
+              </span>
+              {/* Subtle shine effect */}
+              <div style={{
+                position: 'absolute',
+                top: '8px',
+                left: '8px',
+                right: '50%',
+                bottom: '50%',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 100%)',
+                borderRadius: '16px 8px 24px 8px',
+              }} />
             </div>
-            <IonText color="dark">
-              <h1 style={{ margin: '0 0 8px 0', fontSize: '28px' }}>labGate</h1>
-            </IonText>
-            <IonText color="medium">
-              <p style={{ margin: 0 }}>Medizinische Laborbefunde</p>
-            </IonText>
+            <h1 style={{
+              margin: '0 0 6px 0',
+              fontSize: '32px',
+              fontWeight: 700,
+              color: 'var(--labgate-text)',
+              letterSpacing: '-0.5px'
+            }}>
+              labGate
+            </h1>
+            <p style={{
+              margin: 0,
+              color: 'var(--labgate-text-muted)',
+              fontSize: '15px',
+              fontWeight: 500
+            }}>
+              Medizinische Laborbefunde
+            </p>
           </div>
 
           {/* Login Form */}

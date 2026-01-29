@@ -66,6 +66,7 @@ import { NewsDetailPage } from './features/news/pages/NewsDetailPage';
 /* Senders */
 import { SendersPage } from './features/senders/pages/SendersPage';
 import { SenderDetailPage } from './features/senders/pages/SenderDetailPage';
+import { useSenders } from './features/senders/hooks/useSenders';
 
 /* Help */
 import { HelpPage } from './features/help/pages/HelpPage';
@@ -91,6 +92,8 @@ setupIonicReact();
 
 const MainTabs: React.FC = () => {
   const { t } = useTranslation();
+  // Load senders on mount to auto-select first sender
+  useSenders();
 
   return (
     <IonTabs>

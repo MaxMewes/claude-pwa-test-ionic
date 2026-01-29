@@ -135,10 +135,10 @@ export const mockSendersHandlers = {
 
     // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<Sender>>({
-      Items: paginated,
+      Results: paginated,
       CurrentPage: page,
       ItemsPerPage: pageSize,
-      TotalItemsCount: filtered.length,
+      TotalCount: filtered.length,
     });
   },
 

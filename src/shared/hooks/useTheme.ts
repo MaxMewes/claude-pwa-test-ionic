@@ -7,7 +7,7 @@ type Theme = 'light' | 'dark' | 'system';
 export const useTheme = () => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem(THEME_KEY);
-    return (saved as Theme) || 'system';
+    return (saved as Theme) || 'light';
   });
 
   const [isDark, setIsDark] = useState(false);

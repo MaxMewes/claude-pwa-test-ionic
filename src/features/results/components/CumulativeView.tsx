@@ -1,6 +1,6 @@
 import React from 'react';
 import { IonList, IonItem, IonLabel, IonText, IonIcon, IonBadge } from '@ionic/react';
-import { alertCircleOutline } from 'ionicons/icons';
+import { alertCircleOutline, arrowUp, arrowDown } from 'ionicons/icons';
 import { TestResult } from '../../../api/types';
 
 interface CumulativeViewProps {
@@ -9,24 +9,31 @@ interface CumulativeViewProps {
 }
 
 // labGate API v3 uses IsPathological and PathologyIndicator
-const getPathologyInfo = (test: TestResult): { color: string; label: string } => {
+// Modern color palette
+const getPathologyInfo = (test: TestResult): {
+  color: string;
+  cssColor: string;
+  bgColor: string;
+  label: string;
+  icon?: typeof arrowUp;
+} => {
   if (!test.IsPathological) {
-    return { color: 'success', label: 'Normal' };
+    return { color: 'success', cssColor: '#22C55E', bgColor: 'rgba(34, 197, 94, 0.1)', label: 'Normal' };
   }
 
   switch (test.PathologyIndicator) {
     case 'L':
-      return { color: 'primary', label: 'Niedrig' };
+      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Niedrig', icon: arrowDown };
     case 'LL':
-      return { color: 'danger', label: 'Kritisch niedrig' };
+      return { color: 'danger', cssColor: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.1)', label: 'Kritisch niedrig', icon: arrowDown };
     case 'H':
-      return { color: 'warning', label: 'Hoch' };
+      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Hoch', icon: arrowUp };
     case 'HH':
-      return { color: 'danger', label: 'Kritisch hoch' };
+      return { color: 'danger', cssColor: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.1)', label: 'Kritisch hoch', icon: arrowUp };
     case 'A':
-      return { color: 'warning', label: 'Auffaellig' };
+      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Auffaellig' };
     default:
-      return { color: 'warning', label: 'Auffaellig' };
+      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Auffaellig' };
   }
 };
 
@@ -44,30 +51,58 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
         button
         onClick={() => onTestClick?.(test)}
         detail
+        style={{
+          '--border-color': test.IsPathological ? 'var(--result-indicator-patho)' : 'var(--labgate-border)',
+        }}
       >
+        {/* Pathology indicator bar on the left */}
+        {test.IsPathological && (
+          <div
+            slot="start"
+            style={{
+              width: '4px',
+              alignSelf: 'stretch',
+              backgroundColor: pathologyInfo.cssColor,
+              marginRight: '8px',
+              borderRadius: '2px',
+            }}
+          />
+        )}
+
         <IonLabel>
           {/* labGate API v3 uses TestName */}
-          <h2 style={{ fontWeight: test.IsPathological ? 600 : 400 }}>{test.TestName}</h2>
+          <h2 style={{
+            fontWeight: test.IsPathological ? 600 : 400,
+            color: 'var(--labgate-text)',
+            fontSize: '15px'
+          }}>
+            {test.TestName}
+          </h2>
           {/* labGate API v3 uses ReferenceRange and Unit */}
-          <p>{test.ReferenceRange} {test.Unit || ''}</p>
+          <p style={{ color: 'var(--labgate-text-light)', fontSize: '12px' }}>
+            Ref: {test.ReferenceRange} {test.Unit || ''}
+          </p>
         </IonLabel>
 
         <div slot="end" style={{ textAlign: 'right' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {test.IsPathological && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {pathologyInfo.icon && (
+              <IonIcon
+                icon={pathologyInfo.icon}
+                style={{ color: pathologyInfo.cssColor, fontSize: '16px' }}
+              />
+            )}
+            {test.IsPathological && !pathologyInfo.icon && (
               <IonIcon
                 icon={alertCircleOutline}
-                color={pathologyInfo.color}
+                style={{ color: pathologyInfo.cssColor, fontSize: '16px' }}
               />
             )}
             <IonText
               style={{
                 fontSize: '16px',
                 fontWeight: 600,
-                color:
-                  test.IsPathological
-                    ? `var(--ion-color-${pathologyInfo.color})`
-                    : 'var(--ion-text-color)',
+                color: test.IsPathological ? pathologyInfo.cssColor : 'var(--labgate-text)',
               }}
             >
               {/* labGate API v3 uses Value and Unit */}
@@ -75,12 +110,26 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
             </IonText>
           </div>
           {test.IsPathological && (
-            <IonBadge color={pathologyInfo.color} style={{ marginTop: '4px' }}>
+            <IonBadge
+              style={{
+                marginTop: '4px',
+                '--background': pathologyInfo.bgColor,
+                '--color': pathologyInfo.cssColor,
+                fontWeight: 600,
+              }}
+            >
               {pathologyInfo.label}
             </IonBadge>
           )}
           {test.Comment && (
-            <IonText color="medium" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+            <IonText
+              style={{
+                fontSize: '12px',
+                display: 'block',
+                marginTop: '4px',
+                color: 'var(--labgate-text-light)'
+              }}
+            >
               {test.Comment}
             </IonText>
           )}
@@ -91,31 +140,40 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
 
   return (
     <div>
-      {/* Abnormal Values First */}
+      {/* Abnormal Values First - with red header */}
       {abnormalTests.length > 0 && (
         <>
-          <IonItem lines="none" color="light">
-            <IonLabel>
-              <h2 style={{ fontWeight: 600, color: 'var(--ion-color-danger)' }}>
-                Auffaellige Werte ({abnormalTests.length})
-              </h2>
-            </IonLabel>
-          </IonItem>
-          <IonList>{abnormalTests.map(renderTest)}</IonList>
+          <div
+            className="list-group-header"
+            style={{
+              color: 'var(--result-indicator-patho)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <IonIcon icon={alertCircleOutline} />
+            Auffaellige Werte ({abnormalTests.length})
+          </div>
+          <IonList lines="full">{abnormalTests.map(renderTest)}</IonList>
         </>
       )}
 
-      {/* Normal Values */}
+      {/* Normal Values - with green header */}
       {normalTests.length > 0 && (
         <>
-          <IonItem lines="none" color="light">
-            <IonLabel>
-              <h2 style={{ fontWeight: 600, color: 'var(--ion-color-success)' }}>
-                Normale Werte ({normalTests.length})
-              </h2>
-            </IonLabel>
-          </IonItem>
-          <IonList>{normalTests.map(renderTest)}</IonList>
+          <div
+            className="list-group-header"
+            style={{
+              color: 'var(--result-normal)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            Normale Werte ({normalTests.length})
+          </div>
+          <IonList lines="full">{normalTests.map(renderTest)}</IonList>
         </>
       )}
     </div>

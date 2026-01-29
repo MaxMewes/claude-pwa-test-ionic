@@ -95,12 +95,17 @@ export interface LabResult {
   Sender?: ResultSender;
   Laboratory?: ResultLaboratory;
   ReportDate: string;
-  Status: string;
+  OrderDate?: string;
+  Status?: string;
   ResultType?: string;
   LaboratorySection?: string;
   IsFavorite: boolean;
   IsRead: boolean;
   IsArchived: boolean;
+  IsPathological?: boolean;
+  IsUrgent?: boolean;
+  HasCriticalValues?: boolean;
+  HasDocuments?: boolean;
   IsConfirmable?: boolean;
   ResultData?: TestResult[];
   // Legacy fields for backwards compatibility
@@ -123,7 +128,9 @@ export interface LabResult {
 
 export interface ResultPatient {
   Id: number;
-  Fullname: string;
+  Fullname?: string;
+  Firstname?: string;
+  Lastname?: string;
   PatientNumber?: string;
   DateOfBirth?: string;
 }
@@ -237,19 +244,29 @@ export interface CumulativeResult {
   history: TrendDataPoint[];
 }
 
-// Patient Types
+// Patient Types (labGate API v3 uses PascalCase)
 export interface Patient {
-  id: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: 'male' | 'female' | 'other';
+  // API v3 fields (PascalCase)
+  Id?: number;
+  Firstname?: string;
+  Lastname?: string;
+  DateOfBirth?: string;
+  Gender?: number; // 1 = female, 2 = male
+  ResultCount?: number;
+  LastResultDate?: string | null;
+  HasPatho?: boolean;
+  // Legacy fields (camelCase) for backwards compatibility
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  gender?: 'male' | 'female' | 'other';
   insuranceNumber?: string;
   email?: string;
   phone?: string;
   address?: PatientAddress;
   lastVisit?: string;
-  resultCount: number;
+  resultCount?: number;
 }
 
 export interface PatientAddress {
@@ -259,29 +276,46 @@ export interface PatientAddress {
   country: string;
 }
 
-// Laboratory Types
+// Laboratory Types (labGate API v3 uses PascalCase)
 export interface Laboratory {
-  id: string;
-  name: string;
-  shortName: string;
+  // API v3 fields (PascalCase)
+  Id?: number;
+  Name?: string;
+  Address?: LaboratoryAddress | null;
+  Phone?: string | null;
+  Email?: string | null;
+  Website?: string | null;
+  Contacts?: LaboratoryContact[];
+  // Legacy fields (camelCase) for backwards compatibility
+  id?: string;
+  name?: string;
+  shortName?: string;
   description?: string;
-  address: LaboratoryAddress;
-  phone: string;
+  address?: LaboratoryAddress;
+  phone?: string;
   fax?: string;
-  email: string;
+  email?: string;
   website?: string;
-  openingHours: OpeningHours[];
-  services: string[];
-  contacts: LaboratoryContact[];
+  openingHours?: OpeningHours[];
+  services?: string[];
+  contacts?: LaboratoryContact[];
   accreditations?: string[];
-  isActive: boolean;
+  isActive?: boolean;
 }
 
 export interface LaboratoryAddress {
-  street: string;
-  city: string;
-  postalCode: string;
-  country: string;
+  // API v3 fields (PascalCase)
+  Street?: string | null;
+  Number?: string | null;
+  HouseNumber?: string | null;
+  Zip?: string | null;
+  City?: string | null;
+  CountryCode?: string | null;
+  // Legacy fields (camelCase)
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -498,16 +532,27 @@ export interface ApiResponse<T> {
 
 // labGate API v3 Paginated Response
 export interface PaginatedResponse<T> {
-  Items: T[];
+  Results: T[];
+  TotalCount: number;
   CurrentPage: number;
   ItemsPerPage: number;
-  TotalItemsCount: number;
-  // Legacy fields for backwards compatibility
-  data?: T[];
-  total?: number;
-  page?: number;
-  pageSize?: number;
-  totalPages?: number;
+  TotalPages?: number;
+}
+
+// V3 API Query Parameters
+export interface ResultQueryParams {
+  StartDate?: string;
+  EndDate?: string;
+  Query?: string;
+  ResultCategory?: 'None' | 'Favorites' | 'New' | 'Pathological' | 'Urgent' | 'HighPathological';
+  ResultType?: string;
+  PatientIds?: number[];
+  SenderIds?: number[];
+  Area?: 'NotArchived' | 'Archived' | 'All';
+  CurrentPage?: number;
+  ItemsPerPage?: number;
+  SortColumn?: 'None' | 'ReportDate' | 'LabNo' | 'Patient' | 'KisVisitNumber';
+  SortDirection?: 'None' | 'Descending' | 'Ascending';
 }
 
 export interface ApiError {

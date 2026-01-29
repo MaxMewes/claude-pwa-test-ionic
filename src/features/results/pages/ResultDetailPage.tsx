@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   IonPage,
   IonHeader,
@@ -9,54 +9,36 @@ import {
   IonBackButton,
   IonButton,
   IonIcon,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
-  IonCard,
-  IonCardContent,
   IonText,
-  IonModal,
 } from '@ionic/react';
-import { pinOutline, pin, documentOutline, statsChartOutline, listOutline, star, starOutline } from 'ionicons/icons';
+import { star, starOutline } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import { useResult, useMarkResultAsRead, useToggleResultPin } from '../hooks/useResults';
-import { CumulativeView } from '../components/CumulativeView';
-import { TrendChart } from '../components/TrendChart';
+import { useResult } from '../hooks/useResults';
+import { useSettingsStore } from '../../../shared/store/useSettingsStore';
+import { useAuthStore } from '../../auth/store/authStore';
+import { TestResultList } from '../components/TestResultList';
 import { SkeletonLoader } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
-import { TestResult } from '../../../api/types';
-
-type ViewMode = 'cumulative' | 'trend';
 
 export const ResultDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  // labGate API v3 uses numeric Id
   const { data: result, isLoading } = useResult(id);
-  const markAsRead = useMarkResultAsRead();
-  const togglePin = useToggleResultPin();
+  const { selectedSender } = useAuthStore();
+  const { isFavorite, toggleFavorite } = useSettingsStore();
 
-  const [viewMode, setViewMode] = useState<ViewMode>('cumulative');
-  const [selectedTest, setSelectedTest] = useState<TestResult | null>(null);
+  // Check if this result is a favorite (from local storage)
+  const isResultFavorite = selectedSender?.Id && result?.Id
+    ? isFavorite(selectedSender.Id, result.Id)
+    : false;
 
-  // Mark as read when viewing - labGate API v3 uses IsRead and Id
-  useEffect(() => {
-    if (result && !result.IsRead) {
-      markAsRead.mutate([result.Id]);
+  const handleToggleFavorite = () => {
+    if (selectedSender?.Id && result?.Id) {
+      toggleFavorite(selectedSender.Id, result.Id);
     }
-  }, [result?.Id]);
-
-  const handleTogglePin = () => {
-    if (result) {
-      togglePin.mutate(result.Id);
-    }
-  };
-
-  const handleTestClick = (test: TestResult) => {
-    setSelectedTest(test);
   };
 
   if (isLoading) {
@@ -105,117 +87,70 @@ export const ResultDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref={ROUTES.RESULTS} />
           </IonButtons>
-          {/* labGate API v3 uses Patient.Fullname */}
-          <IonTitle>{result.Patient.Fullname}</IonTitle>
+          {/* labGate API v3 uses Patient with Firstname/Lastname or Fullname */}
+          <IonTitle>{result.Patient?.Fullname || `${result.Patient?.Firstname || ''} ${result.Patient?.Lastname || ''}`.trim() || 'Patient'}</IonTitle>
           <IonButtons slot="end">
-            {result.IsFavorite && (
-              <IonButton>
-                <IonIcon icon={star} color="warning" />
-              </IonButton>
-            )}
-            <IonButton onClick={handleTogglePin}>
-              <IonIcon icon={result.isPinned ? pin : pinOutline} />
+            <IonButton onClick={handleToggleFavorite}>
+              <IonIcon
+                icon={isResultFavorite ? star : starOutline}
+                style={{ color: isResultFavorite ? '#E18B05' : undefined }}
+              />
             </IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
 
       <IonContent>
-        {/* Result Info Card */}
-        <IonCard>
-          <IonCardContent>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        {/* Result Info Header - like old app */}
+        <div
+          style={{
+            padding: '16px',
+            backgroundColor: '#FAFAFA',
+            borderBottom: '1px solid #E5E5E5',
+          }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <IonText style={{ fontSize: '12px', color: '#646363' }}>
+                {t('results.reportDate')}
+              </IonText>
+              <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: '#3C3C3B' }}>
+                {format(new Date(result.ReportDate), 'dd.MM.yyyy HH:mm', { locale: de })}
+              </p>
+            </div>
+            <div>
+              <IonText style={{ fontSize: '12px', color: '#646363' }}>
+                Labor-Nr.
+              </IonText>
+              <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: '#3C3C3B' }}>
+                {result.LabNo}
+              </p>
+            </div>
+            {result.Laboratory?.Name && (
               <div>
-                <IonText color="medium" style={{ fontSize: '12px' }}>
-                  {t('results.reportDate')}
-                </IonText>
-                <IonText>
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>
-                    {/* labGate API v3 uses ReportDate */}
-                    {format(new Date(result.ReportDate), 'dd.MM.yyyy HH:mm', { locale: de })}
-                  </p>
-                </IonText>
-              </div>
-              <div>
-                <IonText color="medium" style={{ fontSize: '12px' }}>
+                <IonText style={{ fontSize: '12px', color: '#646363' }}>
                   Labor
                 </IonText>
-                <IonText>
-                  {/* labGate API v3 uses Laboratory?.Name */}
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{result.Laboratory?.Name || '-'}</p>
-                </IonText>
+                <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: '#3C3C3B' }}>
+                  {result.Laboratory.Name}
+                </p>
               </div>
+            )}
+            {result.Sender?.Name && (
               <div>
-                <IonText color="medium" style={{ fontSize: '12px' }}>
-                  Labor-Nr.
+                <IonText style={{ fontSize: '12px', color: '#646363' }}>
+                  Einsender
                 </IonText>
-                <IonText>
-                  {/* labGate API v3 uses LabNo */}
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>#{result.LabNo}</p>
-                </IonText>
+                <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: '#3C3C3B' }}>
+                  {result.Sender.Name}
+                </p>
               </div>
-              {result.LaboratorySection && (
-                <div>
-                  <IonText color="medium" style={{ fontSize: '12px' }}>
-                    Bereich
-                  </IonText>
-                  <IonText>
-                    <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{result.LaboratorySection}</p>
-                  </IonText>
-                </div>
-              )}
-              {result.Sender && (
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <IonText color="medium" style={{ fontSize: '12px' }}>
-                    Einsender
-                  </IonText>
-                  <IonText>
-                    <p style={{ margin: '4px 0 0 0', fontWeight: 500 }}>{result.Sender.Name}</p>
-                  </IonText>
-                </div>
-              )}
-            </div>
-          </IonCardContent>
-        </IonCard>
-
-        {/* View Mode Segment */}
-        <div style={{ padding: '0 16px' }}>
-          <IonSegment value={viewMode} onIonChange={(e) => setViewMode(e.detail.value as ViewMode)}>
-            <IonSegmentButton value="cumulative">
-              <IonIcon icon={listOutline} />
-              <IonLabel>{t('results.cumulative')}</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="trend">
-              <IonIcon icon={statsChartOutline} />
-              <IonLabel>{t('results.trend')}</IonLabel>
-            </IonSegmentButton>
-          </IonSegment>
+            )}
+          </div>
         </div>
 
-        {/* Content based on view mode */}
-        {viewMode === 'cumulative' ? (
-          <CumulativeView tests={tests} onTestClick={handleTestClick} />
-        ) : (
-          <div style={{ padding: '16px' }}>
-            {tests.map((test) => (
-              <TrendChart key={test.Id} resultId={result.Id} test={test} />
-            ))}
-          </div>
-        )}
-
-        {/* Test Detail Modal */}
-        <IonModal
-          isOpen={!!selectedTest}
-          onDidDismiss={() => setSelectedTest(null)}
-          initialBreakpoint={0.5}
-          breakpoints={[0, 0.5, 0.75, 1]}
-        >
-          {selectedTest && (
-            <IonContent className="ion-padding">
-              <TrendChart resultId={result.Id} test={selectedTest} />
-            </IonContent>
-          )}
-        </IonModal>
+        {/* Test Results List - like old app */}
+        <TestResultList tests={tests} />
       </IonContent>
     </IonPage>
   );

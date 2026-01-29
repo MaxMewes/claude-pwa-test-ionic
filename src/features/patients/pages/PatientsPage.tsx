@@ -39,11 +39,27 @@ export const PatientsPage: React.FC = () => {
     await refetch();
   };
 
+  // Helper to get values from either PascalCase (API v3) or camelCase (legacy) fields
+  const getPatientFirstName = (patient: Patient) => patient.Firstname ?? patient.firstName ?? '';
+  const getPatientLastName = (patient: Patient) => patient.Lastname ?? patient.lastName ?? '';
+  const getPatientId = (patient: Patient) => String(patient.Id ?? patient.id ?? '');
+  const getPatientDOB = (patient: Patient) => patient.DateOfBirth ?? patient.dateOfBirth ?? '';
+  const getPatientGender = (patient: Patient) => {
+    // API v3 uses numbers: 1=female, 2=male
+    if (patient.Gender === 1) return 'female';
+    if (patient.Gender === 2) return 'male';
+    return patient.gender ?? 'other';
+  };
+  const getPatientResultCount = (patient: Patient) => patient.ResultCount ?? patient.resultCount ?? 0;
+
   const getInitials = (patient: Patient) => {
-    return `${patient.firstName[0]}${patient.lastName[0]}`.toUpperCase();
+    const first = getPatientFirstName(patient)?.[0] || '';
+    const last = getPatientLastName(patient)?.[0] || '';
+    return `${first}${last}`.toUpperCase() || '?';
   };
 
   const getAge = (dateOfBirth: string) => {
+    if (!dateOfBirth) return 0;
     return differenceInYears(new Date(), new Date(dateOfBirth));
   };
 
@@ -63,7 +79,7 @@ export const PatientsPage: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader type="list" count={5} />
-        ) : !data?.Items?.length ? (
+        ) : !data?.Results?.length ? (
           <EmptyState
             type={search ? 'search' : 'patients'}
             actionLabel={search ? t('common.reset') : undefined}
@@ -71,54 +87,68 @@ export const PatientsPage: React.FC = () => {
           />
         ) : (
           <IonList>
-            {data.Items.map((patient) => (
-              <IonItem
-                key={patient.id}
-                button
-                onClick={() => handlePatientClick(patient.id)}
-                detail
-              >
-                <IonAvatar slot="start">
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      backgroundColor: 'var(--ion-color-primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#fff',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {getInitials(patient)}
-                  </div>
-                </IonAvatar>
+            {data.Results.map((patient) => {
+              const patientId = getPatientId(patient);
+              const firstName = getPatientFirstName(patient);
+              const lastName = getPatientLastName(patient);
+              const dob = getPatientDOB(patient);
+              const gender = getPatientGender(patient);
+              const resultCount = getPatientResultCount(patient);
 
-                <IonLabel>
-                  <h2 style={{ fontWeight: 500 }}>
-                    {patient.lastName}, {patient.firstName}
-                  </h2>
-                  <p>
-                    {t(`patients.gender.${patient.gender}`)} • {getAge(patient.dateOfBirth)} Jahre
-                  </p>
-                  {patient.insuranceNumber && (
+              return (
+                <IonItem
+                  key={patientId}
+                  button
+                  onClick={() => handlePatientClick(patientId)}
+                  detail
+                >
+                  <IonAvatar slot="start">
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: gender === 'male'
+                          ? 'var(--gender-male)'
+                          : gender === 'female'
+                            ? 'var(--gender-female)'
+                            : 'var(--gender-other)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        fontWeight: 600,
+                        fontSize: '16px',
+                      }}
+                    >
+                      {getInitials(patient)}
+                    </div>
+                  </IonAvatar>
+
+                  <IonLabel>
+                    <h2 style={{ fontWeight: 500 }}>
+                      {lastName}, {firstName}
+                    </h2>
                     <p>
-                      <IonText color="medium">
-                        {t('patients.insuranceNumber')}: {patient.insuranceNumber}
-                      </IonText>
+                      {t(`patients.gender.${gender}`)} • {getAge(dob)} Jahre
                     </p>
-                  )}
-                </IonLabel>
+                    {patient.insuranceNumber && (
+                      <p>
+                        <IonText color="medium">
+                          {t('patients.insuranceNumber')}: {patient.insuranceNumber}
+                        </IonText>
+                      </p>
+                    )}
+                  </IonLabel>
 
-                <div slot="end" style={{ textAlign: 'right' }}>
-                  <IonBadge color="primary">{patient.resultCount}</IonBadge>
-                  <IonText color="medium" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>
-                    Befunde
-                  </IonText>
-                </div>
-              </IonItem>
-            ))}
+                  <div slot="end" style={{ textAlign: 'right' }}>
+                    <IonBadge color="primary">{resultCount}</IonBadge>
+                    <IonText color="medium" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>
+                      Befunde
+                    </IonText>
+                  </div>
+                </IonItem>
+              );
+            })}
           </IonList>
         )}
       </IonContent>

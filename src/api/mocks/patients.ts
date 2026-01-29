@@ -123,9 +123,9 @@ export const mockPatientsHandlers = {
     if (search) {
       filtered = mockPatientsData.filter(
         (p) =>
-          p.firstName.toLowerCase().includes(search) ||
-          p.lastName.toLowerCase().includes(search) ||
-          p.insuranceNumber?.toLowerCase().includes(search)
+          (p.firstName ?? '').toLowerCase().includes(search) ||
+          (p.lastName ?? '').toLowerCase().includes(search) ||
+          (p.insuranceNumber ?? '').toLowerCase().includes(search)
       );
     }
 
@@ -134,10 +134,10 @@ export const mockPatientsHandlers = {
 
     // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<Patient>>({
-      Items: paginatedPatients,
+      Results: paginatedPatients,
       CurrentPage: page,
       ItemsPerPage: pageSize,
-      TotalItemsCount: filtered.length,
+      TotalCount: filtered.length,
     });
   },
 
@@ -159,10 +159,10 @@ export const mockPatientsHandlers = {
     // Return empty results for now - actual implementation would filter results
     // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<LabResult>>({
-      Items: [],
+      Results: [],
       CurrentPage: 1,
       ItemsPerPage: 10,
-      TotalItemsCount: 0,
+      TotalCount: 0,
     });
   },
 };

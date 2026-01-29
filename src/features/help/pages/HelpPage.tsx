@@ -34,22 +34,22 @@ export const HelpPage: React.FC = () => {
 
   const { data, isLoading } = useFAQs();
 
-  const faqs = data?.data || [];
+  const faqs = data?.Results || [];
   const filteredFAQs = searchQuery
     ? faqs.filter(
-        (faq) =>
+        (faq: { question: string; answer: string }) =>
           faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
           faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : faqs;
 
   // Group FAQs by category
-  const groupedFAQs = filteredFAQs.reduce((acc, faq) => {
+  const groupedFAQs = filteredFAQs.reduce((acc: Record<string, typeof faqs>, faq: { category?: string }) => {
     const category = faq.category || 'Allgemein';
     if (!acc[category]) {
       acc[category] = [];
     }
-    acc[category].push(faq);
+    acc[category].push(faq as typeof faqs[number]);
     return acc;
   }, {} as Record<string, typeof faqs>);
 

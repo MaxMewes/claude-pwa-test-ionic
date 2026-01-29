@@ -1,21 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   IonPage,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonContent,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
   IonCard,
   IonCardHeader,
   IonCardTitle,
-  IonCardSubtitle,
   IonCardContent,
   IonIcon,
   IonText,
-  IonBadge,
 } from '@ionic/react';
 import { pinOutline, timeOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
@@ -24,23 +19,12 @@ import { de } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useNews } from '../hooks/useNews';
 import { PullToRefresh, SkeletonLoader, EmptyState } from '../../../shared/components';
-import { NewsCategory } from '../../../api/types';
-
-const categoryColors: Record<NewsCategory, string> = {
-  announcement: 'primary',
-  health_tip: 'success',
-  laboratory_news: 'secondary',
-  app_update: 'tertiary',
-};
 
 export const NewsPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const [category, setCategory] = useState<NewsCategory | 'all'>('all');
 
-  const { data, isLoading, refetch } = useNews(
-    category === 'all' ? undefined : { category }
-  );
+  const { data, isLoading, refetch } = useNews();
 
   const handleNewsClick = (newsId: string) => {
     history.push(`/news/${newsId}`);
@@ -56,29 +40,6 @@ export const NewsPage: React.FC = () => {
         <IonToolbar>
           <IonTitle>{t('news.title')}</IonTitle>
         </IonToolbar>
-        <IonToolbar>
-          <IonSegment
-            value={category}
-            onIonChange={(e) => setCategory(e.detail.value as NewsCategory | 'all')}
-            scrollable
-          >
-            <IonSegmentButton value="all">
-              <IonLabel>Alle</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="announcement">
-              <IonLabel>{t('news.category.announcement')}</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="health_tip">
-              <IonLabel>{t('news.category.health_tip')}</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="laboratory_news">
-              <IonLabel>{t('news.category.laboratory_news')}</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="app_update">
-              <IonLabel>{t('news.category.app_update')}</IonLabel>
-            </IonSegmentButton>
-          </IonSegment>
-        </IonToolbar>
       </IonHeader>
 
       <IonContent>
@@ -86,11 +47,11 @@ export const NewsPage: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader type="card" count={3} />
-        ) : !data?.Items?.length ? (
+        ) : !data?.Results?.length ? (
           <EmptyState type="news" />
         ) : (
           <div style={{ padding: '8px' }}>
-            {data.Items.map((article) => (
+            {data.Results.map((article) => (
               <IonCard
                 key={article.id}
                 onClick={() => handleNewsClick(article.id)}
@@ -108,22 +69,15 @@ export const NewsPage: React.FC = () => {
                 )}
                 <IonCardHeader>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ flex: 1 }}>
-                      <IonCardSubtitle>
-                        <IonBadge color={categoryColors[article.category]}>
-                          {t(`news.category.${article.category}`)}
-                        </IonBadge>
-                      </IonCardSubtitle>
-                      <IonCardTitle
-                        style={{
-                          fontSize: '18px',
-                          fontWeight: article.isRead ? 'normal' : 'bold',
-                          marginTop: '8px',
-                        }}
-                      >
-                        {article.title}
-                      </IonCardTitle>
-                    </div>
+                    <IonCardTitle
+                      style={{
+                        fontSize: '18px',
+                        fontWeight: article.isRead ? 'normal' : 'bold',
+                        flex: 1,
+                      }}
+                    >
+                      {article.title}
+                    </IonCardTitle>
                     {article.isPinned && (
                       <IonIcon icon={pinOutline} color="primary" style={{ fontSize: '20px' }} />
                     )}

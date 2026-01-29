@@ -390,7 +390,7 @@ function applyFilter(results: LabResult[], filter: ResultFilter): LabResult[] {
     // Search filter
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
-      const matchesPatient = result.Patient.Fullname.toLowerCase().includes(searchLower);
+      const matchesPatient = result.Patient.Fullname?.toLowerCase().includes(searchLower) ?? false;
       const matchesLab = result.Laboratory?.Name.toLowerCase().includes(searchLower);
       const matchesLabNo = result.LabNo.toLowerCase().includes(searchLower);
       const matchesSender = result.Sender?.Name.toLowerCase().includes(searchLower);
@@ -448,10 +448,10 @@ export const mockResultsHandlers = {
 
     // labGate API v3 paginated response format
     return createMockResponse<PaginatedResponse<LabResult>>({
-      Items: paginatedResults,
+      Results: paginatedResults,
       CurrentPage: page,
       ItemsPerPage: pageSize,
-      TotalItemsCount: filteredResults.length,
+      TotalCount: filteredResults.length,
     });
   },
 

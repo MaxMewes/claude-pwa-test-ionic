@@ -26,7 +26,7 @@ export const SendersPage: React.FC = () => {
   const history = useHistory();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data, isLoading, refetch } = useSenders({ query: searchQuery });
+  const { senders, isLoading, refetch } = useSenders({ query: searchQuery });
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     await refetch();
@@ -72,7 +72,7 @@ export const SendersPage: React.FC = () => {
               </IonItem>
             ))}
           </IonList>
-        ) : !data?.Items?.length ? (
+        ) : !senders?.length ? (
           <div style={{ textAlign: 'center', padding: '48px 24px' }}>
             <IonText color="medium">
               <p>{t('senders.noSenders')}</p>
@@ -80,11 +80,11 @@ export const SendersPage: React.FC = () => {
           </div>
         ) : (
           <IonList>
-            {data.Items.map((sender) => (
+            {senders.map((sender) => (
               <IonItem
-                key={sender.id}
+                key={sender.Id}
                 button
-                onClick={() => history.push(`/senders/${sender.id}`)}
+                onClick={() => history.push(`/senders/${sender.Id}`)}
                 detail
               >
                 <IonAvatar slot="start">
@@ -92,24 +92,22 @@ export const SendersPage: React.FC = () => {
                     style={{
                       width: '100%',
                       height: '100%',
-                      backgroundColor: 'var(--ion-color-primary)',
+                      backgroundColor: 'var(--labgate-brand)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#fff',
+                      color: 'var(--labgate-brand-text-on-brand)',
                       fontWeight: 600,
+                      fontSize: '14px',
                     }}
                   >
-                    {getInitials(sender.firstName, sender.lastName)}
+                    {getInitials(sender.Firstname, sender.Lastname)}
                   </div>
                 </IonAvatar>
                 <IonLabel>
-                  <h2>{sender.fullName}</h2>
-                  {sender.specialField && (
-                    <p>{sender.specialField}</p>
-                  )}
-                  {sender.siteName && (
-                    <IonNote>{sender.siteName}</IonNote>
+                  <h2>{`${sender.Firstname} ${sender.Lastname}`.trim()}</h2>
+                  {sender.Site?.Name && (
+                    <IonNote>{sender.Site.Name}</IonNote>
                   )}
                 </IonLabel>
               </IonItem>

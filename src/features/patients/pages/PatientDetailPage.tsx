@@ -78,7 +78,14 @@ export const PatientDetailPage: React.FC = () => {
     );
   }
 
-  const age = differenceInYears(new Date(), new Date(patient.dateOfBirth));
+  // Helper to get values from either PascalCase (API v3) or camelCase (legacy) fields
+  const firstName = patient.Firstname ?? patient.firstName ?? '';
+  const lastName = patient.Lastname ?? patient.lastName ?? '';
+  const dateOfBirth = patient.DateOfBirth ?? patient.dateOfBirth ?? '';
+  const gender = patient.Gender === 1 ? 'female' : patient.Gender === 2 ? 'male' : (patient.gender ?? 'other');
+  const resultCount = patient.ResultCount ?? patient.resultCount ?? 0;
+  const initials = `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || '?';
+  const age = dateOfBirth ? differenceInYears(new Date(), new Date(dateOfBirth)) : 0;
 
   return (
     <IonPage>
@@ -87,12 +94,12 @@ export const PatientDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref={ROUTES.PATIENTS} />
           </IonButtons>
-          <IonTitle>{patient.lastName}, {patient.firstName}</IonTitle>
+          <IonTitle>{lastName}, {firstName}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent>
-        {/* Patient Header Card */}
+        {/* Patient Header Card - with gender-based colors */}
         <IonCard>
           <IonCardContent>
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
@@ -100,7 +107,12 @@ export const PatientDetailPage: React.FC = () => {
                 style={{
                   width: '80px',
                   height: '80px',
-                  backgroundColor: 'var(--ion-color-primary)',
+                  backgroundColor:
+                    gender === 'male'
+                      ? 'var(--gender-male)'
+                      : gender === 'female'
+                        ? 'var(--gender-female)'
+                        : 'var(--gender-other)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -108,39 +120,46 @@ export const PatientDetailPage: React.FC = () => {
                   margin: '0 auto 12px',
                   color: '#fff',
                   fontSize: '28px',
-                  fontWeight: 600,
+                  fontWeight: 700,
                 }}
               >
-                {patient.firstName[0]}{patient.lastName[0]}
+                {initials}
               </div>
-              <IonText color="dark">
-                <h2 style={{ margin: '0 0 4px 0' }}>
-                  {patient.firstName} {patient.lastName}
-                </h2>
-              </IonText>
-              <IonText color="medium">
-                <p style={{ margin: 0 }}>
-                  {t(`patients.gender.${patient.gender}`)} • {age} Jahre
-                </p>
-              </IonText>
+              <h2 style={{
+                margin: '0 0 4px 0',
+                color: 'var(--labgate-text)',
+                fontWeight: 600,
+                fontSize: '18px'
+              }}>
+                {firstName} {lastName}
+              </h2>
+              <p style={{
+                margin: 0,
+                color: 'var(--labgate-text-light)',
+                fontSize: '14px'
+              }}>
+                {t(`patients.gender.${gender}`)} • {age} Jahre
+              </p>
             </div>
 
             <IonButton expand="block" onClick={handleViewResults}>
               <IonIcon slot="start" icon={documentTextOutline} />
-              {patient.resultCount} Befunde anzeigen
+              {resultCount} Befunde anzeigen
             </IonButton>
           </IonCardContent>
         </IonCard>
 
         {/* Patient Details */}
         <IonList>
-          <IonItem>
-            <IonIcon icon={calendarOutline} slot="start" color="primary" />
-            <IonLabel>
-              <p>{t('patients.dateOfBirth')}</p>
-              <h2>{format(new Date(patient.dateOfBirth), 'dd.MM.yyyy', { locale: de })}</h2>
-            </IonLabel>
-          </IonItem>
+          {dateOfBirth && (
+            <IonItem>
+              <IonIcon icon={calendarOutline} slot="start" color="primary" />
+              <IonLabel>
+                <p>{t('patients.dateOfBirth')}</p>
+                <h2>{format(new Date(dateOfBirth), 'dd.MM.yyyy', { locale: de })}</h2>
+              </IonLabel>
+            </IonItem>
+          )}
 
           {patient.insuranceNumber && (
             <IonItem>
@@ -166,11 +185,9 @@ export const PatientDetailPage: React.FC = () => {
         {/* Contact Section */}
         {(patient.phone || patient.email) && (
           <>
-            <IonItem lines="none" color="light">
-              <IonLabel>
-                <h2 style={{ fontWeight: 600 }}>{t('patients.contact')}</h2>
-              </IonLabel>
-            </IonItem>
+            <div className="list-group-header">
+              {t('patients.contact')}
+            </div>
             <IonList>
               {patient.phone && (
                 <IonItem button href={`tel:${patient.phone}`}>
@@ -195,11 +212,9 @@ export const PatientDetailPage: React.FC = () => {
         {/* Address Section */}
         {patient.address && (
           <>
-            <IonItem lines="none" color="light">
-              <IonLabel>
-                <h2 style={{ fontWeight: 600 }}>{t('patients.address')}</h2>
-              </IonLabel>
-            </IonItem>
+            <div className="list-group-header">
+              {t('patients.address')}
+            </div>
             <IonList>
               <IonItem>
                 <IonIcon icon={locationOutline} slot="start" color="primary" />

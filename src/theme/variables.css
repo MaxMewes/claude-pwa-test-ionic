@@ -1,194 +1,621 @@
-/* labGate App Theme */
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+/* labGate App Theme - Modern Clean Design */
+/* Unified iOS-like design for all platforms */
+
+/* Import Inter Font - Modern, clean typeface */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Primary - Medical Blue */
-  --ion-color-primary: #0066CC;
-  --ion-color-primary-rgb: 0, 102, 204;
+  /* Typography - Inter for modern look */
+  --ion-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Primary - labGate Brand Green */
+  --ion-color-primary: #70CC60;
+  --ion-color-primary-rgb: 112, 204, 96;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #005ab4;
-  --ion-color-primary-tint: #1a75d1;
+  --ion-color-primary-shade: #5cb84e;
+  --ion-color-primary-tint: #7ed170;
 
-  /* Secondary - Professional Gray */
-  --ion-color-secondary: #5c6bc0;
-  --ion-color-secondary-rgb: 92, 107, 192;
+  /* Secondary - Modern Blue */
+  --ion-color-secondary: #3B82F6;
+  --ion-color-secondary-rgb: 59, 130, 246;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #515ea9;
-  --ion-color-secondary-tint: #6c7ac6;
+  --ion-color-secondary-shade: #3474d9;
+  --ion-color-secondary-tint: #4f8ef7;
 
-  /* Tertiary - Accent */
-  --ion-color-tertiary: #7c4dff;
-  --ion-color-tertiary-rgb: 124, 77, 255;
+  /* Tertiary - Modern Purple */
+  --ion-color-tertiary: #8B5CF6;
+  --ion-color-tertiary-rgb: 139, 92, 246;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #6d44e0;
-  --ion-color-tertiary-tint: #895fff;
+  --ion-color-tertiary-shade: #7a51d8;
+  --ion-color-tertiary-tint: #976cf7;
 
-  /* Success - Medical Green */
-  --ion-color-success: #28a745;
-  --ion-color-success-rgb: 40, 167, 69;
+  /* Success */
+  --ion-color-success: #22C55E;
+  --ion-color-success-rgb: 34, 197, 94;
   --ion-color-success-contrast: #ffffff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #23933d;
-  --ion-color-success-tint: #3eb058;
+  --ion-color-success-shade: #1ead53;
+  --ion-color-success-tint: #38cb6e;
 
-  /* Warning - Alert Orange */
-  --ion-color-warning: #ffc107;
-  --ion-color-warning-rgb: 255, 193, 7;
+  /* Warning */
+  --ion-color-warning: #F59E0B;
+  --ion-color-warning-rgb: 245, 158, 11;
   --ion-color-warning-contrast: #000000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
-  --ion-color-warning-shade: #e0aa06;
-  --ion-color-warning-tint: #ffc720;
+  --ion-color-warning-shade: #d88b0a;
+  --ion-color-warning-tint: #f6a823;
 
-  /* Danger - Critical Red */
-  --ion-color-danger: #dc3545;
-  --ion-color-danger-rgb: 220, 53, 69;
+  /* Danger */
+  --ion-color-danger: #EF4444;
+  --ion-color-danger-rgb: 239, 68, 68;
   --ion-color-danger-contrast: #ffffff;
   --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #c22f3d;
-  --ion-color-danger-tint: #e04958;
+  --ion-color-danger-shade: #d23c3c;
+  --ion-color-danger-tint: #f15757;
 
   /* Light */
-  --ion-color-light: #f8f9fa;
-  --ion-color-light-rgb: 248, 249, 250;
-  --ion-color-light-contrast: #000000;
-  --ion-color-light-contrast-rgb: 0, 0, 0;
-  --ion-color-light-shade: #dadcdc;
+  --ion-color-light: #F8FAFC;
+  --ion-color-light-rgb: 248, 250, 252;
+  --ion-color-light-contrast: #1E293B;
+  --ion-color-light-contrast-rgb: 30, 41, 59;
+  --ion-color-light-shade: #dadcde;
   --ion-color-light-tint: #f9fafb;
 
   /* Medium */
-  --ion-color-medium: #6c757d;
-  --ion-color-medium-rgb: 108, 117, 125;
+  --ion-color-medium: #64748B;
+  --ion-color-medium-rgb: 100, 116, 139;
   --ion-color-medium-contrast: #ffffff;
   --ion-color-medium-contrast-rgb: 255, 255, 255;
-  --ion-color-medium-shade: #5f676e;
-  --ion-color-medium-tint: #7b838a;
+  --ion-color-medium-shade: #58667a;
+  --ion-color-medium-tint: #748297;
 
   /* Dark */
-  --ion-color-dark: #212529;
-  --ion-color-dark-rgb: 33, 37, 41;
+  --ion-color-dark: #1E293B;
+  --ion-color-dark-rgb: 30, 41, 59;
   --ion-color-dark-contrast: #ffffff;
   --ion-color-dark-contrast-rgb: 255, 255, 255;
-  --ion-color-dark-shade: #1d2024;
-  --ion-color-dark-tint: #373b3e;
+  --ion-color-dark-shade: #1a2434;
+  --ion-color-dark-tint: #353e4f;
 
-  /* Custom Result Status Colors */
-  --result-normal: #28a745;
-  --result-low: #17a2b8;
-  --result-high: #ffc107;
-  --result-critical: #dc3545;
-  --result-abnormal: #fd7e14;
+  /* labGate Design System */
+  --labgate-brand: #70CC60;
+  --labgate-brand-dark: #5cb84e;
+  --labgate-brand-light: #E8F8E5;
+  --labgate-brand-text-on-brand: #ffffff;
+  --labgate-text: #1E293B;
+  --labgate-text-light: #64748B;
+  --labgate-text-muted: #94A3B8;
+  --labgate-favorite: #F59E0B;
+  --labgate-alert: #F59E0B;
+  --labgate-selected-bg: #F1F5F9;
+  --labgate-border: #E2E8F0;
+  --labgate-border-light: #F1F5F9;
+  --labgate-link: #3B82F6;
+  --labgate-surface: #ffffff;
+  --labgate-surface-elevated: #ffffff;
+
+  /* Validation Colors */
+  --validation-success: #22C55E;
+  --validation-failed: #EF4444;
+  --validation-failed-bg: #FEF2F2;
+
+  /* Result/Pathology Colors */
+  --result-normal: #22C55E;
+  --result-low: #F59E0B;
+  --result-high: #F59E0B;
+  --result-critical: #EF4444;
+  --result-very-low: #EF4444;
+  --result-very-high: #EF4444;
+  --result-abnormal: #F59E0B;
+  --result-indicator-patho: #FCA5A5;
+
+  /* Gender Colors - Softer, modern */
+  --gender-male: #60A5FA;
+  --gender-female: #F472B6;
+  --gender-other: #94A3B8;
+
+  /* Modern Spacing Scale */
+  --labgate-spacing-xs: 4px;
+  --labgate-spacing-sm: 8px;
+  --labgate-spacing: 16px;
+  --labgate-spacing-md: 20px;
+  --labgate-spacing-lg: 24px;
+  --labgate-spacing-xl: 32px;
+  --labgate-spacing-2xl: 48px;
+
+  /* Typography Scale */
+  --labgate-font-size-xs: 11px;
+  --labgate-font-size-sm: 13px;
+  --labgate-font-size-default: 15px;
+  --labgate-font-size-md: 17px;
+  --labgate-font-size-lg: 20px;
+  --labgate-font-size-xl: 24px;
+  --labgate-font-size-2xl: 32px;
+
+  /* Modern Border Radius */
+  --labgate-radius-sm: 8px;
+  --labgate-radius-md: 12px;
+  --labgate-radius-lg: 16px;
+  --labgate-radius-xl: 20px;
+  --labgate-radius-full: 9999px;
+  --labgate-button-radius: 12px;
+  --labgate-card-radius: 16px;
+  --labgate-badge-radius: 6px;
+
+  /* Shadows */
+  --labgate-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --labgate-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --labgate-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --labgate-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --labgate-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* iOS Specific Styles */
-.ios body {
-  --ion-background-color: #ffffff;
-  --ion-background-color-rgb: 255, 255, 255;
-  --ion-text-color: #212529;
-  --ion-text-color-rgb: 33, 37, 41;
-  --ion-border-color: #dee2e6;
-  --ion-toolbar-background: #f8f9fa;
+/* Global Body Styles */
+body {
+  font-family: var(--ion-font-family);
+  color: var(--labgate-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Material Design Specific Styles */
+/* ============================================
+   UNIFIED MODERN THEME (iOS + Material Design)
+   ============================================ */
+
+/* Both platforms use the same clean, modern look */
+.ios body,
 .md body {
-  --ion-background-color: #ffffff;
-  --ion-background-color-rgb: 255, 255, 255;
-  --ion-text-color: #212529;
-  --ion-text-color-rgb: 33, 37, 41;
-  --ion-border-color: #dee2e6;
-  --ion-toolbar-background: #0066CC;
-  --ion-toolbar-color: #ffffff;
+  --ion-background-color: #F8FAFC;
+  --ion-background-color-rgb: 248, 250, 252;
+  --ion-text-color: #1E293B;
+  --ion-text-color-rgb: 30, 41, 59;
+  --ion-border-color: #E2E8F0;
+  --ion-toolbar-background: #ffffff;
+  --ion-toolbar-color: #1E293B;
+  --ion-item-background: #ffffff;
+  --ion-card-background: #ffffff;
 }
 
-/* Dark Mode - Manual toggle via class */
+/* Modern Toolbar - Clean white with subtle shadow */
+ion-toolbar {
+  --background: #ffffff;
+  --color: var(--labgate-text);
+  --border-width: 0;
+  --padding-start: var(--labgate-spacing);
+  --padding-end: var(--labgate-spacing);
+}
+
+ion-header {
+  box-shadow: var(--labgate-shadow-sm);
+}
+
+ion-header::after {
+  display: none; /* Remove default border */
+}
+
+/* Modern Title */
+ion-title {
+  font-weight: 600;
+  font-size: var(--labgate-font-size-md);
+  letter-spacing: -0.3px;
+}
+
+/* Back Button */
+ion-back-button {
+  --color: var(--labgate-brand);
+  --icon-font-size: 24px;
+}
+
+/* Modern Tab Bar - Floating style */
+ion-tab-bar {
+  --background: #ffffff;
+  --border: none;
+  border-top: 1px solid var(--labgate-border);
+  padding-bottom: env(safe-area-inset-bottom);
+  height: 56px;
+}
+
+ion-tab-button {
+  --color: var(--labgate-text-muted);
+  --color-selected: var(--labgate-brand);
+  font-size: var(--labgate-font-size-xs);
+  font-weight: 500;
+}
+
+ion-tab-button ion-icon {
+  font-size: 22px;
+}
+
+ion-tab-button.tab-selected ion-icon {
+  transform: scale(1.05);
+}
+
+/* Modern Segment */
+ion-segment {
+  --background: var(--labgate-selected-bg);
+  border-radius: var(--labgate-radius-md);
+  padding: 4px;
+}
+
+ion-segment-button {
+  --border-radius: var(--labgate-radius-sm);
+  --indicator-color: #ffffff;
+  --indicator-box-shadow: var(--labgate-shadow);
+  --color: var(--labgate-text-light);
+  --color-checked: var(--labgate-text);
+  font-weight: 500;
+  font-size: var(--labgate-font-size-sm);
+  min-height: 36px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Modern Buttons */
+ion-button {
+  --border-radius: var(--labgate-button-radius);
+  --box-shadow: none;
+  font-weight: 600;
+  font-size: var(--labgate-font-size-default);
+  text-transform: none;
+  letter-spacing: 0;
+  min-height: 48px;
+}
+
+ion-button[size="small"] {
+  --border-radius: var(--labgate-radius-sm);
+  min-height: 36px;
+  font-size: var(--labgate-font-size-sm);
+}
+
+ion-button[fill="solid"] {
+  --background: var(--labgate-brand);
+  --background-hover: var(--labgate-brand-dark);
+  --background-activated: var(--labgate-brand-dark);
+  --color: #ffffff;
+}
+
+ion-button[fill="outline"] {
+  --border-color: var(--labgate-border);
+  --border-width: 1.5px;
+  --color: var(--labgate-text);
+  --background-hover: var(--labgate-selected-bg);
+}
+
+ion-button[fill="clear"] {
+  --color: var(--labgate-brand);
+}
+
+/* Modern Cards */
+ion-card {
+  --background: #ffffff;
+  border-radius: var(--labgate-card-radius);
+  box-shadow: var(--labgate-shadow);
+  margin: var(--labgate-spacing);
+  border: 1px solid var(--labgate-border-light);
+}
+
+ion-card-header {
+  padding: var(--labgate-spacing);
+  padding-bottom: var(--labgate-spacing-sm);
+}
+
+ion-card-content {
+  padding: var(--labgate-spacing);
+  padding-top: 0;
+}
+
+ion-card-title {
+  font-size: var(--labgate-font-size-md);
+  font-weight: 600;
+  color: var(--labgate-text);
+}
+
+ion-card-subtitle {
+  font-size: var(--labgate-font-size-sm);
+  color: var(--labgate-text-light);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Modern List Items */
+ion-item {
+  --padding-start: var(--labgate-spacing);
+  --padding-end: var(--labgate-spacing);
+  --inner-padding-end: var(--labgate-spacing);
+  --background: #ffffff;
+  --border-color: var(--labgate-border-light);
+  --min-height: 56px;
+  font-size: var(--labgate-font-size-default);
+}
+
+ion-item h2 {
+  font-weight: 500;
+  font-size: var(--labgate-font-size-default);
+  color: var(--labgate-text);
+}
+
+ion-item p {
+  font-size: var(--labgate-font-size-sm);
+  color: var(--labgate-text-light);
+}
+
+ion-item ion-icon[slot="start"] {
+  color: var(--labgate-brand);
+  font-size: 22px;
+  margin-right: var(--labgate-spacing);
+}
+
+/* Modern List */
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+ion-list-header {
+  font-weight: 600;
+  font-size: var(--labgate-font-size-sm);
+  color: var(--labgate-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: var(--labgate-spacing);
+  padding-bottom: var(--labgate-spacing-sm);
+}
+
+/* Modern Searchbar */
+ion-searchbar {
+  --background: var(--labgate-selected-bg);
+  --border-radius: var(--labgate-radius-md);
+  --box-shadow: none;
+  --placeholder-color: var(--labgate-text-muted);
+  --icon-color: var(--labgate-text-muted);
+  --clear-button-color: var(--labgate-text-muted);
+  padding: var(--labgate-spacing-sm) var(--labgate-spacing);
+  font-size: var(--labgate-font-size-default);
+}
+
+ion-searchbar .searchbar-input {
+  font-size: var(--labgate-font-size-default);
+}
+
+/* Modern Input */
+ion-input,
+ion-textarea {
+  --placeholder-color: var(--labgate-text-muted);
+  --placeholder-opacity: 1;
+  --padding-start: var(--labgate-spacing);
+  --padding-end: var(--labgate-spacing);
+  font-size: var(--labgate-font-size-default);
+}
+
+/* Modern Badge */
+ion-badge {
+  --padding-start: var(--labgate-spacing-sm);
+  --padding-end: var(--labgate-spacing-sm);
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  border-radius: var(--labgate-badge-radius);
+  font-weight: 600;
+  font-size: var(--labgate-font-size-xs);
+  letter-spacing: 0;
+}
+
+/* Modern Avatar */
+ion-avatar {
+  --border-radius: var(--labgate-radius-md);
+  width: 44px;
+  height: 44px;
+}
+
+/* Modern Toggle */
+ion-toggle {
+  --track-background: var(--labgate-border);
+  --track-background-checked: var(--labgate-brand);
+  --handle-background: #ffffff;
+  --handle-background-checked: #ffffff;
+}
+
+/* Modern Modal */
+ion-modal {
+  --border-radius: var(--labgate-radius-xl) var(--labgate-radius-xl) 0 0;
+  --box-shadow: var(--labgate-shadow-xl);
+}
+
+ion-modal ion-toolbar {
+  --background: var(--labgate-surface);
+}
+
+/* Modern Refresher */
+ion-refresher-content {
+  --color: var(--labgate-brand);
+}
+
+/* Modern Spinner */
+ion-spinner {
+  --color: var(--labgate-brand);
+}
+
+/* Modern Skeleton */
+ion-skeleton-text {
+  --background: var(--labgate-selected-bg);
+  --background-rgb: 241, 245, 249;
+  border-radius: var(--labgate-radius-sm);
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
 body.dark {
-  --ion-color-primary: #4da6ff;
-  --ion-color-primary-rgb: 77, 166, 255;
-  --ion-color-primary-contrast: #000000;
-  --ion-color-primary-contrast-rgb: 0, 0, 0;
-  --ion-color-primary-shade: #4492e0;
-  --ion-color-primary-tint: #5fafff;
+  --ion-color-primary: #86EFAC;
+  --ion-color-primary-rgb: 134, 239, 172;
+  --ion-color-primary-contrast: #064E3B;
+  --ion-color-primary-contrast-rgb: 6, 78, 59;
+  --ion-color-primary-shade: #76d29a;
+  --ion-color-primary-tint: #92f1b4;
 
-  --ion-background-color: #121212;
-  --ion-background-color-rgb: 18, 18, 18;
-  --ion-text-color: #ffffff;
-  --ion-text-color-rgb: 255, 255, 255;
-  --ion-border-color: #333333;
-  --ion-toolbar-background: #1e1e1e;
-  --ion-item-background: #1e1e1e;
-  --ion-card-background: #1e1e1e;
-  --ion-toolbar-color: #ffffff;
-  --ion-tab-bar-background: #1e1e1e;
-  --ion-tab-bar-color: #888888;
-  --ion-tab-bar-color-selected: #4da6ff;
+  --ion-background-color: #0F172A;
+  --ion-background-color-rgb: 15, 23, 42;
+  --ion-text-color: #F1F5F9;
+  --ion-text-color-rgb: 241, 245, 249;
+  --ion-border-color: #334155;
+  --ion-toolbar-background: #1E293B;
+  --ion-item-background: #1E293B;
+  --ion-card-background: #1E293B;
+  --ion-toolbar-color: #F1F5F9;
+  --ion-tab-bar-background: #1E293B;
+  --ion-tab-bar-color: #64748B;
+  --ion-tab-bar-color-selected: #86EFAC;
+
+  --labgate-brand: #86EFAC;
+  --labgate-brand-dark: #6EE7B7;
+  --labgate-brand-light: #064E3B;
+  --labgate-text: #F1F5F9;
+  --labgate-text-light: #94A3B8;
+  --labgate-text-muted: #64748B;
+  --labgate-selected-bg: #334155;
+  --labgate-border: #334155;
+  --labgate-border-light: #1E293B;
+  --labgate-surface: #1E293B;
+  --labgate-surface-elevated: #334155;
 }
 
-body.dark ion-modal {
-  --ion-background-color: #1e1e1e;
-  --ion-toolbar-background: #1e1e1e;
-  --ion-toolbar-border-color: #333333;
+body.dark ion-toolbar {
+  --background: #1E293B;
 }
 
-body.dark ion-content {
-  --background: #121212;
+body.dark ion-header {
+  box-shadow: 0 1px 0 #334155;
 }
 
-body.dark ion-list {
-  --ion-item-background: #1e1e1e;
+body.dark ion-tab-bar {
+  --background: #1E293B;
+  border-top-color: #334155;
+}
+
+body.dark ion-card {
+  --background: #1E293B;
+  border-color: #334155;
 }
 
 body.dark ion-item {
-  --ion-item-background: #1e1e1e;
+  --background: #1E293B;
+  --border-color: #334155;
 }
 
-/* Dark Mode - System preference */
+body.dark ion-segment {
+  --background: #334155;
+}
+
+body.dark ion-segment-button {
+  --indicator-color: #475569;
+  --color: #94A3B8;
+  --color-checked: #F1F5F9;
+}
+
+body.dark ion-searchbar {
+  --background: #334155;
+}
+
+body.dark ion-modal {
+  --background: #1E293B;
+}
+
+body.dark .list-group-header {
+  background-color: #0F172A;
+  border-color: #334155;
+}
+
+/* Dark mode system preference */
 @media (prefers-color-scheme: dark) {
   body:not(.light) {
-    --ion-color-primary: #4da6ff;
-    --ion-color-primary-rgb: 77, 166, 255;
-    --ion-color-primary-contrast: #000000;
-    --ion-color-primary-contrast-rgb: 0, 0, 0;
-    --ion-color-primary-shade: #4492e0;
-    --ion-color-primary-tint: #5fafff;
+    --ion-color-primary: #86EFAC;
+    --ion-color-primary-rgb: 134, 239, 172;
+    --ion-color-primary-contrast: #064E3B;
+    --ion-color-primary-contrast-rgb: 6, 78, 59;
+    --ion-color-primary-shade: #76d29a;
+    --ion-color-primary-tint: #92f1b4;
 
-    --ion-background-color: #121212;
-    --ion-background-color-rgb: 18, 18, 18;
-    --ion-text-color: #ffffff;
-    --ion-text-color-rgb: 255, 255, 255;
-    --ion-border-color: #333333;
-    --ion-toolbar-background: #1e1e1e;
-    --ion-item-background: #1e1e1e;
-    --ion-card-background: #1e1e1e;
-    --ion-toolbar-color: #ffffff;
-    --ion-tab-bar-background: #1e1e1e;
-    --ion-tab-bar-color: #888888;
-    --ion-tab-bar-color-selected: #4da6ff;
+    --ion-background-color: #0F172A;
+    --ion-background-color-rgb: 15, 23, 42;
+    --ion-text-color: #F1F5F9;
+    --ion-text-color-rgb: 241, 245, 249;
+    --ion-border-color: #334155;
+    --ion-toolbar-background: #1E293B;
+    --ion-item-background: #1E293B;
+    --ion-card-background: #1E293B;
+    --ion-toolbar-color: #F1F5F9;
+    --ion-tab-bar-background: #1E293B;
+    --ion-tab-bar-color: #64748B;
+    --ion-tab-bar-color-selected: #86EFAC;
+
+    --labgate-brand: #86EFAC;
+    --labgate-brand-dark: #6EE7B7;
+    --labgate-brand-light: #064E3B;
+    --labgate-text: #F1F5F9;
+    --labgate-text-light: #94A3B8;
+    --labgate-text-muted: #64748B;
+    --labgate-selected-bg: #334155;
+    --labgate-border: #334155;
+    --labgate-border-light: #1E293B;
+    --labgate-surface: #1E293B;
+    --labgate-surface-elevated: #334155;
   }
 
-  body:not(.light) ion-modal {
-    --ion-background-color: #1e1e1e;
-    --ion-toolbar-background: #1e1e1e;
-    --ion-toolbar-border-color: #333333;
+  body:not(.light) ion-toolbar {
+    --background: #1E293B;
   }
 
-  body:not(.light) ion-content {
-    --background: #121212;
+  body:not(.light) ion-header {
+    box-shadow: 0 1px 0 #334155;
   }
 
-  body:not(.light) ion-list {
-    --ion-item-background: #1e1e1e;
+  body:not(.light) ion-tab-bar {
+    --background: #1E293B;
+    border-top-color: #334155;
+  }
+
+  body:not(.light) ion-card {
+    --background: #1E293B;
+    border-color: #334155;
   }
 
   body:not(.light) ion-item {
-    --ion-item-background: #1e1e1e;
+    --background: #1E293B;
+    --border-color: #334155;
+  }
+
+  body:not(.light) ion-segment {
+    --background: #334155;
+  }
+
+  body:not(.light) ion-segment-button {
+    --indicator-color: #475569;
+    --color: #94A3B8;
+    --color-checked: #F1F5F9;
+  }
+
+  body:not(.light) ion-searchbar {
+    --background: #334155;
+  }
+
+  body:not(.light) ion-modal {
+    --background: #1E293B;
+  }
+
+  body:not(.light) .list-group-header {
+    background-color: #0F172A;
+    border-color: #334155;
   }
 }
 
-/* Custom utility classes */
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Result flag colors */
 .result-flag-normal {
   color: var(--result-normal);
 }
@@ -209,23 +636,212 @@ body.dark ion-item {
   color: var(--result-abnormal);
 }
 
-/* Badge variants for result status */
+/* Badge variants */
 .badge-pending {
   --background: var(--ion-color-warning);
-  --color: var(--ion-color-warning-contrast);
+  --color: #000000;
 }
 
 .badge-partial {
   --background: var(--ion-color-secondary);
-  --color: var(--ion-color-secondary-contrast);
+  --color: #ffffff;
 }
 
 .badge-final {
-  --background: var(--ion-color-success);
-  --color: var(--ion-color-success-contrast);
+  --background: var(--labgate-brand);
+  --color: #ffffff;
 }
 
 .badge-corrected {
   --background: var(--ion-color-tertiary);
-  --color: var(--ion-color-tertiary-contrast);
+  --color: #ffffff;
+}
+
+/* Branded header */
+.branded-header {
+  background: linear-gradient(135deg, var(--labgate-brand) 0%, var(--labgate-brand-dark) 100%);
+  color: #ffffff;
+}
+
+/* Form styling */
+.form-label {
+  font-weight: 500;
+  font-size: var(--labgate-font-size-sm);
+  color: var(--labgate-text);
+  margin-bottom: var(--labgate-spacing-xs);
+}
+
+.form-error {
+  color: var(--validation-failed);
+  font-size: var(--labgate-font-size-xs);
+  background-color: var(--validation-failed-bg);
+  padding: var(--labgate-spacing-xs) var(--labgate-spacing-sm);
+  border-radius: var(--labgate-radius-sm);
+  margin-top: var(--labgate-spacing-xs);
+}
+
+/* Property display */
+.property-display {
+  display: flex;
+  align-items: center;
+  gap: var(--labgate-spacing-sm);
+  padding: var(--labgate-spacing-sm) 0;
+}
+
+.property-display-icon {
+  color: var(--labgate-text-muted);
+  font-size: 18px;
+}
+
+.property-display-label {
+  color: var(--labgate-text-light);
+  font-size: var(--labgate-font-size-sm);
+}
+
+.property-display-value {
+  color: var(--labgate-text);
+  font-size: var(--labgate-font-size-default);
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--labgate-spacing-2xl) var(--labgate-spacing);
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 64px;
+  color: var(--labgate-border);
+  margin-bottom: var(--labgate-spacing);
+}
+
+.empty-state-title {
+  font-weight: 600;
+  font-size: var(--labgate-font-size-lg);
+  color: var(--labgate-text);
+  margin: 0 0 var(--labgate-spacing-sm) 0;
+}
+
+.empty-state-message {
+  font-size: var(--labgate-font-size-default);
+  color: var(--labgate-text-light);
+  margin: 0 0 var(--labgate-spacing-lg) 0;
+  max-width: 280px;
+}
+
+/* Skeleton loading */
+.skeleton-item {
+  padding: var(--labgate-spacing);
+}
+
+/* Forward navigation icon */
+.forward-nav-icon {
+  color: var(--labgate-text-muted);
+  font-size: 20px;
+}
+
+/* List group header */
+.list-group-header {
+  background-color: var(--labgate-selected-bg);
+  font-weight: 600;
+  font-size: var(--labgate-font-size-sm);
+  color: var(--labgate-text-light);
+  padding: var(--labgate-spacing-sm) var(--labgate-spacing);
+  border-bottom: 1px solid var(--labgate-border);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Modern card variants */
+.card-elevated {
+  box-shadow: var(--labgate-shadow-md);
+  border: none;
+}
+
+.card-outlined {
+  box-shadow: none;
+  border: 1px solid var(--labgate-border);
+}
+
+/* Status indicator */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-indicator--success {
+  background-color: var(--result-normal);
+}
+
+.status-indicator--warning {
+  background-color: var(--result-abnormal);
+}
+
+.status-indicator--danger {
+  background-color: var(--result-critical);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Focus states for accessibility */
+ion-button:focus-visible,
+ion-item:focus-visible,
+ion-tab-button:focus-visible {
+  outline: 2px solid var(--labgate-brand);
+  outline-offset: 2px;
+}
+
+/* Safe area padding for notched devices */
+ion-content {
+  --padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   BARCODE SCANNER - ML Kit native plugin
+   ============================================ */
+
+/* Make app transparent when scanning so native camera preview is visible */
+body.barcode-scanner-active {
+  --ion-background-color: transparent !important;
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+body.barcode-scanner-active ion-app,
+body.barcode-scanner-active ion-content,
+body.barcode-scanner-active ion-page,
+body.barcode-scanner-active ion-modal,
+body.barcode-scanner-active .ion-page {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+body.barcode-scanner-active ion-modal ion-content {
+  --background: transparent !important;
+}
+
+body.barcode-scanner-active ion-modal .scanner-content {
+  --background: transparent !important;
+  background: transparent !important;
 }

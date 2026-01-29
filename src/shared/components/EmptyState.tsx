@@ -1,5 +1,5 @@
 import React from 'react';
-import { IonIcon, IonText, IonButton } from '@ionic/react';
+import { IonIcon, IonButton } from '@ionic/react';
 import { searchOutline, documentTextOutline, peopleOutline, businessOutline, newspaperOutline } from 'ionicons/icons';
 
 interface EmptyStateProps {
@@ -57,30 +57,17 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const defaults = defaultMessages[type];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px 24px',
-        textAlign: 'center',
-      }}
-    >
+    <div className="empty-state">
       <IonIcon
         icon={icon}
-        style={{
-          fontSize: '64px',
-          color: 'var(--ion-color-medium)',
-          marginBottom: '16px',
-        }}
+        className="empty-state-icon"
       />
-      <IonText color="dark">
-        <h2 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>{title || defaults.title}</h2>
-      </IonText>
-      <IonText color="medium">
-        <p style={{ margin: '0 0 24px 0', fontSize: '14px' }}>{message || defaults.message}</p>
-      </IonText>
+      <h2 className="empty-state-title">
+        {title || defaults.title}
+      </h2>
+      <p className="empty-state-message">
+        {message || defaults.message}
+      </p>
       {actionLabel && onAction && (
         <IonButton onClick={onAction} fill="outline">
           {actionLabel}

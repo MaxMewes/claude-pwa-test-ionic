@@ -1,9 +1,37 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { Capacitor } from '@capacitor/core';
 import { useAuthStore } from '../../features/auth/store/authStore';
 
-// In development, use empty base URL to leverage Vite proxy
-// In production, use the full API URL
-const API_BASE_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '');
+// API Base URL configuration:
+// - Native apps (Android/iOS): Always use full URL (no CORS restrictions)
+// - Web development: Empty URL to use Vite proxy
+// - Web production: Full URL
+const getBaseUrl = (): string => {
+  const fullApiUrl = import.meta.env.VITE_API_URL || 'https://demo.labgate.net';
+  const isNative = Capacitor.isNativePlatform();
+  const isDev = import.meta.env.DEV;
+
+  console.log('[API] Platform detection:', {
+    isNative,
+    isDev,
+    platform: Capacitor.getPlatform(),
+    fullApiUrl,
+  });
+
+  // Native platforms don't have CORS - always use full URL
+  if (isNative) {
+    console.log('[API] Using full URL for native platform:', fullApiUrl);
+    return fullApiUrl;
+  }
+
+  // Web: use proxy in dev, full URL in prod
+  const url = isDev ? '' : fullApiUrl;
+  console.log('[API] Using URL for web:', url || '(proxy)');
+  return url;
+};
+
+const API_BASE_URL = getBaseUrl();
+console.log('[API] Final baseURL:', API_BASE_URL);
 
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -13,7 +41,7 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor - add auth token
+// Request interceptor - add auth token and log requests
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // labGate API v3 uses single Token
@@ -21,6 +49,11 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Log the full URL being requested
+    const fullUrl = config.baseURL ? `${config.baseURL}${config.url}` : config.url;
+    console.log('[API] Request:', config.method?.toUpperCase(), fullUrl);
+
     return config;
   },
   (error) => {

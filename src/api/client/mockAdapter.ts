@@ -6,8 +6,8 @@ import { mockLaboratoriesHandlers } from '../mocks/laboratories';
 import { mockNewsHandlers } from '../mocks/news';
 import { mockSettingsHandlers } from '../mocks/settings';
 import { mockSendersHandlers } from '../mocks/senders';
-import { mockFAQHandlers } from '../mocks/faq';
 import { mockFeedbackHandlers } from '../mocks/feedback';
+import { mockUpdateInfoHandlers } from '../mocks/updateInfo';
 
 type MockHandler = (config: AxiosRequestConfig) => Promise<AxiosResponse>;
 
@@ -67,12 +67,11 @@ const mockRoutes: MockRoute[] = [
   { method: 'get', pattern: /\/api\/v3\/news\/[^/]+$/, handler: mockNewsHandlers.getNewsById },
   { method: 'patch', pattern: /\/api\/v3\/news\/[^/]+\/read$/, handler: mockNewsHandlers.markAsRead },
 
-  // FAQ routes - labGate API v3
-  { method: 'get', pattern: /\/api\/v3\/faqs$/, handler: mockFAQHandlers.getFAQs },
-  { method: 'get', pattern: /\/api\/v3\/faqs\/[^/]+$/, handler: mockFAQHandlers.getFAQById },
-
   // Feedback routes - labGate API v3
   { method: 'post', pattern: /\/api\/v3\/feedbacks$/, handler: mockFeedbackHandlers.sendFeedback },
+
+  // Update Info routes - labGate API v3
+  { method: 'get', pattern: /\/api\/v3\/mobile-apps\/update-info$/, handler: mockUpdateInfoHandlers.getUpdateInfo },
 
   // Settings routes - labGate API v3
   { method: 'get', pattern: /\/api\/v3\/settings$/, handler: mockSettingsHandlers.getSettings },

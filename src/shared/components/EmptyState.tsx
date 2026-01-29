@@ -1,9 +1,9 @@
 import React from 'react';
 import { IonIcon, IonButton } from '@ionic/react';
-import { searchOutline, documentTextOutline, peopleOutline, businessOutline, newspaperOutline } from 'ionicons/icons';
+import { searchOutline, documentTextOutline, peopleOutline, businessOutline, newspaperOutline, alertCircleOutline } from 'ionicons/icons';
 
 interface EmptyStateProps {
-  type?: 'results' | 'patients' | 'laboratories' | 'news' | 'search' | 'generic';
+  type?: 'results' | 'patients' | 'laboratories' | 'news' | 'search' | 'generic' | 'error';
   title?: string;
   message?: string;
   actionLabel?: string;
@@ -17,6 +17,7 @@ const iconMap = {
   news: newspaperOutline,
   search: searchOutline,
   generic: searchOutline,
+  error: alertCircleOutline,
 };
 
 const defaultMessages: Record<string, { title: string; message: string }> = {
@@ -43,6 +44,10 @@ const defaultMessages: Record<string, { title: string; message: string }> = {
   generic: {
     title: 'Keine Daten',
     message: 'Es sind keine Daten vorhanden.',
+  },
+  error: {
+    title: 'Fehler',
+    message: 'Ein Fehler ist aufgetreten.',
   },
 };
 

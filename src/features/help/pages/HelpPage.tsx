@@ -25,14 +25,14 @@ import {
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useFAQs } from '../hooks/useFAQ';
+import { useFAQ } from '../../settings/hooks/useFAQ';
 
 export const HelpPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data, isLoading } = useFAQs();
+  const { data, isLoading } = useFAQ();
 
   const faqs = data?.Results || [];
   const filteredFAQs = searchQuery

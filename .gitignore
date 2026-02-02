@@ -727,3 +727,12 @@ FodyWeavers.xsd
 # claude
 /.claude/settings.local.json
 
+# Playwright
+playwright-report/
+test-results/
+
+# Windows artifacts
+nul
+
+# Screenshots
+screenshot.jpg

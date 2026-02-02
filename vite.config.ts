@@ -104,6 +104,28 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'jsdom',
       setupFiles: './src/setupTests.ts',
+      exclude: ['node_modules', 'e2e/**'],
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html'],
+        include: [
+          'src/shared/**/*.{ts,tsx}',
+          'src/features/**/store/**/*.{ts,tsx}',
+          'src/features/**/hooks/**/*.{ts,tsx}',
+          'src/config/**/*.{ts,tsx}',
+        ],
+        exclude: [
+          'node_modules/',
+          'src/setupTests.ts',
+          '**/*.d.ts',
+          '**/*.test.{ts,tsx}',
+          '**/types/**',
+          '**/mocks/**',
+          'src/main.tsx',
+          'src/vite-env.d.ts',
+          '**/index.ts',
+        ],
+      },
     },
   }
 })

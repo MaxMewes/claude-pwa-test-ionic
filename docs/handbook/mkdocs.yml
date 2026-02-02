@@ -1,0 +1,79 @@
+site_name: labGate PWA Handbuch
+site_description: Benutzerhandbuch für die labGate PWA Anwendung
+site_author: labGate Team
+
+theme:
+  name: material
+  language: de
+  palette:
+    - scheme: default
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-7
+        name: Dunkelmodus aktivieren
+    - scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-4
+        name: Hellmodus aktivieren
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+
+plugins:
+  - search:
+      lang: de
+
+validation:
+  links:
+    absolute_links: ignore
+    unrecognized_links: ignore
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Start: index.md
+  - Erste Schritte:
+    - Installation: getting-started/installation.md
+    - Anmeldung: getting-started/login.md
+    - Übersicht: getting-started/overview.md
+  - Befunde:
+    - Befundübersicht: results/overview.md
+    - Befunddetails: results/details.md
+    - Filter & Suche: results/filter-search.md
+  - Patienten:
+    - Patientenliste: patients/list.md
+    - Patientendetails: patients/details.md
+  - Labore:
+    - Laborübersicht: laboratories/overview.md
+    - Labordetails: laboratories/details.md
+    - Leistungskatalog: laboratories/services.md
+  - Neuigkeiten:
+    - Neuigkeiten: news/overview.md
+  - Einstellungen:
+    - Allgemein: settings/general.md
+    - Benachrichtigungen: settings/notifications.md
+  - Hilfe:
+    - FAQ: help/faq.md
+    - Support: help/support.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/labgate

@@ -11,11 +11,49 @@ import {
   IonItem,
   IonLabel,
   IonText,
+  IonBadge,
+  IonSpinner,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
+import { useUpdateInfo } from '../hooks/useUpdateInfo';
+
+// Import version from package.json
+const APP_VERSION = '0.0.1';
+const LABGATE_API_VERSION = 'v3';
 
 export const AboutPage: React.FC = () => {
   const { t } = useTranslation();
+  const { data: updateInfo, isLoading: isLoadingUpdate } = useUpdateInfo();
+
+  const getUpdateBadge = () => {
+    if (isLoadingUpdate) {
+      return <IonSpinner name="crescent" style={{ width: '16px', height: '16px' }} />;
+    }
+
+    if (!updateInfo) return null;
+
+    switch (updateInfo.UpdateType) {
+      case 'Required':
+        return (
+          <IonBadge color="danger" style={{ marginLeft: '8px' }}>
+            Update erforderlich
+          </IonBadge>
+        );
+      case 'Optional':
+        return (
+          <IonBadge color="warning" style={{ marginLeft: '8px' }}>
+            Update verfügbar
+          </IonBadge>
+        );
+      case 'None':
+      default:
+        return (
+          <IonBadge color="success" style={{ marginLeft: '8px' }}>
+            Aktuell
+          </IonBadge>
+        );
+    }
+  };
 
   return (
     <IonPage>
@@ -35,7 +73,7 @@ export const AboutPage: React.FC = () => {
             style={{
               width: '80px',
               height: '80px',
-              backgroundColor: 'var(--ion-color-primary)',
+              backgroundColor: 'var(--labgate-brand)',
               borderRadius: '20px',
               display: 'flex',
               alignItems: 'center',
@@ -43,14 +81,17 @@ export const AboutPage: React.FC = () => {
               margin: '0 auto 16px',
             }}
           >
-            <span style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}>LG</span>
+            <span style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}>🧪</span>
           </div>
           <IonText color="dark">
             <h1 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>labGate</h1>
           </IonText>
           <IonText color="medium">
             <p style={{ margin: 0 }}>Medizinische Laborbefunde</p>
-            <p style={{ margin: '8px 0 0', fontSize: '14px' }}>Version 2.5.0</p>
+            <p style={{ margin: '8px 0 0', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              App Version {APP_VERSION}
+              {getUpdateBadge()}
+            </p>
           </IonText>
         </div>
 
@@ -68,16 +109,53 @@ export const AboutPage: React.FC = () => {
         <IonList>
           <IonItem>
             <IonLabel>
+              <p>App Version</p>
+              <h2 style={{ display: 'flex', alignItems: 'center' }}>
+                {APP_VERSION}
+                {getUpdateBadge()}
+              </h2>
+            </IonLabel>
+          </IonItem>
+
+          <IonItem>
+            <IonLabel>
+              <p>labGate API Version</p>
+              <h2>{LABGATE_API_VERSION}</h2>
+            </IonLabel>
+          </IonItem>
+
+          {updateInfo?.CurrentVersion && (
+            <IonItem>
+              <IonLabel>
+                <p>labGate Backend Version</p>
+                <h2>{updateInfo.CurrentVersion}</h2>
+              </IonLabel>
+            </IonItem>
+          )}
+
+          {updateInfo?.MinimumVersion && (
+            <IonItem>
+              <IonLabel>
+                <p>Mindestversion</p>
+                <h2>{updateInfo.MinimumVersion}</h2>
+              </IonLabel>
+            </IonItem>
+          )}
+
+          <IonItem>
+            <IonLabel>
               <p>Entwickelt von</p>
               <h2>labGate GmbH</h2>
             </IonLabel>
           </IonItem>
+
           <IonItem>
             <IonLabel>
               <p>Kontakt</p>
               <h2>support@labgate.de</h2>
             </IonLabel>
           </IonItem>
+
           <IonItem>
             <IonLabel>
               <p>Website</p>
@@ -86,10 +164,25 @@ export const AboutPage: React.FC = () => {
           </IonItem>
         </IonList>
 
+        {/* Technical Details */}
+        <div style={{ padding: '24px' }}>
+          <IonText color="medium" style={{ fontSize: '12px' }}>
+            <p style={{ textAlign: 'center', margin: '0 0 8px' }}>
+              <strong>Technische Details:</strong>
+            </p>
+            <p style={{ textAlign: 'center', margin: '4px 0' }}>
+              Ionic React • Capacitor • TypeScript
+            </p>
+            <p style={{ textAlign: 'center', margin: '4px 0' }}>
+              PWA-fähig • Offline-Support
+            </p>
+          </IonText>
+        </div>
+
         {/* Legal */}
         <div style={{ padding: '24px', textAlign: 'center' }}>
           <IonText color="medium" style={{ fontSize: '12px' }}>
-            <p>Copyright 2024 labGate GmbH. Alle Rechte vorbehalten.</p>
+            <p>© 2026 labGate GmbH. Alle Rechte vorbehalten.</p>
             <p>Medizinprodukt der Klasse I gemaess MDR (EU) 2017/745</p>
           </IonText>
         </div>

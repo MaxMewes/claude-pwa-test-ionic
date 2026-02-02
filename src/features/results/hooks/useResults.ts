@@ -1,9 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { format, startOfDay, subDays } from 'date-fns';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { LabResult, ResultCounter, ResultFilter } from '../../../api/types';
+import { ResultPeriodFilter } from '../../../shared/store/useSettingsStore';
 
 const RESULTS_KEY = 'results';
-const ITEMS_PER_PAGE = 50;
+const ITEMS_PER_PAGE = 25;
 
 // V3 API query parameters (PascalCase as expected by API)
 interface ApiQueryParams {
@@ -30,8 +32,45 @@ interface ResultsResponseV3 {
   TotalPages: number;
 }
 
+// Map period filter to API date parameters
+function mapPeriodToDateParams(period: ResultPeriodFilter): { StartDate?: string; EndDate?: string; Area?: ApiQueryParams['Area'] } {
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const formatDate = (date: Date) => format(date, 'yyyy-MM-dd');
+
+  switch (period) {
+    case 'today':
+      return {
+        StartDate: formatDate(todayStart),
+        EndDate: formatDate(now),
+        Area: 'NotArchived',
+      };
+    case '7days':
+      return {
+        StartDate: formatDate(subDays(todayStart, 7)),
+        EndDate: formatDate(now),
+        Area: 'NotArchived',
+      };
+    case '30days':
+      return {
+        StartDate: formatDate(subDays(todayStart, 30)),
+        EndDate: formatDate(now),
+        Area: 'NotArchived',
+      };
+    case 'archive':
+      return {
+        Area: 'Archived',
+      };
+    case 'all':
+    default:
+      return {
+        Area: 'NotArchived',
+      };
+  }
+}
+
 // Map local filters to V3 API format
-function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage = ITEMS_PER_PAGE): ApiQueryParams {
+function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage = ITEMS_PER_PAGE, period?: ResultPeriodFilter): ApiQueryParams {
   const v3Filters: ApiQueryParams = {
     ItemsPerPage: itemsPerPage,
     SortColumn: 'ReportDate',
@@ -40,12 +79,18 @@ function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage = ITEMS_P
     CurrentPage: page - 1,
   };
 
+  // Apply period filter first (sets StartDate, EndDate, Area)
+  if (period) {
+    const periodParams = mapPeriodToDateParams(period);
+    Object.assign(v3Filters, periodParams);
+  }
+
   if (!filters) return v3Filters;
 
-  // Status/Area filter
+  // Status/Area filter - only override if not already set by period
   if (filters.isArchived) {
     v3Filters.Area = 'Archived';
-  } else {
+  } else if (!v3Filters.Area) {
     v3Filters.Area = 'NotArchived';
   }
 
@@ -58,11 +103,11 @@ function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage = ITEMS_P
     v3Filters.ResultCategory = 'Urgent';
   }
 
-  // Date filter
-  if (filters.dateFrom) {
+  // Date filter - only override if not set by period filter
+  if (filters.dateFrom && !v3Filters.StartDate) {
     v3Filters.StartDate = filters.dateFrom;
   }
-  if (filters.dateTo) {
+  if (filters.dateTo && !v3Filters.EndDate) {
     v3Filters.EndDate = filters.dateTo;
   }
 
@@ -92,12 +137,12 @@ function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage = ITEMS_P
   return v3Filters;
 }
 
-export function useResults(filter?: ResultFilter, page = 1) {
-  return useQuery({
-    queryKey: [RESULTS_KEY, filter, page],
-    queryFn: async () => {
+export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
+  return useInfiniteQuery({
+    queryKey: [RESULTS_KEY, filter, period],
+    queryFn: async ({ pageParam = 1 }) => {
       // Build query params
-      const params = mapFiltersToV3(filter, page);
+      const params = mapFiltersToV3(filter, pageParam, ITEMS_PER_PAGE, period);
 
       // labGate API v3 endpoint
       const response = await axiosInstance.get<ResultsResponseV3>('/api/v3/results', { params });
@@ -109,6 +154,11 @@ export function useResults(filter?: ResultFilter, page = 1) {
         ItemsPerPage: response.data.ItemsPerPage || ITEMS_PER_PAGE,
         TotalPages: response.data.TotalPages || 1,
       };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.CurrentPage + 2; // API uses 0-based, we use 1-based
+      return nextPage <= lastPage.TotalPages ? nextPage : undefined;
     },
   });
 }

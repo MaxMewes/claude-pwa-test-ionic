@@ -1,25 +1,53 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '../../../api/client/axiosInstance';
-import { NewsArticle, PaginatedResponse, NewsCategory } from '../../../api/types';
+import { NewsArticle, NewsCategory } from '../../../api/types';
+import { useAuthStore } from '../../auth/store/authStore';
 
 const NEWS_KEY = 'news';
+const ITEMS_PER_PAGE = 25;
+
+// API v3 response format for news list
+interface NewsListResponseV3 {
+  Items: NewsArticle[];
+  CurrentPage: number;
+  ItemsPerPage: number;
+  TotalItemsCount: number;
+}
 
 interface NewsFilter {
   category?: NewsCategory;
-  page?: number;
-  pageSize?: number;
 }
 
 export function useNews(filter?: NewsFilter) {
-  return useQuery({
+  const { isAuthenticated } = useAuthStore();
+
+  return useInfiniteQuery({
     queryKey: [NEWS_KEY, filter],
-    queryFn: async () => {
-      // labGate API v3 endpoint
-      const response = await axiosInstance.get<PaginatedResponse<NewsArticle>>('/api/v3/news', {
-        params: filter,
+    queryFn: async ({ pageParam = 1 }) => {
+      // labGate API v3 endpoint (1-based pagination)
+      const response = await axiosInstance.get<NewsListResponseV3>('/api/v3/news', {
+        params: {
+          ...filter,
+          itemsPerPage: ITEMS_PER_PAGE,
+          currentPage: pageParam,
+        },
       });
-      return response.data;
+      const items = response.data.Items || [];
+      const totalCount = response.data.TotalItemsCount ?? items.length;
+      const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+      return {
+        Results: items,
+        TotalCount: totalCount,
+        CurrentPage: pageParam,
+        TotalPages: totalPages,
+      };
     },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.CurrentPage + 1;
+      return nextPage <= lastPage.TotalPages ? nextPage : undefined;
+    },
+    enabled: isAuthenticated,
   });
 }
 

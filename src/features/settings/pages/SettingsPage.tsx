@@ -10,6 +10,8 @@ import {
   IonLabel,
   IonIcon,
   IonToggle,
+  IonButtons,
+  IonMenuButton,
 } from '@ionic/react';
 import {
   notificationsOutline,
@@ -22,12 +24,15 @@ import {
   chevronForwardOutline,
   serverOutline,
   informationCircleOutline,
+  eyeOutline,
+  chatbubbleOutline,
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { ROUTES } from '../../../config/routes';
 import { useTheme } from '../../../shared/hooks/useTheme';
+import { useSettingsStore } from '../../../shared/store/useSettingsStore';
 import { UserAvatar } from '../../../shared/components';
 import { APP_CONFIG, getDisplayApiUrl } from '../../../config/app';
 
@@ -36,6 +41,7 @@ export const SettingsPage: React.FC = () => {
   const history = useHistory();
   const { user, logout, isLoggingOut } = useAuth();
   const { isDark, toggleDarkMode } = useTheme();
+  const { previewMode, togglePreviewMode } = useSettingsStore();
 
   const settingsItems = [
     {
@@ -58,10 +64,23 @@ export const SettingsPage: React.FC = () => {
       label: t('settings.privacy.title'),
       route: ROUTES.SETTINGS_PRIVACY,
     },
+  ];
+
+  const helpItems = [
     {
       icon: helpCircleOutline,
       label: t('settings.support.faq'),
       route: ROUTES.SETTINGS_FAQ,
+    },
+    {
+      icon: informationCircleOutline,
+      label: 'Über labGate',
+      route: ROUTES.HELP_ABOUT,
+    },
+    {
+      icon: chatbubbleOutline,
+      label: 'Feedback',
+      route: ROUTES.HELP_FEEDBACK,
     },
   ];
 
@@ -74,7 +93,13 @@ export const SettingsPage: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('settings.title')}</IonTitle>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
+          <IonTitle className="ion-text-center">{t('settings.title')}</IonTitle>
+          <IonButtons slot="end" style={{ visibility: 'hidden' }}>
+            <IonMenuButton />
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
@@ -151,9 +176,21 @@ export const SettingsPage: React.FC = () => {
               slot="end"
             />
           </IonItem>
+          <IonItem>
+            <IonIcon icon={eyeOutline} slot="start" color="primary" />
+            <IonLabel>Vorschau-Modus</IonLabel>
+            <IonToggle
+              checked={previewMode}
+              onIonChange={togglePreviewMode}
+              slot="end"
+            />
+          </IonItem>
         </IonList>
 
-        {/* Settings List */}
+        {/* Settings Section */}
+        <div style={{ padding: '16px 16px 8px', color: 'var(--labgate-text-light)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>
+          Einstellungen
+        </div>
         <IonList>
           {settingsItems.map((item) => (
             <IonItem
@@ -168,8 +205,26 @@ export const SettingsPage: React.FC = () => {
           ))}
         </IonList>
 
+        {/* Help Section */}
+        <div style={{ padding: '16px 16px 8px', color: 'var(--labgate-text-light)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>
+          Hilfe & Support
+        </div>
+        <IonList>
+          {helpItems.map((item) => (
+            <IonItem
+              key={item.route}
+              button
+              onClick={() => history.push(item.route)}
+              detail
+            >
+              <IonIcon icon={item.icon} slot="start" color="primary" />
+              <IonLabel>{item.label}</IonLabel>
+            </IonItem>
+          ))}
+        </IonList>
+
         {/* Logout */}
-        <IonList style={{ marginTop: '24px' }}>
+        <IonList style={{ marginTop: '16px' }}>
           <IonItem button onClick={logout} disabled={isLoggingOut} detail={false}>
             <IonIcon icon={logOutOutline} slot="start" color="danger" />
             <IonLabel color="danger">{t('auth.logout')}</IonLabel>

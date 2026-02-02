@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '../../../api/client/axiosInstance';
-import { useAuthStore } from '../../auth/store/authStore';
 import { LabResult } from '../../../api/types';
 
 export interface TrendDataPoint {
@@ -54,14 +53,12 @@ interface PatientLabTrendsData {
 }
 
 export function usePatientLabTrends(patientId: number | undefined) {
-  const { selectedSender } = useAuthStore();
-
   return useQuery({
-    queryKey: ['patient-lab-trends', patientId, selectedSender?.Id],
+    queryKey: ['patient-lab-trends', patientId],
     queryFn: async (): Promise<PatientLabTrendsData> => {
-      // labGate API v3 endpoint - matches labgate-pwa exactly
+      // labGate API v3 endpoint
       const listResponse = await axiosInstance.get<PatientResultsResponse>(
-        `/api/v3/patients/${patientId}/results?senderId=${selectedSender?.Id}`
+        `/api/v3/patients/${patientId}/results`
       );
 
       const resultIds = (listResponse.data.Results || []).map((r) => r.Id);
@@ -129,7 +126,7 @@ export function usePatientLabTrends(patientId: number | undefined) {
 
       return { testsMap, trendData };
     },
-    enabled: !!patientId && !!selectedSender?.Id,
+    enabled: !!patientId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 }

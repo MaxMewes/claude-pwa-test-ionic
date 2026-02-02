@@ -14,14 +14,6 @@ export interface User {
   createdAt: string;
 }
 
-// Sender type for V3 API
-export interface SelectedSender {
-  Id: number;
-  Firstname?: string;
-  Lastname?: string;
-  LaboratoryId?: number;
-}
-
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -33,7 +25,6 @@ interface AuthState {
   lastActivity: number;
   pin: string | null;
   biometricEnabled: boolean;
-  selectedSender: SelectedSender | null; // Selected sender for V3 API calls
 
   // Actions
   setUser: (user: User | null) => void;
@@ -43,7 +34,6 @@ interface AuthState {
   setPasswordExpired: (expired: boolean) => void;
   setPin: (pin: string | null) => void;
   setBiometricEnabled: (enabled: boolean) => void;
-  setSelectedSender: (sender: SelectedSender | null) => void;
   updateLastActivity: () => void;
   logout: () => void;
   clearSession: () => void;
@@ -64,7 +54,6 @@ export const useAuthStore = create<AuthState>()(
       lastActivity: Date.now(),
       pin: null,
       biometricEnabled: false,
-      selectedSender: null,
 
       setUser: (user) =>
         set({
@@ -104,8 +93,6 @@ export const useAuthStore = create<AuthState>()(
 
       setBiometricEnabled: (enabled) => set({ biometricEnabled: enabled }),
 
-      setSelectedSender: (sender) => set({ selectedSender: sender }),
-
       updateLastActivity: () => set({ lastActivity: Date.now() }),
 
       logout: () =>
@@ -118,7 +105,6 @@ export const useAuthStore = create<AuthState>()(
           requiresTwoFactor: false,
           passwordExpired: false,
           lastActivity: Date.now(),
-          selectedSender: null,
         }),
 
       clearSession: () =>
@@ -138,7 +124,6 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         pin: state.pin,
         biometricEnabled: state.biometricEnabled,
-        selectedSender: state.selectedSender,
       }),
     }
   )

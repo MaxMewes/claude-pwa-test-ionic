@@ -10,12 +10,11 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonCheckbox,
+  IonToggle,
   IonIcon,
 } from '@ionic/react';
-import { closeOutline, refreshOutline } from 'ionicons/icons';
-import { useTranslation } from 'react-i18next';
-import { ResultFilter as FilterType, ResultStatus, ResultCategory } from '../../../api/types';
+import { closeOutline } from 'ionicons/icons';
+import { ResultFilter as FilterType, ResultTypeFilter, LabCategoryFilter } from '../../../api/types';
 
 interface ResultFilterModalProps {
   isOpen: boolean;
@@ -24,15 +23,18 @@ interface ResultFilterModalProps {
   onFilterChange: (filter: FilterType) => void;
 }
 
-const statuses: ResultStatus[] = ['pending', 'partial', 'final', 'corrected'];
-const categories: ResultCategory[] = [
-  'hematology',
-  'chemistry',
-  'immunology',
-  'microbiology',
-  'urinalysis',
-  'coagulation',
-  'other',
+const resultTypes: { key: ResultTypeFilter; label: string }[] = [
+  { key: 'final', label: 'Endbefund' },
+  { key: 'partial', label: 'Teilbefund' },
+  { key: 'preliminary', label: 'Vorläufiger Befund' },
+  { key: 'followUp', label: 'Nachforderung' },
+  { key: 'archive', label: 'Archivbefund' },
+];
+
+const labCategories: { key: LabCategoryFilter; label: string }[] = [
+  { key: 'specialist', label: 'Facharzt' },
+  { key: 'labCommunity', label: 'Laborgemeinschaft' },
+  { key: 'microbiology', label: 'Mikrobiologie' },
 ];
 
 export const ResultFilterModal: React.FC<ResultFilterModalProps> = ({
@@ -41,125 +43,110 @@ export const ResultFilterModal: React.FC<ResultFilterModalProps> = ({
   filter,
   onFilterChange,
 }) => {
-  const { t } = useTranslation();
-
-  const toggleStatus = (status: ResultStatus) => {
-    const currentStatuses = filter.status || [];
-    const newStatuses = currentStatuses.includes(status)
-      ? currentStatuses.filter((s) => s !== status)
-      : [...currentStatuses, status];
-    onFilterChange({ ...filter, status: newStatuses.length ? newStatuses : undefined });
-  };
-
-  const toggleCategory = (category: ResultCategory) => {
-    const currentCategories = filter.category || [];
-    const newCategories = currentCategories.includes(category)
-      ? currentCategories.filter((c) => c !== category)
-      : [...currentCategories, category];
-    onFilterChange({ ...filter, category: newCategories.length ? newCategories : undefined });
-  };
-
-  const toggleUnread = () => {
-    onFilterChange({
-      ...filter,
-      isRead: filter.isRead === false ? undefined : false,
-    });
-  };
-
-  const togglePinned = () => {
+  const toggleFavoritesOnly = () => {
     onFilterChange({
       ...filter,
       isPinned: filter.isPinned === true ? undefined : true,
     });
   };
 
+  const toggleResultType = (type: ResultTypeFilter) => {
+    const currentTypes = filter.resultTypes || [];
+    const newTypes = currentTypes.includes(type)
+      ? currentTypes.filter((t) => t !== type)
+      : [...currentTypes, type];
+    onFilterChange({ ...filter, resultTypes: newTypes.length ? newTypes : undefined });
+  };
+
+  const toggleLabCategory = (category: LabCategoryFilter) => {
+    const currentCategories = filter.labCategories || [];
+    const newCategories = currentCategories.includes(category)
+      ? currentCategories.filter((c) => c !== category)
+      : [...currentCategories, category];
+    onFilterChange({ ...filter, labCategories: newCategories.length ? newCategories : undefined });
+  };
+
   const resetFilters = () => {
     onFilterChange({});
+    onClose();
   };
 
   const hasActiveFilters =
-    (filter.status?.length ?? 0) > 0 ||
-    (filter.category?.length ?? 0) > 0 ||
-    filter.isRead !== undefined ||
+    (filter.resultTypes?.length ?? 0) > 0 ||
+    (filter.labCategories?.length ?? 0) > 0 ||
     filter.isPinned !== undefined;
 
   return (
     <IonModal isOpen={isOpen} onDidDismiss={onClose}>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
+          <IonTitle>Filter anwenden</IonTitle>
+          <IonButtons slot="end">
             <IonButton onClick={onClose}>
               <IonIcon icon={closeOutline} />
-            </IonButton>
-          </IonButtons>
-          <IonTitle>{t('results.filter.title')}</IonTitle>
-          <IonButtons slot="end">
-            <IonButton onClick={resetFilters} disabled={!hasActiveFilters}>
-              <IonIcon icon={refreshOutline} slot="start" />
-              {t('common.reset')}
             </IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
 
       <IonContent>
-        {/* Quick Filters */}
-        <IonList>
+        {/* Favorites Only Filter */}
+        <IonList lines="full" style={{ marginBottom: '16px' }}>
           <IonItem>
-            <IonCheckbox
-              slot="start"
-              checked={filter.isRead === false}
-              onIonChange={toggleUnread}
-            />
-            <IonLabel>{t('results.filter.unread')}</IonLabel>
-          </IonItem>
-          <IonItem>
-            <IonCheckbox
-              slot="start"
+            <IonLabel>Nur gemerkte Befunde anzeigen</IonLabel>
+            <IonToggle
+              slot="end"
               checked={filter.isPinned === true}
-              onIonChange={togglePinned}
+              onIonChange={toggleFavoritesOnly}
             />
-            <IonLabel>{t('results.filter.pinned')}</IonLabel>
           </IonItem>
         </IonList>
 
-        {/* Status Filter */}
-        <IonList>
-          <IonItem lines="none">
-            <IonLabel>
-              <h2>{t('results.filter.status')}</h2>
-            </IonLabel>
-          </IonItem>
-          {statuses.map((status) => (
-            <IonItem key={status}>
-              <IonCheckbox
-                slot="start"
-                checked={filter.status?.includes(status) || false}
-                onIonChange={() => toggleStatus(status)}
+        {/* Result Type Filters */}
+        <IonList lines="full" style={{ marginBottom: '16px' }}>
+          {resultTypes.map((type) => (
+            <IonItem key={type.key}>
+              <IonLabel>{type.label}</IonLabel>
+              <IonToggle
+                slot="end"
+                checked={filter.resultTypes?.includes(type.key) || false}
+                onIonChange={() => toggleResultType(type.key)}
               />
-              <IonLabel>{t(`results.status.${status}`)}</IonLabel>
             </IonItem>
           ))}
         </IonList>
 
-        {/* Category Filter */}
-        <IonList>
-          <IonItem lines="none">
-            <IonLabel>
-              <h2>{t('results.filter.category')}</h2>
-            </IonLabel>
-          </IonItem>
-          {categories.map((category) => (
-            <IonItem key={category}>
-              <IonCheckbox
-                slot="start"
-                checked={filter.category?.includes(category) || false}
-                onIonChange={() => toggleCategory(category)}
+        {/* Lab Category Filters */}
+        <IonList lines="full" style={{ marginBottom: '16px' }}>
+          {labCategories.map((category) => (
+            <IonItem key={category.key}>
+              <IonLabel>{category.label}</IonLabel>
+              <IonToggle
+                slot="end"
+                checked={filter.labCategories?.includes(category.key) || false}
+                onIonChange={() => toggleLabCategory(category.key)}
               />
-              <IonLabel>{t(`results.category.${category}`)}</IonLabel>
             </IonItem>
           ))}
         </IonList>
+
+        {/* Reset Button */}
+        <div style={{ padding: '16px 16px 32px 16px' }}>
+          <IonButton
+            expand="block"
+            fill="clear"
+            onClick={resetFilters}
+            disabled={!hasActiveFilters}
+            style={{
+              '--color': '#70CC60',
+              fontWeight: 600,
+              fontSize: '14px',
+              textTransform: 'uppercase',
+            }}
+          >
+            ALLE FILTER ZURÜCKSETZEN
+          </IonButton>
+        </div>
       </IonContent>
     </IonModal>
   );

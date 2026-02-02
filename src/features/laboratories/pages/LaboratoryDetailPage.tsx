@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -7,12 +7,15 @@ import {
   IonContent,
   IonButtons,
   IonBackButton,
-  IonSegment,
-  IonSegmentButton,
   IonLabel,
   IonIcon,
   IonText,
   IonSearchbar,
+  IonButton,
+  IonFooter,
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
 } from '@ionic/react';
 import {
   informationCircleOutline,
@@ -22,10 +25,12 @@ import {
   mailOutline,
   globeOutline,
   locationOutline,
-  chevronForward,
+  searchOutline,
+  closeOutline,
 } from 'ionicons/icons';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import noContactsImage from '../../../assets/images/no-contacts-indicator-undraw-people.svg';
 import { useLaboratory, useServiceCatalog, ServiceCatalogItem, LaboratoryContactPerson } from '../hooks/useLaboratories';
 import { SkeletonLoader } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
@@ -45,9 +50,41 @@ const COLORS = {
 export const LaboratoryDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  const history = useHistory();
   const { data: lab, isLoading } = useLaboratory(id);
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const [searchText, setSearchText] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [openAccordions, setOpenAccordions] = useState<string[]>([]);
+  const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
+
+  const handleServiceClick = (serviceId: number) => {
+    history.push(`/laboratories/${id}/services/${serviceId}`);
+  };
+
+  // Focus searchbar when opening
+  useEffect(() => {
+    if (isSearchOpen && searchbarRef.current) {
+      setTimeout(() => {
+        searchbarRef.current?.setFocus();
+      }, 100);
+    }
+  }, [isSearchOpen]);
+
+  // Close search when switching tabs
+  useEffect(() => {
+    if (activeTab !== 'services') {
+      setIsSearchOpen(false);
+      setSearchText('');
+    }
+  }, [activeTab]);
+
+  const handleSearchToggle = () => {
+    if (isSearchOpen) {
+      setSearchText('');
+    }
+    setIsSearchOpen(!isSearchOpen);
+  };
 
   const { data: services, isLoading: servicesLoading } = useServiceCatalog(
     id,
@@ -71,6 +108,13 @@ export const LaboratoryDetailPage: React.FC = () => {
 
     return groups;
   }, [services]);
+
+  // Auto-expand all accordions when searching
+  useEffect(() => {
+    if (searchText && Object.keys(groupedServices).length > 0) {
+      setOpenAccordions(Object.keys(groupedServices));
+    }
+  }, [searchText, groupedServices]);
 
   if (isLoading) {
     return (
@@ -307,14 +351,6 @@ export const LaboratoryDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <IonSearchbar
-        value={searchText}
-        onIonInput={(e) => setSearchText(e.detail.value || '')}
-        placeholder="Leistung suchen..."
-        style={{ '--background': '#F4F4F4' }}
-      />
-
       {/* Services List */}
       {servicesLoading ? (
         <SkeletonLoader type="list" count={10} />
@@ -323,57 +359,56 @@ export const LaboratoryDetailPage: React.FC = () => {
           {searchText ? 'Keine Leistungen gefunden' : 'Keine Leistungen verfügbar'}
         </div>
       ) : (
-        <div style={{ backgroundColor: '#FFFFFF' }}>
+        <IonAccordionGroup
+          multiple={true}
+          value={openAccordions}
+          onIonChange={(e) => setOpenAccordions(e.detail.value as string[])}
+        >
           {Object.entries(groupedServices).map(([letter, items]) => (
-            <div key={letter}>
-              {/* Group Header */}
-              <div
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#FAFAFA',
-                  borderBottom: `1px solid ${COLORS.border}`,
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: COLORS.text,
-                }}
-              >
-                {letter}
-              </div>
-
-              {/* Group Items */}
-              {items.map((service, index) => (
-                <div
-                  key={service.Id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '12px 16px',
-                    backgroundColor: index % 2 === 0 ? COLORS.rowEven : COLORS.rowOdd,
-                    borderBottom: `1px solid ${COLORS.border}`,
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: '15px',
-                        color: COLORS.text,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {service.Name}
-                    </div>
-                    <div style={{ fontSize: '12px', color: COLORS.textLight, marginTop: '2px' }}>
-                      {service.Ident}
+            <IonAccordion key={letter} value={letter}>
+              <IonItem slot="header" color="light">
+                <IonLabel>
+                  <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
+                    {letter}
+                  </h2>
+                  <p style={{ fontSize: '12px', color: COLORS.textLight, margin: '4px 0 0 0' }}>
+                    {items.length} {items.length === 1 ? 'Leistung' : 'Leistungen'}
+                  </p>
+                </IonLabel>
+              </IonItem>
+              <div slot="content" style={{ backgroundColor: '#FFFFFF' }}>
+                {items.map((service, index) => (
+                  <div
+                    key={service.Id}
+                    onClick={() => handleServiceClick(service.Id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      backgroundColor: index % 2 === 0 ? COLORS.rowEven : COLORS.rowOdd,
+                      borderBottom: `1px solid ${COLORS.border}`,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: '15px',
+                          color: COLORS.text,
+                        }}
+                      >
+                        {service.Name}
+                      </div>
+                      <div style={{ fontSize: '12px', color: COLORS.textLight, marginTop: '2px' }}>
+                        {service.Ident}
+                      </div>
                     </div>
                   </div>
-                  <IonIcon icon={chevronForward} style={{ color: COLORS.textLight, fontSize: '18px' }} />
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </IonAccordion>
           ))}
-        </div>
+        </IonAccordionGroup>
       )}
     </div>
   );
@@ -414,8 +449,13 @@ export const LaboratoryDetailPage: React.FC = () => {
 
       {/* Contacts List */}
       {!labContacts.length ? (
-        <div style={{ padding: '40px 16px', textAlign: 'center', color: COLORS.textLight }}>
-          Keine Ansprechpartner verfügbar
+        <div style={{ padding: '40px 16px', textAlign: 'center' }}>
+          <img
+            src={noContactsImage}
+            alt=""
+            style={{ width: '200px', maxWidth: '80%', height: 'auto', marginBottom: '16px', opacity: 0.85 }}
+          />
+          <div style={{ color: COLORS.textLight }}>Keine Ansprechpartner verfügbar</div>
         </div>
       ) : (
         <div style={{ backgroundColor: '#FFFFFF' }}>
@@ -485,25 +525,35 @@ export const LaboratoryDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref={ROUTES.LABORATORIES} />
           </IonButtons>
-          <IonTitle>{labName}</IonTitle>
-        </IonToolbar>
-
-        {/* Tab Segment */}
-        <IonToolbar>
-          <IonSegment value={activeTab} onIonChange={(e) => setActiveTab(e.detail.value as TabType)}>
-            <IonSegmentButton value="info">
-              <IonIcon icon={informationCircleOutline} />
-              <IonLabel>Info</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="services">
-              <IonIcon icon={listOutline} />
-              <IonLabel>Leistungen</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="contacts">
-              <IonIcon icon={peopleOutline} />
-              <IonLabel>Kontakte</IonLabel>
-            </IonSegmentButton>
-          </IonSegment>
+          {isSearchOpen ? (
+            <>
+              <IonSearchbar
+                ref={searchbarRef}
+                value={searchText}
+                onIonInput={(e) => setSearchText(e.detail.value || '')}
+                placeholder="Leistung suchen..."
+                animated
+                showCancelButton="never"
+                style={{ '--background': 'var(--labgate-selected-bg)' }}
+              />
+              <IonButtons slot="end">
+                <IonButton onClick={handleSearchToggle}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </>
+          ) : (
+            <>
+              <IonTitle>{labName}</IonTitle>
+              {activeTab === 'services' && (
+                <IonButtons slot="end">
+                  <IonButton onClick={handleSearchToggle}>
+                    <IonIcon icon={searchOutline} />
+                  </IonButton>
+                </IonButtons>
+              )}
+            </>
+          )}
         </IonToolbar>
       </IonHeader>
 
@@ -512,6 +562,54 @@ export const LaboratoryDetailPage: React.FC = () => {
         {activeTab === 'services' && renderServicesTab()}
         {activeTab === 'contacts' && renderContactsTab()}
       </IonContent>
+
+      <IonFooter>
+        <div
+          style={{
+            display: 'flex',
+            borderTop: '1px solid var(--labgate-border)',
+            backgroundColor: 'var(--ion-background-color)',
+          }}
+        >
+          {[
+            { key: 'info' as TabType, label: 'Informationen', icon: informationCircleOutline },
+            { key: 'services' as TabType, label: 'LV', icon: listOutline },
+            { key: 'contacts' as TabType, label: 'Kontakte', icon: peopleOutline },
+          ].map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  padding: '8px 4px',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  color: isActive ? 'var(--labgate-brand)' : 'var(--labgate-text-muted)',
+                  fontSize: '11px',
+                  fontWeight: isActive ? 600 : 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <IonIcon
+                  icon={tab.icon}
+                  style={{
+                    fontSize: '22px',
+                  }}
+                />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </IonFooter>
     </IonPage>
   );
 };

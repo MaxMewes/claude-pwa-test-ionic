@@ -26,17 +26,37 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string>('');
+  const [retryCount, setRetryCount] = useState(0);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const mountedRef = useRef(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setIsScanning(false);
+      setError('');
+      return;
+    }
 
     mountedRef.current = true;
 
     const startScanner = async () => {
       try {
         setError('');
+        setIsScanning(false);
+
+        // Wait for DOM element to be ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Check if element exists
+        const element = document.getElementById('qr-reader');
+        if (!element) {
+          throw new Error('Scanner element not found');
+        }
+
+        // Clear any existing scanner
+        if (scannerRef.current) {
+          await stopScanner();
+        }
 
         // Create scanner instance
         const scanner = new Html5Qrcode('qr-reader', {
@@ -67,6 +87,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             aspectRatio: 1.0,
           },
           (decodedText, decodedResult) => {
+            if (!mountedRef.current) return;
+
             console.log('Barcode detected:', decodedText, 'Format:', decodedResult.result.format);
 
             // Vibrate on success
@@ -75,17 +97,22 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             }
 
             // Stop and return result
-            stopScanner();
-            onScan(decodedText);
-            onClose();
+            stopScanner().then(() => {
+              onScan(decodedText);
+              onClose();
+            });
           },
           (errorMessage) => {
             // Scanning errors are normal and continuous, ignore them
           }
         );
 
-        setIsScanning(true);
+        if (mountedRef.current) {
+          setIsScanning(true);
+        }
       } catch (err: any) {
+        if (!mountedRef.current) return;
+
         console.error('Scanner start error:', err);
 
         let errorMsg = 'Kamera konnte nicht gestartet werden';
@@ -108,7 +135,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       mountedRef.current = false;
       stopScanner();
     };
-  }, [isOpen]);
+  }, [isOpen, retryCount, onScan, onClose]);
 
   const stopScanner = async () => {
     if (scannerRef.current) {
@@ -140,20 +167,15 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     onClose();
   };
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setError('');
     setIsScanning(false);
-    // Trigger re-initialization
-    const restart = async () => {
-      await stopScanner();
-      // Small delay before restart
-      setTimeout(() => {
-        if (mountedRef.current && isOpen) {
-          window.location.reload();
-        }
-      }, 100);
-    };
-    restart();
+
+    // Stop current scanner
+    await stopScanner();
+
+    // Trigger re-initialization by updating retry count
+    setRetryCount(prev => prev + 1);
   };
 
   return (

@@ -71,39 +71,16 @@ export const LoginPage: React.FC = () => {
         >
           {/* Logo and Title - Modern Design */}
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <div
+            <img
+              src="/assets/images/login-undraw-hire.svg"
+              alt="labGate"
               style={{
-                width: '88px',
-                height: '88px',
-                background: 'linear-gradient(135deg, #70CC60 0%, #5cb84e 100%)',
-                borderRadius: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                width: '200px',
+                height: 'auto',
                 margin: '0 auto 20px',
-                boxShadow: '0 8px 24px rgba(112, 204, 96, 0.35)',
-                position: 'relative',
+                display: 'block',
               }}
-            >
-              <span style={{
-                color: '#ffffff',
-                fontSize: '32px',
-                fontWeight: 700,
-                letterSpacing: '-1px'
-              }}>
-                LG
-              </span>
-              {/* Subtle shine effect */}
-              <div style={{
-                position: 'absolute',
-                top: '8px',
-                left: '8px',
-                right: '50%',
-                bottom: '50%',
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 100%)',
-                borderRadius: '16px 8px 24px 8px',
-              }} />
-            </div>
+            />
             <h1 style={{
               margin: '0 0 6px 0',
               fontSize: '32px',

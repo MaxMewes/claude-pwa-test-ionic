@@ -1,11 +1,13 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useIonRouter } from '@ionic/react';
 import { useAuthStore } from '../store/authStore';
+import { useSettingsStore } from '../../../shared/store/useSettingsStore';
 import { authService, LoginCredentials } from '../../../api/services/authService';
 import { ROUTES } from '../../../config/routes';
 
 export function useAuth() {
   const router = useIonRouter();
+  const queryClient = useQueryClient();
   const {
     user,
     isAuthenticated,
@@ -18,6 +20,7 @@ export function useAuth() {
     setPasswordExpired,
     logout: storeLogout,
   } = useAuthStore();
+  const { reset: resetSettings } = useSettingsStore();
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
@@ -59,7 +62,12 @@ export function useAuth() {
       await authService.logout();
     },
     onSettled: () => {
+      // Clear auth state
       storeLogout();
+      // Clear settings store (favorites, preview mode, etc.)
+      resetSettings();
+      // Clear all cached queries
+      queryClient.clear();
       router.push(ROUTES.LOGIN, 'back', 'replace');
     },
   });

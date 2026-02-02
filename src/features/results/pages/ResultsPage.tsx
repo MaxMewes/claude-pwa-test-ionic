@@ -10,34 +10,62 @@ import {
   IonButton,
   IonIcon,
   IonSearchbar,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonMenuButton,
 } from '@ionic/react';
-import { searchOutline, closeOutline, barcodeOutline } from 'ionicons/icons';
-import { useHistory } from 'react-router-dom';
+import { searchOutline, closeOutline, barcodeOutline, funnelOutline } from 'ionicons/icons';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useResults, useResultCounter, useMarkResultAsRead } from '../hooks/useResults';
-import { useSettingsStore } from '../../../shared/store/useSettingsStore';
-import { useAuthStore } from '../../auth/store/authStore';
+import { useSettingsStore, ResultPeriodFilter } from '../../../shared/store/useSettingsStore';
 import { ResultCard } from '../components/ResultCard';
 import { PullToRefresh, SkeletonLoader, EmptyState } from '../../../shared/components';
 import { BarcodeScanner } from '../components/BarcodeScanner';
-import { LabResult } from '../../../api/types';
+import { ResultFilterModal } from '../components/ResultFilter';
+import { LabResult, ResultFilter } from '../../../api/types';
 
 type ResultCategory = 'all' | 'unread' | 'pathological' | 'highPatho' | 'urgent';
 
 export const ResultsPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState<ResultCategory>('all');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filter, setFilter] = useState<ResultFilter>({});
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
 
-  const { data, isLoading, refetch } = useResults();
+  const { isFavorite, toggleFavorite, resultsPeriod } = useSettingsStore();
+
+  // Read search parameter from URL on mount/change
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchParam = params.get('search');
+    if (searchParam) {
+      setSearchQuery(decodeURIComponent(searchParam));
+      setIsSearchOpen(true);
+    }
+  }, [location.search]);
+
+  const { data, isLoading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useResults(undefined, resultsPeriod);
   const { data: counter } = useResultCounter();
+
+  // Flatten paginated results
+  const allResults = data?.pages?.flatMap((page) => page.Results) || [];
   const markAsRead = useMarkResultAsRead();
-  const { selectedSender } = useAuthStore();
-  const { isFavorite, toggleFavorite } = useSettingsStore();
+
+  // Period title mapping
+  const periodTitles: Record<ResultPeriodFilter, string> = {
+    today: 'Heute',
+    '7days': 'Letzten 7 Tage',
+    '30days': 'Letzten 30 Tage',
+    all: 'Alle',
+    archive: 'Archiv',
+  };
 
   // Focus searchbar when opening
   useEffect(() => {
@@ -81,14 +109,12 @@ export const ResultsPage: React.FC = () => {
   };
 
   const handleToggleFavorite = (resultId: number) => {
-    if (selectedSender?.Id) {
-      toggleFavorite(selectedSender.Id, resultId);
-    }
+    toggleFavorite(resultId);
   };
 
-  // Filter results based on category and search
+  // Filter results based on category and search (period is now filtered by API)
   const filteredResults = useMemo(() => {
-    let results = data?.Results || [];
+    let results = allResults;
 
     // Apply category filter
     switch (category) {
@@ -121,26 +147,33 @@ export const ResultsPage: React.FC = () => {
     }
 
     return results;
-  }, [data?.Results, category, searchQuery]);
+  }, [allResults, category, searchQuery]);
 
-  // Calculate counts for each category
+  // Calculate counts for each category (based on API-filtered results)
   const counts = useMemo(() => {
-    const results = data?.Results || [];
     return {
-      all: results.length,
-      unread: counter?.New || results.filter((r) => !r.IsRead).length,
-      pathological: counter?.Pathological || results.filter((r) => r.IsPathological && !r.IsUrgent).length,
-      highPatho: results.filter((r) => r.IsPathological && r.HasCriticalValues).length,
-      urgent: results.filter((r) => r.IsUrgent).length,
+      all: allResults.length,
+      unread: allResults.filter((r) => !r.IsRead).length,
+      pathological: allResults.filter((r) => r.IsPathological && !r.IsUrgent).length,
+      highPatho: allResults.filter((r) => r.IsPathological && r.HasCriticalValues).length,
+      urgent: allResults.filter((r) => r.IsUrgent).length,
     };
-  }, [data?.Results, counter]);
+  }, [allResults]);
+
+  // Handle infinite scroll
+  const handleLoadMore = async (event: CustomEvent<void>) => {
+    if (hasNextPage) {
+      await fetchNextPage();
+    }
+    (event.target as HTMLIonInfiniteScrollElement).complete();
+  };
 
   const tabs: { key: ResultCategory; label: string; count: number; color: string }[] = [
-    { key: 'all', label: 'Ungelesen', count: counts.all, color: 'medium' },
-    { key: 'unread', label: 'Neu', count: counts.unread, color: 'primary' },
-    { key: 'pathological', label: 'Patho', count: counts.pathological, color: 'warning' },
-    { key: 'highPatho', label: 'Hochpatho.', count: counts.highPatho, color: 'danger' },
-    { key: 'urgent', label: 'Notfall', count: counts.urgent, color: 'danger' },
+    { key: 'all', label: 'Alle', count: counts.all, color: '#000000' },
+    { key: 'unread', label: 'Ungelesen', count: counts.unread, color: '#000000' },
+    { key: 'pathological', label: 'Pathologisch', count: counts.pathological, color: '#F59E0B' },
+    { key: 'highPatho', label: 'Hochpatho.', count: counts.highPatho, color: '#EF4444' },
+    { key: 'urgent', label: 'Notfall', count: counts.urgent, color: '#EF4444' },
   ];
 
   return (
@@ -169,12 +202,15 @@ export const ResultsPage: React.FC = () => {
               </IonButtons>
             </>
           ) : (
-            // Normal mode - show title and search icon
+            // Normal mode - show title and icons
             <>
-              <IonTitle>{t('results.title')}</IonTitle>
+              <IonButtons slot="start">
+                <IonMenuButton />
+              </IonButtons>
+              <IonTitle className="ion-text-center">Befunde - {periodTitles[resultsPeriod]}</IonTitle>
               <IonButtons slot="end">
-                <IonButton onClick={handleBarcodeScan}>
-                  <IonIcon icon={barcodeOutline} />
+                <IonButton onClick={() => setIsFilterOpen(true)}>
+                  <IonIcon icon={funnelOutline} />
                 </IonButton>
                 <IonButton onClick={handleSearchToggle}>
                   <IonIcon icon={searchOutline} />
@@ -186,20 +222,22 @@ export const ResultsPage: React.FC = () => {
 
         {/* Category Filter Tabs */}
         <IonToolbar
+          className="results-filter-toolbar"
           style={{
-            '--background': 'var(--ion-background-color)',
             '--padding-top': '0',
             '--padding-bottom': '0',
-            '--min-height': '40px',
+            '--padding-start': '0',
+            '--padding-end': '0',
+            '--min-height': '48px',
+            '--border-width': '0',
+            height: '48px',
           }}
         >
           <div
             style={{
               display: 'flex',
-              borderBottom: '1px solid var(--labgate-border)',
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
+              width: '100%',
+              height: '48px',
             }}
           >
             {tabs.map((tab) => {
@@ -211,48 +249,38 @@ export const ResultsPage: React.FC = () => {
                   style={{
                     flex: 1,
                     minWidth: 0,
+                    height: '100%',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px',
-                    padding: '10px 4px',
+                    gap: '6px',
+                    padding: '8px 4px',
                     border: 'none',
-                    borderBottom: isActive
-                      ? '2px solid var(--labgate-brand)'
-                      : '2px solid transparent',
-                    backgroundColor: 'transparent',
-                    color: isActive ? 'var(--labgate-brand)' : 'var(--labgate-text-light)',
-                    fontSize: '12px',
-                    fontWeight: isActive ? 600 : 500,
-                    whiteSpace: 'nowrap',
+                    backgroundColor: isActive ? 'rgba(0,0,0,0.15)' : 'transparent',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  {tab.label}
-                  {tab.count > 0 && (
-                    <span
-                      style={{
-                        backgroundColor:
-                          tab.key === 'urgent' || tab.key === 'highPatho'
-                            ? '#EF4444'
-                            : tab.key === 'pathological'
-                              ? '#F59E0B'
-                              : tab.key === 'unread'
-                                ? 'var(--labgate-brand)'
-                                : 'var(--labgate-text-muted)',
-                        color: '#ffffff',
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        padding: '1px 5px',
-                        borderRadius: '8px',
-                        minWidth: '16px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {tab.count > 99 ? '99+' : tab.count}
-                    </span>
-                  )}
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      color: 'var(--ion-toolbar-color, var(--ion-text-color))',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {tab.label}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: tab.color === '#000000' ? 'var(--ion-toolbar-color, var(--ion-text-color))' : tab.color,
+                    }}
+                  >
+                    {tab.count}
+                  </span>
                 </button>
               );
             })}
@@ -267,34 +295,31 @@ export const ResultsPage: React.FC = () => {
           <SkeletonLoader type="list" count={8} />
         ) : !filteredResults.length ? (
           <EmptyState
-            type={searchQuery ? 'search' : 'results'}
-            title={
-              category === 'unread' ? 'Keine neuen Befunde' :
-              category === 'pathological' ? 'Keine pathologischen Befunde' :
-              category === 'highPatho' ? 'Keine hochpathologischen Befunde' :
-              category === 'urgent' ? 'Keine Notfall-Befunde' :
-              undefined
-            }
-            message={
-              category !== 'all' && !searchQuery
-                ? 'Es gibt aktuell keine Befunde in dieser Kategorie.'
-                : undefined
-            }
-            actionLabel={searchQuery ? t('common.reset') : undefined}
-            onAction={searchQuery ? () => setSearchQuery('') : undefined}
+            type="results"
+            title="Keine Befunde mit dem angewendeten Filter gefunden."
+            message="Versuchen Sie einen anderen Filter."
           />
         ) : (
-          <IonList lines="none" style={{ padding: 0 }}>
-            {filteredResults.map((result: LabResult) => (
-              <ResultCard
-                key={result.Id}
-                result={result}
-                isFavorite={selectedSender?.Id ? isFavorite(selectedSender.Id, result.Id) : false}
-                onClick={() => handleResultClick(result.Id, result.IsRead)}
-                onToggleFavorite={() => handleToggleFavorite(result.Id)}
-              />
-            ))}
-          </IonList>
+          <>
+            <IonList lines="none" style={{ padding: 0 }}>
+              {filteredResults.map((result: LabResult) => (
+                <ResultCard
+                  key={result.Id}
+                  result={result}
+                  isFavorite={isFavorite(result.Id)}
+                  onClick={() => handleResultClick(result.Id, result.IsRead)}
+                  onToggleFavorite={() => handleToggleFavorite(result.Id)}
+                />
+              ))}
+            </IonList>
+            <IonInfiniteScroll
+              onIonInfinite={handleLoadMore}
+              threshold="100px"
+              disabled={!hasNextPage || isFetchingNextPage}
+            >
+              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Lade mehr..." />
+            </IonInfiniteScroll>
+          </>
         )}
       </IonContent>
 
@@ -303,6 +328,14 @@ export const ResultsPage: React.FC = () => {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={handleBarcodeResult}
+      />
+
+      {/* Filter Modal */}
+      <ResultFilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        filter={filter}
+        onFilterChange={setFilter}
       />
     </IonPage>
   );

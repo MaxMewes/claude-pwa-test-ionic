@@ -1,10 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { useAuthStore } from '../../auth/store/authStore';
 
+const ITEMS_PER_PAGE = 25;
+
 // V3 API Sender type
-interface SenderV3 {
+export interface SenderV3 {
   Id: number;
   Firstname: string;
   Lastname: string;
@@ -27,44 +29,54 @@ interface SenderV3 {
 
 interface SendersResponseV3 {
   Senders: SenderV3[];
+  TotalCount?: number;
+  CurrentPage?: number;
+  TotalPages?: number;
 }
 
 interface UseSendersParams {
-  page?: number;
-  pageSize?: number;
   query?: string;
 }
 
 export function useSenders(params: UseSendersParams = {}) {
   const { query } = params;
-  const { selectedSender, setSelectedSender, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
-  const queryResult = useQuery({
+  const infiniteQuery = useInfiniteQuery({
     queryKey: ['senders', query],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 1 }) => {
       // labGate API v3 endpoint returns { Senders: [...] }
-      const response = await axiosInstance.get<SendersResponseV3>('/api/v3/senders');
-      return response.data;
+      let url = `/api/v3/senders?itemsPerPage=${ITEMS_PER_PAGE}&currentPage=${pageParam}`;
+      if (query) {
+        url += `&query=${encodeURIComponent(query)}`;
+      }
+      const response = await axiosInstance.get<SendersResponseV3>(url);
+      const senders = response.data.Senders || [];
+      const totalCount = response.data.TotalCount ?? senders.length;
+      const totalPages = response.data.TotalPages ?? Math.ceil(totalCount / ITEMS_PER_PAGE);
+      return {
+        Senders: senders,
+        TotalCount: totalCount,
+        CurrentPage: pageParam,
+        TotalPages: totalPages,
+      };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.CurrentPage + 1;
+      return nextPage <= lastPage.TotalPages ? nextPage : undefined;
     },
     enabled: isAuthenticated,
   });
 
-  // Auto-select first sender if none selected
-  useEffect(() => {
-    if (queryResult.data?.Senders && queryResult.data.Senders.length > 0 && !selectedSender) {
-      const firstSender = queryResult.data.Senders[0];
-      setSelectedSender({
-        Id: firstSender.Id,
-        Firstname: firstSender.Firstname,
-        Lastname: firstSender.Lastname,
-        LaboratoryId: firstSender.LaboratoryId,
-      });
-    }
-  }, [queryResult.data, selectedSender, setSelectedSender]);
+  // Flatten paginated results
+  const senders = useMemo(() => {
+    return infiniteQuery.data?.pages?.flatMap((page) => page.Senders) || [];
+  }, [infiniteQuery.data]);
 
   return {
-    ...queryResult,
-    senders: queryResult.data?.Senders || [],
+    ...infiniteQuery,
+    senders,
   };
 }
 

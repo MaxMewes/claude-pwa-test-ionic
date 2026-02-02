@@ -7,22 +7,18 @@ import {
   IonContent,
   IonButtons,
   IonBackButton,
-  IonCard,
-  IonCardContent,
-  IonList,
-  IonItem,
-  IonLabel,
   IonIcon,
   IonText,
   IonButton,
+  IonFooter,
 } from '@ionic/react';
 import {
   personOutline,
+  maleFemaleOutline,
   calendarOutline,
-  callOutline,
-  mailOutline,
   locationOutline,
-  documentTextOutline,
+  peopleOutline,
+  cardOutline,
 } from 'ionicons/icons';
 import { useParams, useHistory } from 'react-router-dom';
 import { format, differenceInYears } from 'date-fns';
@@ -32,6 +28,14 @@ import { usePatient } from '../hooks/usePatients';
 import { SkeletonLoader } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
 
+// Colors matching the app design
+const COLORS = {
+  brand: '#70CC60',
+  text: '#3C3C3B',
+  textLight: '#646363',
+  border: '#E5E5E5',
+};
+
 export const PatientDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -39,7 +43,12 @@ export const PatientDetailPage: React.FC = () => {
   const { data: patient, isLoading } = usePatient(id);
 
   const handleViewResults = () => {
-    history.push(`${ROUTES.RESULTS}?patientId=${id}`);
+    // Get patient name for search filter
+    const patientFirstName = patient?.Firstname ?? patient?.firstName ?? '';
+    const patientLastName = patient?.Lastname ?? patient?.lastName ?? '';
+    const searchName = `${patientLastName}, ${patientFirstName}`.trim();
+    const encodedName = encodeURIComponent(searchName);
+    history.push(`${ROUTES.RESULTS}?search=${encodedName}`);
   };
 
   if (isLoading) {
@@ -82,10 +91,38 @@ export const PatientDetailPage: React.FC = () => {
   const firstName = patient.Firstname ?? patient.firstName ?? '';
   const lastName = patient.Lastname ?? patient.lastName ?? '';
   const dateOfBirth = patient.DateOfBirth ?? patient.dateOfBirth ?? '';
-  const gender = patient.Gender === 1 ? 'female' : patient.Gender === 2 ? 'male' : (patient.gender ?? 'other');
-  const resultCount = patient.ResultCount ?? patient.resultCount ?? 0;
-  const initials = `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || '?';
-  const age = dateOfBirth ? differenceInYears(new Date(), new Date(dateOfBirth)) : 0;
+  const age = dateOfBirth ? differenceInYears(new Date(), new Date(dateOfBirth)) : null;
+  const insurantId = patient.InsurantIdent ?? patient.insuranceNumber ?? '';
+  const isHzvPatient = patient.IsHzvPatient ?? false;
+  const address = patient.Address ?? patient.address;
+
+  // Gender handling - API v3 uses string enum
+  let genderDisplay = 'Unbekannt';
+  let genderSymbol = '';
+  if (patient.Gender === 'Male' || patient.Gender === 2) {
+    genderDisplay = 'Männlich';
+    genderSymbol = '♂';
+  } else if (patient.Gender === 'Female' || patient.Gender === 1) {
+    genderDisplay = 'Weiblich';
+    genderSymbol = '♀';
+  } else if (patient.Gender === 'Diverse') {
+    genderDisplay = 'Divers';
+    genderSymbol = '⚧';
+  }
+
+  // Format address
+  let addressLine1 = '';
+  let addressLine2 = '';
+  if (address) {
+    const street = address.Street ?? address.street ?? '';
+    const houseNumber = address.HouseNumber ?? address.Number ?? '';
+    const zip = address.Zip ?? address.postalCode ?? '';
+    const city = address.City ?? address.city ?? '';
+    const country = address.CountryCode ?? address.country ?? '';
+
+    addressLine1 = `${street} ${houseNumber}`.trim();
+    addressLine2 = `${country ? country + ' - ' : ''}${zip} ${city}`.trim();
+  }
 
   return (
     <IonPage>
@@ -94,142 +131,172 @@ export const PatientDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref={ROUTES.PATIENTS} />
           </IonButtons>
-          <IonTitle>{lastName}, {firstName}</IonTitle>
+          <IonTitle>Patient</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent>
-        {/* Patient Header Card - with gender-based colors */}
-        <IonCard>
-          <IonCardContent>
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  backgroundColor:
-                    gender === 'male'
-                      ? 'var(--gender-male)'
-                      : gender === 'female'
-                        ? 'var(--gender-female)'
-                        : 'var(--gender-other)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 12px',
-                  color: '#fff',
-                  fontSize: '28px',
-                  fontWeight: 700,
-                }}
-              >
-                {initials}
-              </div>
-              <h2 style={{
-                margin: '0 0 4px 0',
-                color: 'var(--labgate-text)',
-                fontWeight: 600,
-                fontSize: '18px'
-              }}>
-                {firstName} {lastName}
-              </h2>
-              <p style={{
-                margin: 0,
-                color: 'var(--labgate-text-light)',
-                fontSize: '14px'
-              }}>
-                {t(`patients.gender.${gender}`)} • {age} Jahre
-              </p>
+        {/* Patient Name Header */}
+        <div
+          style={{
+            padding: '20px 16px',
+            backgroundColor: COLORS.brand,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
+          <IonIcon
+            icon={personOutline}
+            style={{
+              fontSize: '32px',
+              color: '#FFFFFF',
+            }}
+          />
+          <div style={{ flex: 1, color: '#FFFFFF' }}>
+            <div style={{ fontSize: '18px', fontWeight: 600 }}>
+              {lastName}, {firstName}
             </div>
-
-            <IonButton expand="block" onClick={handleViewResults}>
-              <IonIcon slot="start" icon={documentTextOutline} />
-              {resultCount} Befunde anzeigen
-            </IonButton>
-          </IonCardContent>
-        </IonCard>
+          </div>
+        </div>
 
         {/* Patient Details */}
-        <IonList>
+        <div style={{ backgroundColor: '#FFFFFF' }}>
+          {/* Gender */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '14px 16px',
+              borderBottom: `1px solid ${COLORS.border}`,
+            }}
+          >
+            <IonIcon
+              icon={maleFemaleOutline}
+              style={{ fontSize: '20px', color: COLORS.brand, marginRight: '12px' }}
+            />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '12px', color: COLORS.textLight }}>Geschlecht</div>
+              <div style={{ fontSize: '15px', color: COLORS.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {genderDisplay}
+                {genderSymbol && (
+                  <span style={{ color: '#5DADE2', fontWeight: 'bold' }}>{genderSymbol}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Date of Birth */}
           {dateOfBirth && (
-            <IonItem>
-              <IonIcon icon={calendarOutline} slot="start" color="primary" />
-              <IonLabel>
-                <p>{t('patients.dateOfBirth')}</p>
-                <h2>{format(new Date(dateOfBirth), 'dd.MM.yyyy', { locale: de })}</h2>
-              </IonLabel>
-            </IonItem>
-          )}
-
-          {patient.insuranceNumber && (
-            <IonItem>
-              <IonIcon icon={personOutline} slot="start" color="primary" />
-              <IonLabel>
-                <p>{t('patients.insuranceNumber')}</p>
-                <h2>{patient.insuranceNumber}</h2>
-              </IonLabel>
-            </IonItem>
-          )}
-
-          {patient.lastVisit && (
-            <IonItem>
-              <IonIcon icon={calendarOutline} slot="start" color="primary" />
-              <IonLabel>
-                <p>{t('patients.lastVisit')}</p>
-                <h2>{format(new Date(patient.lastVisit), 'dd.MM.yyyy', { locale: de })}</h2>
-              </IonLabel>
-            </IonItem>
-          )}
-        </IonList>
-
-        {/* Contact Section */}
-        {(patient.phone || patient.email) && (
-          <>
-            <div className="list-group-header">
-              {t('patients.contact')}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '14px 16px',
+                borderBottom: `1px solid ${COLORS.border}`,
+              }}
+            >
+              <IonIcon
+                icon={calendarOutline}
+                style={{ fontSize: '20px', color: COLORS.brand, marginRight: '12px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '12px', color: COLORS.textLight }}>Geburtsdatum</div>
+                <div style={{ fontSize: '15px', color: COLORS.text }}>
+                  {format(new Date(dateOfBirth), 'dd.MM.yyyy', { locale: de })}
+                  {age !== null && ` (${age})`}
+                </div>
+              </div>
             </div>
-            <IonList>
-              {patient.phone && (
-                <IonItem button href={`tel:${patient.phone}`}>
-                  <IonIcon icon={callOutline} slot="start" color="primary" />
-                  <IonLabel>
-                    <h2>{patient.phone}</h2>
-                  </IonLabel>
-                </IonItem>
-              )}
-              {patient.email && (
-                <IonItem button href={`mailto:${patient.email}`}>
-                  <IonIcon icon={mailOutline} slot="start" color="primary" />
-                  <IonLabel>
-                    <h2>{patient.email}</h2>
-                  </IonLabel>
-                </IonItem>
-              )}
-            </IonList>
-          </>
-        )}
+          )}
 
-        {/* Address Section */}
-        {patient.address && (
-          <>
-            <div className="list-group-header">
-              {t('patients.address')}
+          {/* Address */}
+          {(addressLine1 || addressLine2) && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                padding: '14px 16px',
+                borderBottom: `1px solid ${COLORS.border}`,
+              }}
+            >
+              <IonIcon
+                icon={locationOutline}
+                style={{ fontSize: '20px', color: COLORS.brand, marginRight: '12px', marginTop: '2px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '12px', color: COLORS.textLight }}>Adresse</div>
+                <div style={{ fontSize: '15px', color: COLORS.text }}>
+                  {addressLine1 && <div>{addressLine1}</div>}
+                  {addressLine2 && <div>{addressLine2}</div>}
+                </div>
+              </div>
             </div>
-            <IonList>
-              <IonItem>
-                <IonIcon icon={locationOutline} slot="start" color="primary" />
-                <IonLabel>
-                  <h2>{patient.address.street}</h2>
-                  <p>
-                    {patient.address.postalCode} {patient.address.city}
-                  </p>
-                  <p>{patient.address.country}</p>
-                </IonLabel>
-              </IonItem>
-            </IonList>
-          </>
-        )}
+          )}
+
+          {/* HzV Patient */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '14px 16px',
+              borderBottom: `1px solid ${COLORS.border}`,
+            }}
+          >
+            <IonIcon
+              icon={peopleOutline}
+              style={{ fontSize: '20px', color: COLORS.brand, marginRight: '12px' }}
+            />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '12px', color: COLORS.textLight }}>Ist HzV Patient</div>
+              <div style={{ fontSize: '15px', color: COLORS.text }}>
+                {isHzvPatient ? 'Ja' : 'Nein'}
+              </div>
+            </div>
+          </div>
+
+          {/* Insurant ID */}
+          {insurantId && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '14px 16px',
+                borderBottom: `1px solid ${COLORS.border}`,
+              }}
+            >
+              <IonIcon
+                icon={cardOutline}
+                style={{ fontSize: '20px', color: COLORS.brand, marginRight: '12px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '12px', color: COLORS.textLight }}>Versicherten-ID</div>
+                <div style={{ fontSize: '15px', color: COLORS.text }}>{insurantId}</div>
+              </div>
+            </div>
+          )}
+        </div>
       </IonContent>
+
+      <IonFooter style={{ '--background': 'transparent', '--border-width': '0', '--border-color': 'transparent', boxShadow: 'none' } as React.CSSProperties}>
+        <div style={{ padding: '16px 16px 24px 16px', backgroundColor: 'transparent', boxShadow: 'none' }}>
+          <IonButton
+            expand="block"
+            onClick={handleViewResults}
+            style={{
+              '--background': COLORS.brand,
+              '--border-radius': '25px',
+              '--box-shadow': 'none',
+              boxShadow: 'none',
+              fontWeight: 600,
+              fontSize: '16px',
+              height: '50px',
+            }}
+          >
+            BEFUNDE ANZEIGEN
+          </IonButton>
+        </div>
+      </IonFooter>
     </IonPage>
   );
 };

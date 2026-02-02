@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -16,7 +16,13 @@ import {
   IonSkeletonText,
   IonText,
   IonNote,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
 } from '@ionic/react';
+import { searchOutline, closeOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSenders } from '../hooks/useSenders';
@@ -25,8 +31,34 @@ export const SendersPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
 
-  const { senders, isLoading, refetch } = useSenders({ query: searchQuery });
+  const { senders, isLoading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useSenders({ query: searchQuery });
+
+  // Handle infinite scroll
+  const handleLoadMore = async (event: CustomEvent<void>) => {
+    if (hasNextPage) {
+      await fetchNextPage();
+    }
+    (event.target as HTMLIonInfiniteScrollElement).complete();
+  };
+
+  // Focus searchbar when opening
+  useEffect(() => {
+    if (isSearchOpen && searchbarRef.current) {
+      setTimeout(() => {
+        searchbarRef.current?.setFocus();
+      }, 100);
+    }
+  }, [isSearchOpen]);
+
+  const handleSearchToggle = () => {
+    if (isSearchOpen) {
+      setSearchQuery('');
+    }
+    setIsSearchOpen(!isSearchOpen);
+  };
 
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     await refetch();
@@ -41,15 +73,33 @@ export const SendersPage: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('senders.title')}</IonTitle>
-        </IonToolbar>
-        <IonToolbar>
-          <IonSearchbar
-            value={searchQuery}
-            onIonInput={(e) => setSearchQuery(e.detail.value || '')}
-            placeholder={t('common.search')}
-            debounce={300}
-          />
+          {isSearchOpen ? (
+            <>
+              <IonSearchbar
+                ref={searchbarRef}
+                value={searchQuery}
+                onIonInput={(e) => setSearchQuery(e.detail.value || '')}
+                placeholder="Einsender suchen..."
+                animated
+                showCancelButton="never"
+                style={{ '--background': 'var(--labgate-selected-bg)' }}
+              />
+              <IonButtons slot="end">
+                <IonButton onClick={handleSearchToggle}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </>
+          ) : (
+            <>
+              <IonTitle>{t('senders.title')}</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={handleSearchToggle}>
+                  <IonIcon icon={searchOutline} />
+                </IonButton>
+              </IonButtons>
+            </>
+          )}
         </IonToolbar>
       </IonHeader>
 
@@ -79,40 +129,49 @@ export const SendersPage: React.FC = () => {
             </IonText>
           </div>
         ) : (
-          <IonList>
-            {senders.map((sender) => (
-              <IonItem
-                key={sender.Id}
-                button
-                onClick={() => history.push(`/senders/${sender.Id}`)}
-                detail
-              >
-                <IonAvatar slot="start">
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      backgroundColor: 'var(--labgate-brand)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--labgate-brand-text-on-brand)',
-                      fontWeight: 600,
-                      fontSize: '14px',
-                    }}
-                  >
-                    {getInitials(sender.Firstname, sender.Lastname)}
-                  </div>
-                </IonAvatar>
-                <IonLabel>
-                  <h2>{`${sender.Firstname} ${sender.Lastname}`.trim()}</h2>
-                  {sender.Site?.Name && (
-                    <IonNote>{sender.Site.Name}</IonNote>
-                  )}
-                </IonLabel>
-              </IonItem>
-            ))}
-          </IonList>
+          <>
+            <IonList>
+              {senders.map((sender) => (
+                <IonItem
+                  key={sender.Id}
+                  button
+                  onClick={() => history.push(`/senders/${sender.Id}`)}
+                  detail
+                >
+                  <IonAvatar slot="start">
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'var(--labgate-brand)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--labgate-brand-text-on-brand)',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                      }}
+                    >
+                      {getInitials(sender.Firstname, sender.Lastname)}
+                    </div>
+                  </IonAvatar>
+                  <IonLabel>
+                    <h2>{`${sender.Firstname} ${sender.Lastname}`.trim()}</h2>
+                    {sender.Site?.Name && (
+                      <IonNote>{sender.Site.Name}</IonNote>
+                    )}
+                  </IonLabel>
+                </IonItem>
+              ))}
+            </IonList>
+            <IonInfiniteScroll
+              onIonInfinite={handleLoadMore}
+              threshold="100px"
+              disabled={!hasNextPage || isFetchingNextPage}
+            >
+              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Lade mehr..." />
+            </IonInfiniteScroll>
+          </>
         )}
       </IonContent>
     </IonPage>

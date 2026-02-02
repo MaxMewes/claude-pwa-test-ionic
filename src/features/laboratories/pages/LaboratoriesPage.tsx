@@ -9,6 +9,10 @@ import {
   IonItem,
   IonLabel,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonButtons,
+  IonMenuButton,
 } from '@ionic/react';
 import { chevronForward } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
@@ -20,7 +24,18 @@ export const LaboratoriesPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
 
-  const { data, isLoading, refetch } = useLaboratories();
+  const { data, isLoading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useLaboratories();
+
+  // Flatten paginated results
+  const allLaboratories = data?.pages?.flatMap((page) => page.Results) || [];
+
+  // Handle infinite scroll
+  const handleLoadMore = async (event: CustomEvent<void>) => {
+    if (hasNextPage) {
+      await fetchNextPage();
+    }
+    (event.target as HTMLIonInfiniteScrollElement).complete();
+  };
 
   const handleLaboratoryClick = (labId: string | number) => {
     history.push(`/laboratories/${labId}`);
@@ -34,7 +49,13 @@ export const LaboratoriesPage: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('laboratories.title')}</IonTitle>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
+          <IonTitle className="ion-text-center">{t('laboratories.title')}</IonTitle>
+          <IonButtons slot="end" style={{ visibility: 'hidden' }}>
+            <IonMenuButton />
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
@@ -43,44 +64,53 @@ export const LaboratoriesPage: React.FC = () => {
 
         {isLoading ? (
           <SkeletonLoader type="list" count={5} />
-        ) : !data?.Results?.length ? (
+        ) : !allLaboratories.length ? (
           <EmptyState type="laboratories" />
         ) : (
-          <IonList lines="full">
-            {data.Results.map((lab, index) => {
-              const labId = lab.Id ?? lab.id ?? index;
-              const labName = lab.Name ?? lab.name ?? 'Labor';
+          <>
+            <IonList lines="full">
+              {allLaboratories.map((lab, index) => {
+                const labId = lab.Id ?? lab.id ?? index;
+                const labName = lab.Name ?? lab.name ?? 'Labor';
 
-              return (
-                <IonItem
-                  key={labId}
-                  button
-                  onClick={() => handleLaboratoryClick(labId)}
-                  style={{
-                    '--background': index % 2 === 0 ? '#F4F4F4' : '#FFFFFF',
-                  }}
-                >
-                  <IonLabel>
-                    <h2
-                      style={{
-                        fontWeight: 500,
-                        fontSize: '15px',
-                        color: '#3C3C3B',
-                        margin: 0,
-                      }}
-                    >
-                      {labName}
-                    </h2>
-                  </IonLabel>
-                  <IonIcon
-                    icon={chevronForward}
-                    slot="end"
-                    style={{ color: '#646363', fontSize: '18px' }}
-                  />
-                </IonItem>
-              );
-            })}
-          </IonList>
+                return (
+                  <IonItem
+                    key={labId}
+                    button
+                    onClick={() => handleLaboratoryClick(labId)}
+                    style={{
+                      '--background': index % 2 === 0 ? '#F4F4F4' : '#FFFFFF',
+                    }}
+                  >
+                    <IonLabel>
+                      <h2
+                        style={{
+                          fontWeight: 500,
+                          fontSize: '15px',
+                          color: '#3C3C3B',
+                          margin: 0,
+                        }}
+                      >
+                        {labName}
+                      </h2>
+                    </IonLabel>
+                    <IonIcon
+                      icon={chevronForward}
+                      slot="end"
+                      style={{ color: '#646363', fontSize: '18px' }}
+                    />
+                  </IonItem>
+                );
+              })}
+            </IonList>
+            <IonInfiniteScroll
+              onIonInfinite={handleLoadMore}
+              threshold="100px"
+              disabled={!hasNextPage || isFetchingNextPage}
+            >
+              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Lade mehr..." />
+            </IonInfiniteScroll>
+          </>
         )}
       </IonContent>
     </IonPage>

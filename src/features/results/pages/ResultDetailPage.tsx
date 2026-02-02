@@ -18,7 +18,6 @@ import { de } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useResult } from '../hooks/useResults';
 import { useSettingsStore } from '../../../shared/store/useSettingsStore';
-import { useAuthStore } from '../../auth/store/authStore';
 import { TestResultList } from '../components/TestResultList';
 import { SkeletonLoader } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
@@ -27,17 +26,14 @@ export const ResultDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { data: result, isLoading } = useResult(id);
-  const { selectedSender } = useAuthStore();
   const { isFavorite, toggleFavorite } = useSettingsStore();
 
   // Check if this result is a favorite (from local storage)
-  const isResultFavorite = selectedSender?.Id && result?.Id
-    ? isFavorite(selectedSender.Id, result.Id)
-    : false;
+  const isResultFavorite = result?.Id ? isFavorite(result.Id) : false;
 
   const handleToggleFavorite = () => {
-    if (selectedSender?.Id && result?.Id) {
-      toggleFavorite(selectedSender.Id, result.Id);
+    if (result?.Id) {
+      toggleFavorite(result.Id);
     }
   };
 

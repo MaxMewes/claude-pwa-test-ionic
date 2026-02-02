@@ -719,6 +719,14 @@ body.dark .list-group-header {
   margin-bottom: var(--labgate-spacing);
 }
 
+.empty-state-image {
+  width: 200px;
+  max-width: 80%;
+  height: auto;
+  margin-bottom: var(--labgate-spacing-lg);
+  opacity: 0.85;
+}
+
 .empty-state-title {
   font-weight: 600;
   font-size: var(--labgate-font-size-lg);
@@ -731,6 +739,11 @@ body.dark .list-group-header {
   color: var(--labgate-text-light);
   margin: 0 0 var(--labgate-spacing-lg) 0;
   max-width: 280px;
+}
+
+/* Results filter toolbar */
+.results-filter-toolbar .toolbar-container {
+  padding: 0 !important;
 }
 
 /* Skeleton loading */

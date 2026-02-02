@@ -1,6 +1,10 @@
 import React from 'react';
 import { IonIcon, IonButton } from '@ionic/react';
 import { searchOutline, documentTextOutline, peopleOutline, businessOutline, newspaperOutline, alertCircleOutline } from 'ionicons/icons';
+import emptyNewsImage from '../../assets/images/empty-news-details-undraw-news.svg';
+import emptyPatientsImage from '../../assets/images/empty-patient-details-undraw-connecting-teams.svg';
+import emptyLaboratoriesImage from '../../assets/images/empty-laboratory-details-undraw-scientist.svg';
+import noDataImage from '../../assets/images/no-data-indicator.svg';
 
 interface EmptyStateProps {
   type?: 'results' | 'patients' | 'laboratories' | 'news' | 'search' | 'generic' | 'error';
@@ -18,6 +22,13 @@ const iconMap = {
   search: searchOutline,
   generic: searchOutline,
   error: alertCircleOutline,
+};
+
+const imageMap: Partial<Record<EmptyStateProps['type'] & string, string>> = {
+  news: emptyNewsImage,
+  patients: emptyPatientsImage,
+  laboratories: emptyLaboratoriesImage,
+  results: noDataImage,
 };
 
 const defaultMessages: Record<string, { title: string; message: string }> = {
@@ -59,14 +70,23 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
 }) => {
   const icon = iconMap[type];
+  const image = imageMap[type];
   const defaults = defaultMessages[type];
 
   return (
     <div className="empty-state">
-      <IonIcon
-        icon={icon}
-        className="empty-state-icon"
-      />
+      {image ? (
+        <img
+          src={image}
+          alt=""
+          className="empty-state-image"
+        />
+      ) : (
+        <IonIcon
+          icon={icon}
+          className="empty-state-icon"
+        />
+      )}
       <h2 className="empty-state-title">
         {title || defaults.title}
       </h2>

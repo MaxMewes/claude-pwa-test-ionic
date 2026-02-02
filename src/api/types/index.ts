@@ -87,6 +87,13 @@ export interface PasswordRules {
   RequireSpecialCharacters: boolean;
 }
 
+// Update Info Types
+export interface AppUpdateInfoResponse {
+  CurrentVersion?: string;
+  MinimumVersion?: string;
+  UpdateType: 'None' | 'Optional' | 'Required';
+}
+
 // labGate API v3 Result Types
 export interface LabResult {
   Id: number;
@@ -202,6 +209,12 @@ export interface ResultDocument {
   url: string;
 }
 
+// Result types for filtering (German labGate categories)
+export type ResultTypeFilter = 'final' | 'partial' | 'preliminary' | 'followUp' | 'archive';
+
+// Lab categories for filtering
+export type LabCategoryFilter = 'specialist' | 'labCommunity' | 'microbiology';
+
 export interface ResultFilter {
   patientId?: string;
   patientIds?: string[];
@@ -210,7 +223,9 @@ export interface ResultFilter {
   senderIds?: string[];
   status?: ResultStatus[];
   resultType?: ResultType[];
+  resultTypes?: ResultTypeFilter[]; // New filter types
   category?: ResultCategory[];
+  labCategories?: LabCategoryFilter[]; // New lab categories
   dateFrom?: string;
   dateTo?: string;
   search?: string;
@@ -245,13 +260,34 @@ export interface CumulativeResult {
 }
 
 // Patient Types (labGate API v3 uses PascalCase)
+export type GenderType = 'Unknown' | 'Female' | 'Male' | 'Undefined' | 'Diverse';
+export type AccountType = 'Unknown' | 'PanelPatient' | 'PrivatePatient' | 'OtherInvoiceRecipient' | 'Sender';
+
 export interface Patient {
-  // API v3 fields (PascalCase)
+  // API v3 fields (PascalCase) - from PatientGetListResponseEntry
   Id?: number;
   Firstname?: string;
   Lastname?: string;
   DateOfBirth?: string;
-  Gender?: number; // 1 = female, 2 = male
+  Gender?: GenderType | number; // API v3 uses string enum, but results use numbers (1=female, 2=male)
+  Age?: number;
+  Title?: string;
+  AddName?: string;
+  PreWord?: string;
+  AccountType?: AccountType;
+  CreatedOn?: string;
+  ModifiedOn?: string;
+  Sender?: PatientSender;
+  // Additional fields from PatientGetResponse (single patient endpoint)
+  Address?: PatientStreetAddress;
+  PostBox?: PatientPostBoxAddress;
+  IsHzvPatient?: boolean;
+  InsurantIdent?: string; // Versicherten-ID
+  InsuranceIdent?: string; // Versicherungsnummer
+  PatientNumber?: string;
+  PhoneNumber?: string;
+  Email?: string;
+  // Computed/derived fields
   ResultCount?: number;
   LastResultDate?: string | null;
   HasPatho?: boolean;
@@ -264,12 +300,34 @@ export interface Patient {
   insuranceNumber?: string;
   email?: string;
   phone?: string;
-  address?: PatientAddress;
+  address?: PatientAddressLegacy;
   lastVisit?: string;
   resultCount?: number;
 }
 
-export interface PatientAddress {
+export interface PatientStreetAddress {
+  Street?: string;
+  HouseNumber?: string;
+  CountryCode?: string;
+  Zip?: string;
+  City?: string;
+}
+
+export interface PatientPostBoxAddress {
+  Number?: string;
+  CountryCode?: string;
+  Zip?: string;
+  City?: string;
+}
+
+export interface PatientSender {
+  Id?: number;
+  Firstname?: string;
+  Lastname?: string;
+  SiteName?: string;
+}
+
+export interface PatientAddressLegacy {
   street: string;
   city: string;
   postalCode: string;
@@ -414,18 +472,35 @@ export interface SenderContact {
   email?: string;
 }
 
-// News Types
+// News Types (API v3 format)
+export interface NewsArticleUser {
+  Firstname?: string;
+  Name?: string;
+  Fullname?: string;
+}
+
 export interface NewsArticle {
-  id: string;
-  title: string;
-  summary: string;
-  content: string;
-  category: NewsCategory;
+  // API v3 fields (PascalCase)
+  Id?: number;
+  Title?: string;
+  Teaser?: string;
+  Content?: string;
+  Importance?: 'Normal' | 'High';
+  Created?: string;
+  CreatedBy?: NewsArticleUser;
+  IsContentFormatted?: boolean;
+  ImageUrl?: string;
+  // Legacy fields for backward compatibility (camelCase)
+  id?: string;
+  title?: string;
+  summary?: string;
+  content?: string;
+  category?: NewsCategory;
   imageUrl?: string;
-  publishedAt: string;
-  author: string;
-  isRead: boolean;
-  isPinned: boolean;
+  publishedAt?: string;
+  author?: string;
+  isRead?: boolean;
+  isPinned?: boolean;
 }
 
 export type NewsCategory = 'announcement' | 'health_tip' | 'laboratory_news' | 'app_update';

@@ -16,6 +16,7 @@ export const ROUTES = {
 
   LABORATORIES: '/laboratories',
   LABORATORY_DETAIL: '/laboratories/:id',
+  SERVICE_DETAIL: '/laboratories/:labId/services/:serviceId',
 
   SENDERS: '/senders',
   SENDER_DETAIL: '/senders/:id',

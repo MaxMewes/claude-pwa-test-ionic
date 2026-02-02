@@ -20,7 +20,7 @@
   "auth": {
     "login": "Anmelden",
     "logout": "Abmelden",
-    "register": "Registrieren",
+    "register": "Zugang beantragen",
     "registerDescription": "Erstellen Sie ein neues Konto",
     "firstName": "Vorname",
     "lastName": "Nachname",
@@ -34,7 +34,7 @@
     "sendResetLink": "Link senden",
     "backToLogin": "Zurueck zur Anmeldung",
     "alreadyHaveAccount": "Bereits ein Konto? Anmelden",
-    "noAccount": "Noch kein Konto? Registrieren",
+    "noAccount": "Noch kein Konto? Zugang beantragen",
     "loginError": "Anmeldung fehlgeschlagen",
     "invalidCredentials": "Ungueltige Anmeldedaten",
     "twoFactor": {
@@ -109,12 +109,17 @@
     "detail": "Patientendetails",
     "noPatients": "Keine Patienten vorhanden",
     "dateOfBirth": "Geburtsdatum",
+    "years": "Jahre",
     "gender": {
       "male": "Maennlich",
       "female": "Weiblich",
-      "other": "Divers"
+      "diverse": "Divers",
+      "other": "Divers",
+      "unknown": "Unbekannt"
     },
     "insuranceNumber": "Versicherungsnummer",
+    "insurantId": "Versicherten-ID",
+    "hzvPatient": "HzV-Patient",
     "contact": "Kontakt",
     "address": "Adresse",
     "lastVisit": "Letzter Besuch",

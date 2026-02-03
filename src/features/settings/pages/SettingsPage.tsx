@@ -108,16 +108,16 @@ export const SettingsPage: React.FC = () => {
         {user && (
           <div style={{
             padding: '24px 16px',
-            background: 'linear-gradient(135deg, var(--labgate-brand) 0%, #5cb84e 100%)',
+            background: 'linear-gradient(135deg, var(--labgate-brand) 0%, var(--labgate-brand-dark) 100%)',
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.97)',
+              backgroundColor: 'var(--labgate-surface)',
               borderRadius: '16px',
               padding: '20px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.12)',
+              boxShadow: 'var(--labgate-shadow-lg)',
             }}>
               {/* Avatar with Initials - uses username as fallback */}
               <UserAvatar

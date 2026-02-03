@@ -37,14 +37,16 @@ import { ROUTES } from '../../../config/routes';
 
 type TabType = 'info' | 'services' | 'contacts';
 
-// Colors matching old app
+// Colors using CSS variables for dark mode support
 const COLORS = {
-  brand: '#70CC60',
-  text: '#3C3C3B',
-  textLight: '#646363',
-  rowEven: '#F4F4F4',
-  rowOdd: '#FFFFFF',
-  border: '#E5E5E5',
+  brand: 'var(--labgate-brand)',
+  brandText: 'var(--labgate-brand-text-on-brand, #ffffff)',
+  text: 'var(--labgate-text)',
+  textLight: 'var(--labgate-text-light)',
+  rowEven: 'var(--labgate-selected-bg)',
+  rowOdd: 'var(--labgate-surface)',
+  border: 'var(--labgate-border)',
+  surface: 'var(--labgate-surface)',
 };
 
 export const LaboratoryDetailPage: React.FC = () => {
@@ -202,7 +204,7 @@ export const LaboratoryDetailPage: React.FC = () => {
           style={{
             width: '48px',
             height: '48px',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: COLORS.surface,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -214,13 +216,13 @@ export const LaboratoryDetailPage: React.FC = () => {
         >
           {labName.substring(0, 2).toUpperCase()}
         </div>
-        <div style={{ flex: 1, color: '#FFFFFF' }}>
+        <div style={{ flex: 1, color: COLORS.brandText }}>
           <div style={{ fontSize: '16px', fontWeight: 600 }}>{labName}</div>
         </div>
       </div>
 
       {/* Contact Information */}
-      <div style={{ backgroundColor: '#FFFFFF' }}>
+      <div style={{ backgroundColor: COLORS.surface }}>
         {labPhone && (
           <div
             onClick={handlePhoneClick}
@@ -334,7 +336,7 @@ export const LaboratoryDetailPage: React.FC = () => {
           style={{
             width: '40px',
             height: '40px',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: COLORS.surface,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -346,7 +348,7 @@ export const LaboratoryDetailPage: React.FC = () => {
         >
           {labName.substring(0, 2).toUpperCase()}
         </div>
-        <div style={{ flex: 1, color: '#FFFFFF', fontSize: '15px', fontWeight: 500 }}>
+        <div style={{ flex: 1, color: COLORS.brandText, fontSize: '15px', fontWeight: 500 }}>
           {labName}
         </div>
       </div>
@@ -376,7 +378,7 @@ export const LaboratoryDetailPage: React.FC = () => {
                   </p>
                 </IonLabel>
               </IonItem>
-              <div slot="content" style={{ backgroundColor: '#FFFFFF' }}>
+              <div slot="content" style={{ backgroundColor: COLORS.surface }}>
                 {items.map((service, index) => (
                   <div
                     key={service.Id}
@@ -430,7 +432,7 @@ export const LaboratoryDetailPage: React.FC = () => {
           style={{
             width: '40px',
             height: '40px',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: COLORS.surface,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -442,7 +444,7 @@ export const LaboratoryDetailPage: React.FC = () => {
         >
           {labName.substring(0, 2).toUpperCase()}
         </div>
-        <div style={{ flex: 1, color: '#FFFFFF', fontSize: '15px', fontWeight: 500 }}>
+        <div style={{ flex: 1, color: COLORS.brandText, fontSize: '15px', fontWeight: 500 }}>
           {labName}
         </div>
       </div>
@@ -458,7 +460,7 @@ export const LaboratoryDetailPage: React.FC = () => {
           <div style={{ color: COLORS.textLight }}>Keine Ansprechpartner verfügbar</div>
         </div>
       ) : (
-        <div style={{ backgroundColor: '#FFFFFF' }}>
+        <div style={{ backgroundColor: COLORS.surface }}>
           {labContacts.map((contact: LaboratoryContactPerson, index: number) => (
             <div
               key={contact.Id || index}

@@ -106,10 +106,11 @@ import { ROUTES } from './config/routes';
 
 setupIonicReact();
 
-const MENU_COLORS = {
-  brand: '#70CC60',
-  text: '#3C3C3B',
-  selectedBg: '#E8F5E6',
+// Menu colors use CSS variables for dark mode support
+const MENU_STYLES = {
+  brand: 'var(--labgate-brand)',
+  text: 'var(--labgate-text)',
+  selectedBg: 'var(--labgate-selected-bg)',
 };
 
 const AppMenu: React.FC = () => {
@@ -137,8 +138,8 @@ const AppMenu: React.FC = () => {
           <IonAccordionGroup value="results">
             <IonAccordion value="results">
               <IonItem slot="header" lines="full">
-                <IonIcon slot="start" icon={statsChartOutline} style={{ color: MENU_COLORS.brand }} />
-                <IonLabel style={{ color: MENU_COLORS.brand, fontWeight: 500 }}>Meine Befunde</IonLabel>
+                <IonIcon slot="start" icon={statsChartOutline} style={{ color: MENU_STYLES.brand }} />
+                <IonLabel style={{ color: MENU_STYLES.brand, fontWeight: 500 }}>Meine Befunde</IonLabel>
               </IonItem>
               <div slot="content">
                 {resultsSubItems.map((item, index) => (
@@ -150,7 +151,7 @@ const AppMenu: React.FC = () => {
                       lines="none"
                       style={{
                         '--padding-start': '48px',
-                        '--background': resultsPeriod === item.period ? MENU_COLORS.selectedBg : 'transparent',
+                        '--background': resultsPeriod === item.period ? MENU_STYLES.selectedBg : 'transparent',
                       }}
                       onClick={() => handlePeriodSelect(item.period)}
                     >
@@ -167,7 +168,7 @@ const AppMenu: React.FC = () => {
           {/* Meine Patienten */}
           <IonMenuToggle autoHide={false}>
             <IonItem routerLink={ROUTES.PATIENTS} routerDirection="root" lines="full">
-              <IonIcon slot="start" icon={peopleOutline} style={{ color: MENU_COLORS.brand }} />
+              <IonIcon slot="start" icon={peopleOutline} style={{ color: MENU_STYLES.brand }} />
               <IonLabel>Meine Patienten</IonLabel>
             </IonItem>
           </IonMenuToggle>
@@ -175,7 +176,7 @@ const AppMenu: React.FC = () => {
           {/* Meine Labore */}
           <IonMenuToggle autoHide={false}>
             <IonItem routerLink={ROUTES.LABORATORIES} routerDirection="root" lines="full">
-              <IonIcon slot="start" icon={flaskOutline} style={{ color: MENU_COLORS.brand }} />
+              <IonIcon slot="start" icon={flaskOutline} style={{ color: MENU_STYLES.brand }} />
               <IonLabel>Meine Labore</IonLabel>
             </IonItem>
           </IonMenuToggle>
@@ -183,7 +184,7 @@ const AppMenu: React.FC = () => {
           {/* News */}
           <IonMenuToggle autoHide={false}>
             <IonItem routerLink={ROUTES.NEWS} routerDirection="root" lines="full">
-              <IonIcon slot="start" icon={newspaperOutline} style={{ color: MENU_COLORS.brand }} />
+              <IonIcon slot="start" icon={newspaperOutline} style={{ color: MENU_STYLES.brand }} />
               <IonLabel>News</IonLabel>
             </IonItem>
           </IonMenuToggle>
@@ -191,7 +192,7 @@ const AppMenu: React.FC = () => {
           {/* Einstellungen */}
           <IonMenuToggle autoHide={false}>
             <IonItem routerLink={ROUTES.SETTINGS} routerDirection="root" lines="full">
-              <IonIcon slot="start" icon={settingsOutline} style={{ color: MENU_COLORS.brand }} />
+              <IonIcon slot="start" icon={settingsOutline} style={{ color: MENU_STYLES.brand }} />
               <IonLabel>Einstellungen</IonLabel>
             </IonItem>
           </IonMenuToggle>
@@ -199,7 +200,7 @@ const AppMenu: React.FC = () => {
           {/* Abmelden */}
           <IonMenuToggle autoHide={false}>
             <IonItem button onClick={logout} lines="full">
-              <IonIcon slot="start" icon={logOutOutline} style={{ color: MENU_COLORS.brand }} />
+              <IonIcon slot="start" icon={logOutOutline} style={{ color: MENU_STYLES.brand }} />
               <IonLabel>Abmelden</IonLabel>
             </IonItem>
           </IonMenuToggle>

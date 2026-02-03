@@ -91,7 +91,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
       detail={false}
       lines="full"
       style={{
-        '--background': selected ? '#F4F4F4' : 'var(--ion-background-color)',
+        '--background': selected ? 'var(--labgate-selected-bg)' : 'var(--ion-background-color)',
         '--padding-start': '0',
         '--inner-padding-end': '12px',
         cursor: 'pointer',
@@ -103,7 +103,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
           width: '12px',
           minWidth: '12px',
           alignSelf: 'stretch',
-          backgroundColor: showPathoBar ? '#ff6b6b' : 'transparent',
+          backgroundColor: showPathoBar ? 'var(--result-indicator-patho)' : 'transparent',
         }}
       />
 
@@ -136,7 +136,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  backgroundColor: '#70CC60', // Brand green like old app
+                  backgroundColor: 'var(--labgate-brand)',
                   flexShrink: 0,
                 }}
               />
@@ -145,7 +145,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
               style={{
                 fontWeight: result.IsRead ? 400 : 700, // Bold if unread like old app
                 fontSize: '15px',
-                color: '#3C3C3B', // Text color from old app
+                color: 'var(--labgate-text)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -181,7 +181,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
                 <IonIcon
                   icon={isFavorite ? star : starOutline}
                   style={{
-                    color: isFavorite ? '#E18B05' : '#999',
+                    color: isFavorite ? 'var(--labgate-favorite)' : 'var(--labgate-text-muted)',
                     fontSize: '16px',
                   }}
                 />
@@ -191,7 +191,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
               <span
                 style={{
                   fontSize: '12px',
-                  color: '#646363', // Light text color from old app
+                  color: 'var(--labgate-text-light)', // Light text color from old app
                   fontWeight: result.IsRead ? 400 : 600,
                 }}
               >
@@ -203,7 +203,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
             <span
               style={{
                 fontSize: '11px',
-                color: '#646363',
+                color: 'var(--labgate-text-light)',
                 marginTop: '2px',
               }}
             >
@@ -223,19 +223,19 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
           }}
         >
           {dobDisplay && (
-            <span style={{ fontSize: '12px', color: '#646363' }}>
+            <span style={{ fontSize: '12px', color: 'var(--labgate-text-light)' }}>
               {dobDisplay}
             </span>
           )}
           {genderIcon && (
             <IonIcon
               icon={genderIcon}
-              style={{ fontSize: '14px', color: '#646363' }}
+              style={{ fontSize: '14px', color: 'var(--labgate-text-light)' }}
             />
           )}
           {/* Laboratory name on the right */}
           {result.Laboratory?.Name && (
-            <span style={{ fontSize: '11px', color: '#999', marginLeft: 'auto' }}>
+            <span style={{ fontSize: '11px', color: 'var(--labgate-text-muted)', marginLeft: 'auto' }}>
               {result.Laboratory.Name}
             </span>
           )}

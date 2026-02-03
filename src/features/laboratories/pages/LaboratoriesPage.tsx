@@ -79,7 +79,7 @@ export const LaboratoriesPage: React.FC = () => {
                     button
                     onClick={() => handleLaboratoryClick(labId)}
                     style={{
-                      '--background': index % 2 === 0 ? '#F4F4F4' : '#FFFFFF',
+                      '--background': index % 2 === 0 ? 'var(--labgate-selected-bg)' : 'var(--labgate-surface)',
                     }}
                   >
                     <IonLabel>
@@ -87,7 +87,7 @@ export const LaboratoriesPage: React.FC = () => {
                         style={{
                           fontWeight: 500,
                           fontSize: '15px',
-                          color: '#3C3C3B',
+                          color: 'var(--labgate-text)',
                           margin: 0,
                         }}
                       >
@@ -97,7 +97,7 @@ export const LaboratoriesPage: React.FC = () => {
                     <IonIcon
                       icon={chevronForward}
                       slot="end"
-                      style={{ color: '#646363', fontSize: '18px' }}
+                      style={{ color: 'var(--labgate-text-light)', fontSize: '18px' }}
                     />
                   </IonItem>
                 );

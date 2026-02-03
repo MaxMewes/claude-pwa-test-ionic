@@ -81,7 +81,7 @@ export const AboutPage: React.FC = () => {
               margin: '0 auto 16px',
             }}
           >
-            <span style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}>🧪</span>
+            <span style={{ color: 'var(--labgate-brand-text-on-brand, #ffffff)', fontSize: '32px', fontWeight: 'bold' }}>🧪</span>
           </div>
           <IonText color="dark">
             <h1 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>labGate</h1>
@@ -145,21 +145,42 @@ export const AboutPage: React.FC = () => {
           <IonItem>
             <IonLabel>
               <p>Entwickelt von</p>
-              <h2>labGate GmbH</h2>
+              <h2>vireq software solutions GmbH</h2>
+            </IonLabel>
+          </IonItem>
+
+          <IonItem>
+            <IonLabel>
+              <p>Anschrift</p>
+              <h2>Carl-Reichstein-Straße 11, 14770 Brandenburg an der Havel</h2>
+            </IonLabel>
+          </IonItem>
+
+          <IonItem>
+            <IonLabel>
+              <p>Geschäftsführer</p>
+              <h2>Vico Weist, René Mewes, Christian Sauer, Sebastian Münch</h2>
             </IonLabel>
           </IonItem>
 
           <IonItem>
             <IonLabel>
               <p>Kontakt</p>
-              <h2>support@labgate.de</h2>
+              <h2>+49 3381 33198 40 • info@vireq.com</h2>
             </IonLabel>
           </IonItem>
 
           <IonItem>
             <IonLabel>
               <p>Website</p>
-              <h2>www.labgate.de</h2>
+              <h2>www.vireq.com</h2>
+            </IonLabel>
+          </IonItem>
+
+          <IonItem>
+            <IonLabel>
+              <p>USt-IdNr.</p>
+              <h2>DE 270371969</h2>
             </IonLabel>
           </IonItem>
         </IonList>
@@ -182,8 +203,8 @@ export const AboutPage: React.FC = () => {
         {/* Legal */}
         <div style={{ padding: '24px', textAlign: 'center' }}>
           <IonText color="medium" style={{ fontSize: '12px' }}>
-            <p>© 2026 labGate GmbH. Alle Rechte vorbehalten.</p>
-            <p>Medizinprodukt der Klasse I gemaess MDR (EU) 2017/745</p>
+            <p>© 2026 vireq software solutions GmbH. Alle Rechte vorbehalten.</p>
+            <p>Medizinprodukt der Klasse I gemäß MDR (EU) 2017/745</p>
           </IonText>
         </div>
       </IonContent>

@@ -76,15 +76,15 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       case 'gradient':
         return {
           ...baseStyles,
-          background: 'linear-gradient(135deg, #70CC60 0%, #5cb84e 100%)',
-          color: '#ffffff',
-          boxShadow: '0 2px 8px rgba(112, 204, 96, 0.3)',
+          background: 'linear-gradient(135deg, var(--labgate-brand) 0%, var(--labgate-brand-dark) 100%)',
+          color: 'var(--labgate-brand-text-on-brand, #ffffff)',
+          boxShadow: 'var(--labgate-shadow)',
         };
       case 'solid':
         return {
           ...baseStyles,
           backgroundColor: 'var(--labgate-brand)',
-          color: '#ffffff',
+          color: 'var(--labgate-brand-text-on-brand, #ffffff)',
         };
       case 'outline':
         return {

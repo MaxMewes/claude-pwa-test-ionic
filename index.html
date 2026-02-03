@@ -16,6 +16,25 @@
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="description" content="labGate - Ihre medizinischen Laborbefunde sicher und schnell abrufen" />
 
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https: blob:;
+      connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss: ws:;
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+    " />
+
+    <!-- App Publisher Information -->
+    <meta name="author" content="vireq software solutions GmbH" />
+    <meta name="publisher" content="vireq software solutions GmbH, Carl-Reichstein-Straße 11, D 14770 Brandenburg an der Havel" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
     <link rel="manifest" href="/manifest.json" />
 
     <link rel="shortcut icon" type="image/png" href="/favicon.png" />

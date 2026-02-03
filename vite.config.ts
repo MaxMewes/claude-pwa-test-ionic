@@ -12,6 +12,14 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       port: parseInt(env.VITE_PORT) || 3000,
+      headers: {
+        // Security headers for development server
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), payment=()',
+      },
       proxy: {
         // Proxy API requests to avoid CORS issues during development
         '/api/v3': {

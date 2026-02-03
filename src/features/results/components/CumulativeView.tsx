@@ -9,7 +9,7 @@ interface CumulativeViewProps {
 }
 
 // labGate API v3 uses IsPathological and PathologyIndicator
-// Modern color palette
+// Colors use CSS variables for dark mode support
 const getPathologyInfo = (test: TestResult): {
   color: string;
   cssColor: string;
@@ -18,22 +18,22 @@ const getPathologyInfo = (test: TestResult): {
   icon?: typeof arrowUp;
 } => {
   if (!test.IsPathological) {
-    return { color: 'success', cssColor: '#22C55E', bgColor: 'rgba(34, 197, 94, 0.1)', label: 'Normal' };
+    return { color: 'success', cssColor: 'var(--result-normal)', bgColor: 'var(--ion-color-success-tint)', label: 'Normal' };
   }
 
   switch (test.PathologyIndicator) {
     case 'L':
-      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Niedrig', icon: arrowDown };
+      return { color: 'warning', cssColor: 'var(--result-low)', bgColor: 'var(--ion-color-warning-tint)', label: 'Niedrig', icon: arrowDown };
     case 'LL':
-      return { color: 'danger', cssColor: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.1)', label: 'Kritisch niedrig', icon: arrowDown };
+      return { color: 'danger', cssColor: 'var(--result-critical)', bgColor: 'var(--ion-color-danger-tint)', label: 'Kritisch niedrig', icon: arrowDown };
     case 'H':
-      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Hoch', icon: arrowUp };
+      return { color: 'warning', cssColor: 'var(--result-high)', bgColor: 'var(--ion-color-warning-tint)', label: 'Hoch', icon: arrowUp };
     case 'HH':
-      return { color: 'danger', cssColor: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.1)', label: 'Kritisch hoch', icon: arrowUp };
+      return { color: 'danger', cssColor: 'var(--result-critical)', bgColor: 'var(--ion-color-danger-tint)', label: 'Kritisch hoch', icon: arrowUp };
     case 'A':
-      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Auffaellig' };
+      return { color: 'warning', cssColor: 'var(--result-abnormal)', bgColor: 'var(--ion-color-warning-tint)', label: 'Auffaellig' };
     default:
-      return { color: 'warning', cssColor: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)', label: 'Auffaellig' };
+      return { color: 'warning', cssColor: 'var(--result-abnormal)', bgColor: 'var(--ion-color-warning-tint)', label: 'Auffaellig' };
   }
 };
 

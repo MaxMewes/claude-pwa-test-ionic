@@ -22,7 +22,9 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { useNews } from '../hooks/useNews';
+import { parseColorMarkup } from '../../../shared/utils/colorMarkupParser';
 import { PullToRefresh, SkeletonLoader, EmptyState } from '../../../shared/components';
 import defaultNewsImage from '../../../assets/images/default-news.png';
 
@@ -117,7 +119,9 @@ export const NewsPage: React.FC = () => {
                     <IonCardContent>
                       {articleTeaser && (
                         <div style={{ margin: '0 0 12px 0', color: 'var(--ion-color-medium)' }}>
-                          <ReactMarkdown>{articleTeaser}</ReactMarkdown>
+                          <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                            {parseColorMarkup(articleTeaser)}
+                          </ReactMarkdown>
                         </div>
                       )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>

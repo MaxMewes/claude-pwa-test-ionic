@@ -18,16 +18,21 @@
 
     <!-- Security Headers -->
     <!-- Note: frame-ancestors must be set via HTTP headers, not meta tags -->
+    <!-- CSP configured for production builds - strict security without unsafe-inline/unsafe-eval -->
+    <!-- Development CSP is configured in vite.config.ts server headers -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval';
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      script-src 'self';
+      style-src 'self' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: https: blob:;
       connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss: ws:;
       media-src 'self' blob:;
       base-uri 'self';
       form-action 'self';
+      frame-ancestors 'none';
+      object-src 'none';
+      upgrade-insecure-requests;
     " />
 
     <!-- App Publisher Information -->

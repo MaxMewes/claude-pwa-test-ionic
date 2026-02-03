@@ -40,6 +40,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     }
 
     mountedRef.current = true;
+    let scannerCleanup: (() => Promise<void>) | null = null;
 
     const startScanner = async () => {
       try {
@@ -79,6 +80,18 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         });
 
         scannerRef.current = scanner;
+
+        // Store cleanup function for this specific scanner instance
+        scannerCleanup = async () => {
+          try {
+            if (scanner.getState() === 2) { // SCANNING state
+              await scanner.stop();
+            }
+            scanner.clear();
+          } catch (err) {
+            console.error('Error cleaning up scanner:', err);
+          }
+        };
 
         // Start scanning with back camera
         await scanner.start(
@@ -133,9 +146,16 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
     startScanner();
 
+    // Cleanup function - properly stops scanner and prevents memory leaks
     return () => {
       mountedRef.current = false;
-      stopScanner();
+      // Use the stored cleanup function if available, otherwise use stopScanner
+      if (scannerCleanup) {
+        scannerCleanup().catch(err => console.error('Cleanup error:', err));
+      } else {
+        stopScanner().catch(err => console.error('Cleanup error:', err));
+      }
+      scannerRef.current = null;
     };
   }, [isOpen, retryCount, onScan, onClose]);
 

@@ -146,10 +146,14 @@ export const ResultsPage: React.FC = () => {
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
       // Load more when within 800px of bottom (start loading earlier)
+      // Race condition fix: Check if already fetching to prevent duplicate requests
       if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
         lastFetchTimeRef.current = now;
         fetchNextPage();
       }
+    }).catch((err) => {
+      // Silently handle scroll element access errors
+      console.debug('[Scroll] Error accessing scroll element:', err);
     });
   }, [data?.pages?.length, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
 

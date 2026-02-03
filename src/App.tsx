@@ -9,9 +9,6 @@ import {
   IonTabButton,
   IonTabs,
   IonMenu,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonList,
   IonItem,
@@ -134,7 +131,6 @@ const MENU_STYLES = {
 };
 
 const AppMenu: React.FC = () => {
-  const { t } = useTranslation();
   const { logout } = useAuthStore();
   const { resultsPeriod, setResultsPeriod } = useSettingsStore();
 

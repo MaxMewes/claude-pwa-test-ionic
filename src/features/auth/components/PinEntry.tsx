@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IonButton, IonGrid, IonRow, IonCol, IonIcon, IonText } from '@ionic/react';
 import { backspaceOutline } from 'ionicons/icons';
 

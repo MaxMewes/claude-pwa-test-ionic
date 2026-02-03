@@ -13,6 +13,7 @@ import {
 import { closeOutline, cameraOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { logger } from '../../../shared/utils/logger';
 
 interface BarcodeScannerProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   const handleScanSuccess = useCallback((decodedText: string) => {
     if (!mountedRef.current) return;
 
-    console.log('Barcode detected:', decodedText);
+    logger.debug('Barcode detected:', decodedText);
 
     // Vibrate on success
     if (navigator.vibrate) {
@@ -106,10 +107,10 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
           },
-          (decodedText, decodedResult) => {
+          (decodedText) => {
             handleScanSuccess(decodedText);
           },
-          (errorMessage) => {
+          () => {
             // Scanning errors are normal and continuous, ignore them
           }
         );
@@ -117,18 +118,20 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         if (mountedRef.current) {
           setIsScanning(true);
         }
-      } catch (err: any) {
+      } catch (err) {
         if (!mountedRef.current) return;
 
         console.error('Scanner start error:', err);
 
         let errorMsg = t('scanner.cameraNotStarted');
-        if (err?.message?.includes('NotAllowedError') || err?.message?.includes('Permission')) {
-          errorMsg = t('scanner.permissionDenied');
-        } else if (err?.message?.includes('NotFoundError')) {
-          errorMsg = t('scanner.noCamera');
-        } else if (err?.message) {
-          errorMsg = err.message;
+        if (err instanceof Error) {
+          if (err.message?.includes('NotAllowedError') || err.message?.includes('Permission')) {
+            errorMsg = t('scanner.permissionDenied');
+          } else if (err.message?.includes('NotFoundError')) {
+            errorMsg = t('scanner.noCamera');
+          } else {
+            errorMsg = err.message;
+          }
         }
 
         setError(errorMsg);

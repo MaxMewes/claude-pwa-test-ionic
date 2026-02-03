@@ -66,7 +66,7 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
   const pathologicalTests = tests.filter((t) => t.IsPathological);
   const normalTests = tests.filter((t) => !t.IsPathological);
 
-  const renderTestRow = (test: TestResult, index: number, isPathoSection: boolean) => {
+  const renderTestRow = (test: TestResult, index: number) => {
     const pathoInfo = getPathoInfo(test);
     const refRange = formatReferenceRange(test);
     const bgColor = index % 2 === 0 ? COLORS.rowEven : COLORS.rowOdd;

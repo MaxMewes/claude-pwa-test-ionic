@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { Capacitor } from '@capacitor/core';
 import { useAuthStore } from '../../features/auth/store/authStore';
+import { logger } from '../../shared/utils/logger';
 
 // API Base URL configuration:
 // - Native apps (Android/iOS): Always use full URL (no CORS restrictions)
@@ -11,7 +12,7 @@ const getBaseUrl = (): string => {
   const isNative = Capacitor.isNativePlatform();
   const isDev = import.meta.env.DEV;
 
-  console.log('[API] Platform detection:', {
+  logger.debug('[API] Platform detection:', {
     isNative,
     isDev,
     platform: Capacitor.getPlatform(),
@@ -20,18 +21,18 @@ const getBaseUrl = (): string => {
 
   // Native platforms don't have CORS - always use full URL
   if (isNative) {
-    console.log('[API] Using full URL for native platform:', fullApiUrl);
+    logger.debug('[API] Using full URL for native platform:', fullApiUrl);
     return fullApiUrl;
   }
 
   // Web: use proxy in dev, full URL in prod
   const url = isDev ? '' : fullApiUrl;
-  console.log('[API] Using URL for web:', url || '(proxy)');
+  logger.debug('[API] Using URL for web:', url || '(proxy)');
   return url;
 };
 
 const API_BASE_URL = getBaseUrl();
-console.log('[API] Final baseURL:', API_BASE_URL);
+logger.debug('[API] Final baseURL:', API_BASE_URL);
 
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -60,7 +61,7 @@ axiosInstance.interceptors.request.use(
 
     // Log the full URL being requested
     const fullUrl = config.baseURL ? `${config.baseURL}${config.url}` : config.url;
-    console.log('[API] Request:', config.method?.toUpperCase(), fullUrl);
+    logger.debug('[API] Request:', config.method?.toUpperCase(), fullUrl);
 
     return config;
   },

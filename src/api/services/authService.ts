@@ -1,5 +1,6 @@
 import { axiosInstance } from '../client/axiosInstance';
 import type { User } from '../../features/auth/store/authStore';
+import { logger } from '../../shared/utils/logger';
 
 // labGate API V2 Request/Response types
 interface LoginRequestV2 {
@@ -77,12 +78,17 @@ export const authService = {
       AdditionalInformation: '',
     };
 
-    console.log('[AUTH] Login Request:', { ...request, Password: '***' });
+    logger.debug('[AUTH] Login Request:', { ...request, Password: '***' });
 
     const response = await axiosInstance.post<LoginResponseV2>('/Api/V2/Authentication/Authorize', request);
     const data = response.data;
 
-    console.log('[AUTH] Login Response:', data);
+    // Don't log sensitive token data even in development
+    logger.debug('[AUTH] Login Response:', { 
+      RequiresSecondFactor: data.RequiresSecondFactor,
+      PasswordExpired: data.PasswordExpired,
+      Email: data.Email || data.EMail,
+    });
 
     if (data.RequiresSecondFactor) {
       return {
@@ -158,7 +164,7 @@ export const authService = {
       await axiosInstance.post('/authentication/logout');
     } catch (error) {
       // Ignore logout errors
-      console.log('[AUTH] Logout error (ignored):', error);
+      logger.debug('[AUTH] Logout error (ignored):', error);
     }
   },
 

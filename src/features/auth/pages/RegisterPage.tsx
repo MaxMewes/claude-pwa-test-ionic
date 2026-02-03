@@ -76,9 +76,11 @@ export const RegisterPage: React.FC = () => {
       });
       router.push(ROUTES.LOGIN, 'back', 'replace');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      const errorMessage = err.response?.data?.message || t('errors.generic');
       presentToast({
-        message: error.response?.data?.message || t('errors.generic'),
+        message: errorMessage,
         duration: 3000,
         color: 'danger',
       });

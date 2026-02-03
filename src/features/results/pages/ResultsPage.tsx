@@ -173,21 +173,21 @@ export const ResultsPage: React.FC = () => {
     setIsSearchOpen(true);
   };
 
-  const handleResultClick = (resultId: number, isRead: boolean) => {
+  const handleResultClick = useCallback((resultId: number, isRead: boolean) => {
     // Mark as read when clicking on unread result
     if (!isRead) {
       markAsRead.mutate([resultId]);
     }
     history.push(`/results/${resultId}`);
-  };
+  }, [markAsRead, history]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await refetch();
-  };
+  }, [refetch]);
 
-  const handleToggleFavorite = (resultId: number) => {
+  const handleToggleFavorite = useCallback((resultId: number) => {
     toggleFavorite(resultId);
-  };
+  }, [toggleFavorite]);
 
   // Filter results based on search and filter modal settings
   // Note: Category filter is now passed to API via effectiveFilter.area
@@ -241,7 +241,7 @@ export const ResultsPage: React.FC = () => {
     }
 
     return results;
-  }, [allResults, searchQuery, filter, isFavorite]);
+  }, [allResults, searchQuery, filter.resultTypes, filter.isPinned, filter.labCategories, isFavorite]);
 
   // Use API counter for total counts, fall back to loaded results if counter not available
   const counts = useMemo(() => {

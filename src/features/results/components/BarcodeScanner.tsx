@@ -121,7 +121,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       } catch (err) {
         if (!mountedRef.current) return;
 
-        console.error('Scanner start error:', err);
+        logger.error('Scanner start error:', err);
 
         let errorMsg = t('scanner.cameraNotStarted');
         if (err instanceof Error) {
@@ -157,7 +157,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         scanner.clear();
         scannerRef.current = null;
       } catch (err) {
-        console.error('Error stopping scanner:', err);
+        logger.error('Error stopping scanner:', err);
       }
     }
     setIsScanning(false);

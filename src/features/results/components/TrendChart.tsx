@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { downloadOutline } from 'ionicons/icons';
 import { usePatientLabTrends, TrendDataPoint } from '../hooks/usePatientLabTrends';
+import { logger } from '../../../shared/utils/logger';
 
 interface TrendChartProps {
   patientId: number;
@@ -87,7 +88,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
 
     img.onerror = () => {
       isLoadComplete = true;
-      console.error('Failed to export chart image');
+      logger.error('Failed to export chart image');
       // Clean up on error
       canvas.remove();
     };
@@ -95,11 +96,13 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 
     // Cleanup timeout in case image never loads
+    // 10 seconds should be more than enough for any reasonable SVG to load
+    const IMAGE_LOAD_TIMEOUT_MS = 10000;
     setTimeout(() => {
       if (!isLoadComplete) {
         canvas.remove();
       }
-    }, 10000);
+    }, IMAGE_LOAD_TIMEOUT_MS);
   };
 
   if (isLoading) {

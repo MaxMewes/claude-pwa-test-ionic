@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { LabResult } from '../../../api/types';
+import { logger } from '../../../shared/utils/logger';
 
 export interface TrendDataPoint {
   date: string;
@@ -69,7 +70,7 @@ export function usePatientLabTrends(patientId: number | undefined) {
       const trendData = new Map<string, TrendDataPoint[]>();
 
       // Helper function to process requests with concurrency limit
-      // This prevents overwhelming the server with 20 simultaneous requests
+      // This prevents overwhelming the server with too many simultaneous requests
       const processBatch = async (ids: number[], concurrencyLimit: number) => {
         for (let i = 0; i < ids.length; i += concurrencyLimit) {
           const batch = ids.slice(i, i + concurrencyLimit);
@@ -118,7 +119,7 @@ export function usePatientLabTrends(patientId: number | undefined) {
                   }
                 }
               } catch (err) {
-                console.error('Error fetching result details:', err);
+                logger.error('Error fetching result details:', err);
               }
             })
           );

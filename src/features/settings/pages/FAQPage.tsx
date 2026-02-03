@@ -77,14 +77,14 @@ export const FAQPage: React.FC = () => {
 
     // Group by category
     return sorted.reduce((acc, faq) => {
-      const category = faq.category || 'Allgemein';
+      const category = faq.category || t('common.general');
       if (!acc[category]) {
         acc[category] = [];
       }
       acc[category].push(faq);
       return acc;
     }, {} as Record<string, typeof filtered>);
-  }, [allFAQs, searchQuery]);
+  }, [allFAQs, searchQuery, t]);
 
   if (isLoading) {
     return (
@@ -94,7 +94,7 @@ export const FAQPage: React.FC = () => {
             <IonButtons slot="start">
               <IonBackButton />
             </IonButtons>
-            <IonTitle>FAQ</IonTitle>
+            <IonTitle>{t('help.faqTitle')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent>
@@ -112,14 +112,14 @@ export const FAQPage: React.FC = () => {
             <IonButtons slot="start">
               <IonBackButton />
             </IonButtons>
-            <IonTitle>FAQ</IonTitle>
+            <IonTitle>{t('help.faqTitle')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent>
           <EmptyState
             type="error"
-            title="Fehler beim Laden"
-            message="Die FAQ konnte nicht geladen werden. Bitte versuchen Sie es später erneut."
+            title={t('help.faqLoadError')}
+            message={t('help.faqLoadErrorMessage')}
           />
         </IonContent>
       </IonPage>
@@ -142,7 +142,7 @@ export const FAQPage: React.FC = () => {
                 ref={searchbarRef}
                 value={searchQuery}
                 onIonInput={(e) => setSearchQuery(e.detail.value || '')}
-                placeholder="FAQ durchsuchen..."
+                placeholder={t('help.searchFAQ')}
                 animated
                 showCancelButton="never"
                 style={{ '--background': 'var(--labgate-selected-bg)' }}
@@ -155,7 +155,7 @@ export const FAQPage: React.FC = () => {
             </>
           ) : (
             <>
-              <IonTitle>FAQ</IonTitle>
+              <IonTitle>{t('help.faqTitle')}</IonTitle>
               <IonButtons slot="end">
                 <IonButton onClick={handleSearchToggle}>
                   <IonIcon icon={searchOutline} />
@@ -170,13 +170,13 @@ export const FAQPage: React.FC = () => {
         {!hasResults ? (
           <EmptyState
             type="search"
-            title={searchQuery ? 'Keine Ergebnisse' : 'Keine FAQ verfügbar'}
+            title={searchQuery ? t('emptyState.search.title') : t('help.noFAQAvailable')}
             message={
               searchQuery
-                ? 'Keine FAQ-Einträge gefunden, die Ihrer Suche entsprechen.'
-                : 'Aktuell sind keine FAQ-Einträge verfügbar.'
+                ? t('help.noMatchingEntries')
+                : t('help.noEntriesAvailable')
             }
-            actionLabel={searchQuery ? 'Suche zurücksetzen' : undefined}
+            actionLabel={searchQuery ? t('help.resetSearch') : undefined}
             onAction={searchQuery ? () => setSearchQuery('') : undefined}
           />
         ) : (
@@ -234,7 +234,7 @@ export const FAQPage: React.FC = () => {
               threshold="100px"
               disabled={!hasNextPage || isFetchingNextPage}
             >
-              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Lade mehr..." />
+              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText={t('common.loadingMore')} />
             </IonInfiniteScroll>
           </>
         )}

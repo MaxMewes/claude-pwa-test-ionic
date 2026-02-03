@@ -79,7 +79,7 @@ export const SendersPage: React.FC = () => {
                 ref={searchbarRef}
                 value={searchQuery}
                 onIonInput={(e) => setSearchQuery(e.detail.value || '')}
-                placeholder="Einsender suchen..."
+                placeholder={t('senders.searchPlaceholder')}
                 animated
                 showCancelButton="never"
                 style={{ '--background': 'var(--labgate-selected-bg)' }}
@@ -169,7 +169,7 @@ export const SendersPage: React.FC = () => {
               threshold="100px"
               disabled={!hasNextPage || isFetchingNextPage}
             >
-              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Lade mehr..." />
+              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText={t('common.loadingMore')} />
             </IonInfiniteScroll>
           </>
         )}

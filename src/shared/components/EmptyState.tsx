@@ -1,6 +1,7 @@
 import React from 'react';
 import { IonIcon, IonButton } from '@ionic/react';
 import { searchOutline, documentTextOutline, peopleOutline, businessOutline, newspaperOutline, alertCircleOutline } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
 import emptyNewsImage from '../../assets/images/empty-news-details-undraw-news.svg';
 import emptyPatientsImage from '../../assets/images/empty-patient-details-undraw-connecting-teams.svg';
 import emptyLaboratoriesImage from '../../assets/images/empty-laboratory-details-undraw-scientist.svg';
@@ -31,37 +32,6 @@ const imageMap: Partial<Record<EmptyStateProps['type'] & string, string>> = {
   results: noDataImage,
 };
 
-const defaultMessages: Record<string, { title: string; message: string }> = {
-  results: {
-    title: 'Keine Befunde',
-    message: 'Es sind keine Befunde vorhanden.',
-  },
-  patients: {
-    title: 'Keine Patienten',
-    message: 'Es sind keine Patienten vorhanden.',
-  },
-  laboratories: {
-    title: 'Keine Labore',
-    message: 'Es sind keine Labore vorhanden.',
-  },
-  news: {
-    title: 'Keine Neuigkeiten',
-    message: 'Es sind keine Neuigkeiten vorhanden.',
-  },
-  search: {
-    title: 'Keine Ergebnisse',
-    message: 'Ihre Suche ergab keine Treffer.',
-  },
-  generic: {
-    title: 'Keine Daten',
-    message: 'Es sind keine Daten vorhanden.',
-  },
-  error: {
-    title: 'Fehler',
-    message: 'Ein Fehler ist aufgetreten.',
-  },
-};
-
 export const EmptyState: React.FC<EmptyStateProps> = ({
   type = 'generic',
   title,
@@ -69,8 +39,41 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionLabel,
   onAction,
 }) => {
+  const { t } = useTranslation();
   const icon = iconMap[type];
   const image = imageMap[type];
+
+  const defaultMessages: Record<string, { title: string; message: string }> = {
+    results: {
+      title: t('emptyState.results.title'),
+      message: t('emptyState.results.message'),
+    },
+    patients: {
+      title: t('emptyState.patients.title'),
+      message: t('emptyState.patients.message'),
+    },
+    laboratories: {
+      title: t('emptyState.laboratories.title'),
+      message: t('emptyState.laboratories.message'),
+    },
+    news: {
+      title: t('emptyState.news.title'),
+      message: t('emptyState.news.message'),
+    },
+    search: {
+      title: t('emptyState.search.title'),
+      message: t('emptyState.search.message'),
+    },
+    generic: {
+      title: t('emptyState.generic.title'),
+      message: t('emptyState.generic.message'),
+    },
+    error: {
+      title: t('emptyState.error.title'),
+      message: t('emptyState.error.message'),
+    },
+  };
+
   const defaults = defaultMessages[type];
 
   return (

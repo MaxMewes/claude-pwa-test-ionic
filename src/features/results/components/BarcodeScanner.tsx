@@ -11,6 +11,7 @@ import {
   IonSpinner,
 } from '@ionic/react';
 import { closeOutline, cameraOutline } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface BarcodeScannerProps {
@@ -24,6 +25,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   onClose,
   onScan,
 }) => {
+  const { t } = useTranslation();
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string>('');
   const [retryCount, setRetryCount] = useState(0);
@@ -115,11 +117,11 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
         console.error('Scanner start error:', err);
 
-        let errorMsg = 'Kamera konnte nicht gestartet werden';
+        let errorMsg = t('scanner.cameraNotStarted');
         if (err?.message?.includes('NotAllowedError') || err?.message?.includes('Permission')) {
-          errorMsg = 'Kamera-Berechtigung wurde verweigert. Bitte in den App-Einstellungen erlauben.';
+          errorMsg = t('scanner.permissionDenied');
         } else if (err?.message?.includes('NotFoundError')) {
-          errorMsg = 'Keine Kamera gefunden';
+          errorMsg = t('scanner.noCamera');
         } else if (err?.message) {
           errorMsg = err.message;
         }
@@ -160,7 +162,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
   const handleManualInput = () => {
     stopScanner();
-    const barcode = prompt('Barcode manuell eingeben:');
+    const barcode = prompt(t('scanner.manualInputPrompt'));
     if (barcode) {
       onScan(barcode);
     }
@@ -182,7 +184,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     <IonModal isOpen={isOpen} onDidDismiss={handleClose}>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Barcode scannen</IonTitle>
+          <IonTitle>{t('scanner.title')}</IonTitle>
           <IonButtons slot="start">
             <IonButton onClick={handleClose}>
               <IonIcon icon={closeOutline} />
@@ -204,9 +206,9 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
           {!isScanning && !error && (
             <div style={{ textAlign: 'center', color: '#fff' }}>
               <IonSpinner name="crescent" style={{ width: '48px', height: '48px' }} />
-              <p style={{ marginTop: '16px' }}>Kamera wird gestartet...</p>
+              <p style={{ marginTop: '16px' }}>{t('scanner.cameraStarting')}</p>
               <p style={{ marginTop: '8px', fontSize: '12px', color: '#aaa' }}>
-                Bitte Kamera-Zugriff erlauben
+                {t('scanner.allowCameraAccess')}
               </p>
             </div>
           )}
@@ -216,10 +218,10 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               <IonIcon icon={cameraOutline} style={{ fontSize: '48px', marginBottom: '16px', color: '#ef4444' }} />
               <p style={{ color: '#ef4444', marginBottom: '16px', fontSize: '14px' }}>{error}</p>
               <IonButton expand="block" onClick={handleRetry} style={{ marginBottom: '8px' }}>
-                Erneut versuchen
+                {t('common.retry')}
               </IonButton>
               <IonButton expand="block" fill="outline" onClick={handleManualInput}>
-                Manuell eingeben
+                {t('scanner.manualInput')}
               </IonButton>
             </div>
           )}
@@ -237,13 +239,13 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
           {isScanning && (
             <div style={{ marginTop: '20px', textAlign: 'center' }}>
               <p style={{ color: '#fff', marginBottom: '8px', fontWeight: '600' }}>
-                Barcode im Rahmen positionieren
+                {t('scanner.positionBarcode')}
               </p>
               <p style={{ color: '#aaa', fontSize: '12px', marginBottom: '16px' }}>
-                Halte das Handy ruhig und warte 1-2 Sekunden
+                {t('scanner.holdSteady')}
               </p>
               <IonButton fill="outline" color="light" onClick={handleManualInput}>
-                Manuell eingeben
+                {t('scanner.manualInput')}
               </IonButton>
             </div>
           )}

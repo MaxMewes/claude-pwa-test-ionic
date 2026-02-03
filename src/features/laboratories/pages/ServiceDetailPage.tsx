@@ -15,6 +15,7 @@ import {
 } from '@ionic/react';
 import { globeOutline, flaskOutline, timeOutline } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useServiceDetail } from '../hooks/useLaboratories';
 import { SkeletonLoader, EmptyState } from '../../../shared/components';
 
@@ -28,6 +29,7 @@ const COLORS = {
 };
 
 export const ServiceDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { labId, serviceId } = useParams<{ labId: string; serviceId: string }>();
   const { data: serviceDetail, isLoading, error } = useServiceDetail(
     serviceId ? parseInt(serviceId, 10) : undefined
@@ -41,7 +43,7 @@ export const ServiceDetailPage: React.FC = () => {
             <IonButtons slot="start">
               <IonBackButton defaultHref={`/laboratories/${labId}`} />
             </IonButtons>
-            <IonTitle>Leistungsdetails</IonTitle>
+            <IonTitle>{t('laboratories.serviceDetail')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent>
@@ -59,14 +61,14 @@ export const ServiceDetailPage: React.FC = () => {
             <IonButtons slot="start">
               <IonBackButton defaultHref={`/laboratories/${labId}`} />
             </IonButtons>
-            <IonTitle>Leistungsdetails</IonTitle>
+            <IonTitle>{t('laboratories.serviceDetail')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent>
           <EmptyState
             type="error"
-            title="Leistung nicht gefunden"
-            message="Die angeforderte Leistung konnte nicht geladen werden."
+            title={t('laboratories.serviceNotFound')}
+            message={t('laboratories.serviceNotFoundMessage')}
           />
         </IonContent>
       </IonPage>
@@ -80,7 +82,7 @@ export const ServiceDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref={`/laboratories/${labId}`} />
           </IonButtons>
-          <IonTitle>Leistungsdetails</IonTitle>
+          <IonTitle>{t('laboratories.serviceDetail')}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>

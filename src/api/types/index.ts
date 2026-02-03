@@ -112,6 +112,10 @@ export interface LabResult {
   IsPathological?: boolean;
   IsUrgent?: boolean;
   HasCriticalValues?: boolean;
+  // API v3 actual field names
+  IsPatho?: boolean;
+  IsHighPatho?: boolean;
+  IsEmergency?: boolean;
   HasDocuments?: boolean;
   IsConfirmable?: boolean;
   ResultData?: TestResult[];

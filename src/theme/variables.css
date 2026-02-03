@@ -188,8 +188,9 @@ ion-toolbar {
   --padding-end: var(--labgate-spacing);
 }
 
-ion-header {
-  box-shadow: var(--labgate-shadow-sm);
+ion-header,
+ion-header.header-md {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 ion-header::after {
@@ -486,8 +487,9 @@ body.dark ion-toolbar {
   --background: #1E293B;
 }
 
-body.dark ion-header {
-  box-shadow: 0 1px 0 #334155;
+body.dark ion-header,
+body.dark ion-header.header-md {
+  box-shadow: 0 1px 3px rgba(51, 65, 85, 0.5);
 }
 
 body.dark ion-tab-bar {
@@ -568,8 +570,9 @@ body.dark .list-group-header {
     --background: #1E293B;
   }
 
-  body:not(.light) ion-header {
-    box-shadow: 0 1px 0 #334155;
+  body:not(.light) ion-header,
+  body:not(.light) ion-header.header-md {
+    box-shadow: 0 1px 3px rgba(51, 65, 85, 0.5);
   }
 
   body:not(.light) ion-tab-bar {

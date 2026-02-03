@@ -1,6 +1,7 @@
 {
   "common": {
     "loading": "Laden...",
+    "loadingMore": "Lade mehr...",
     "error": "Fehler",
     "retry": "Erneut versuchen",
     "cancel": "Abbrechen",
@@ -15,7 +16,9 @@
     "reset": "Zuruecksetzen",
     "noData": "Keine Daten vorhanden",
     "offline": "Sie sind offline",
-    "pullToRefresh": "Zum Aktualisieren ziehen"
+    "pullToRefresh": "Zum Aktualisieren ziehen",
+    "all": "Alle",
+    "general": "Allgemein"
   },
   "auth": {
     "login": "Anmelden",
@@ -57,7 +60,12 @@
       "useFaceId": "Mit Face ID anmelden"
     },
     "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
-    "autoLogout": "Aus Sicherheitsgruenden wurden Sie automatisch abgemeldet."
+    "autoLogout": "Aus Sicherheitsgruenden wurden Sie automatisch abgemeldet.",
+    "usernamePlaceholder": "Benutzername",
+    "emailPlaceholder": "name@example.de",
+    "usernameRequired": "Bitte geben Sie Ihren Benutzernamen ein",
+    "passwordRequired": "Bitte geben Sie Ihr Passwort ein",
+    "subtitle": "Medizinische Laborbefunde"
   },
   "results": {
     "title": "Befunde",
@@ -102,7 +110,26 @@
     "collectionDate": "Entnahmedatum",
     "reportDate": "Befunddatum",
     "orderNumber": "Auftragsnummer",
-    "pdf": "PDF herunterladen"
+    "pdf": "PDF herunterladen",
+    "searchPlaceholder": "Patient oder Labor-Nr. suchen...",
+    "noFilterResults": "Keine Befunde mit dem angewendeten Filter gefunden.",
+    "tryDifferentFilter": "Versuchen Sie einen anderen Filter.",
+    "period": {
+      "today": "Heute",
+      "7days": "Letzten 7 Tage",
+      "30days": "Letzten 30 Tage",
+      "all": "Alle",
+      "archive": "Archiv"
+    },
+    "tabs": {
+      "all": "Alle",
+      "unread": "Ungelesen",
+      "pathological": "Pathologisch",
+      "highPatho": "Hochpatho.",
+      "urgent": "Notfall"
+    },
+    "allLoaded": "Alle {{count}} Befunde geladen",
+    "showingFiltered": "{{shown}} von {{total}} Befunden"
   },
   "patients": {
     "title": "Patienten",
@@ -123,7 +150,8 @@
     "contact": "Kontakt",
     "address": "Adresse",
     "lastVisit": "Letzter Besuch",
-    "resultCount": "Anzahl Befunde"
+    "resultCount": "Anzahl Befunde",
+    "searchPlaceholder": "Patient suchen..."
   },
   "laboratories": {
     "title": "Labore",
@@ -136,7 +164,15 @@
     "directions": "Route anzeigen",
     "call": "Anrufen",
     "email": "E-Mail senden",
-    "website": "Website oeffnen"
+    "website": "Website oeffnen",
+    "searchPlaceholder": "Leistung suchen...",
+    "serviceNotFound": "Leistung nicht gefunden",
+    "serviceNotFoundMessage": "Die angeforderte Leistung konnte nicht geladen werden.",
+    "noServicesFound": "Keine Leistungen gefunden",
+    "noServicesAvailable": "Keine Leistungen verfuegbar",
+    "service": "Leistung",
+    "services": "Leistungen",
+    "serviceDetail": "Leistungsdetails"
   },
   "news": {
     "title": "Neuigkeiten",
@@ -161,7 +197,8 @@
     "mobile": "Mobil",
     "email": "E-Mail",
     "address": "Adresse",
-    "specialField": "Fachgebiet"
+    "specialField": "Fachgebiet",
+    "searchPlaceholder": "Einsender suchen..."
   },
   "help": {
     "title": "Hilfe",
@@ -184,13 +221,21 @@
     "messagePlaceholder": "Beschreiben Sie Ihr Anliegen...",
     "emailOptional": "E-Mail (optional)",
     "emailPlaceholder": "Fuer Rueckfragen",
-    "sendFeedback": "Feedback senden"
+    "sendFeedback": "Feedback senden",
+    "faqTitle": "FAQ",
+    "faqLoadError": "Fehler beim Laden",
+    "faqLoadErrorMessage": "Die FAQ konnte nicht geladen werden. Bitte versuchen Sie es spaeter erneut.",
+    "noFAQAvailable": "Keine FAQ verfuegbar",
+    "noMatchingEntries": "Keine FAQ-Eintraege gefunden, die Ihrer Suche entsprechen.",
+    "noEntriesAvailable": "Aktuell sind keine FAQ-Eintraege verfuegbar.",
+    "resetSearch": "Suche zuruecksetzen"
   },
   "settings": {
     "title": "Einstellungen",
     "account": "Konto",
     "profile": "Profil",
     "darkMode": "Dunkelmodus",
+    "language": "Sprache",
     "changePassword": "Passwort aendern",
     "notifications": {
       "title": "Benachrichtigungen",
@@ -246,6 +291,48 @@
       "success": "Passwort erfolgreich geaendert",
       "requirements": "Mindestens 8 Zeichen, Gross-/Kleinbuchstaben und Zahlen"
     }
+  },
+  "emptyState": {
+    "results": {
+      "title": "Keine Befunde",
+      "message": "Es sind keine Befunde vorhanden."
+    },
+    "patients": {
+      "title": "Keine Patienten",
+      "message": "Es sind keine Patienten vorhanden."
+    },
+    "laboratories": {
+      "title": "Keine Labore",
+      "message": "Es sind keine Labore vorhanden."
+    },
+    "news": {
+      "title": "Keine Neuigkeiten",
+      "message": "Es sind keine Neuigkeiten vorhanden."
+    },
+    "search": {
+      "title": "Keine Ergebnisse",
+      "message": "Ihre Suche ergab keine Treffer."
+    },
+    "generic": {
+      "title": "Keine Daten",
+      "message": "Es sind keine Daten vorhanden."
+    },
+    "error": {
+      "title": "Fehler",
+      "message": "Ein Fehler ist aufgetreten."
+    }
+  },
+  "scanner": {
+    "title": "Barcode scannen",
+    "cameraNotStarted": "Kamera konnte nicht gestartet werden",
+    "permissionDenied": "Kamera-Berechtigung wurde verweigert. Bitte in den App-Einstellungen erlauben.",
+    "noCamera": "Keine Kamera gefunden",
+    "cameraStarting": "Kamera wird gestartet...",
+    "allowCameraAccess": "Bitte Kamera-Zugriff erlauben",
+    "positionBarcode": "Barcode im Rahmen positionieren",
+    "holdSteady": "Halte das Handy ruhig und warte 1-2 Sekunden",
+    "manualInput": "Manuell eingeben",
+    "manualInputPrompt": "Barcode manuell eingeben:"
   },
   "errors": {
     "network": "Netzwerkfehler. Bitte pruefen Sie Ihre Internetverbindung.",

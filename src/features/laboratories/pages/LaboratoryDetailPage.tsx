@@ -358,7 +358,7 @@ export const LaboratoryDetailPage: React.FC = () => {
         <SkeletonLoader type="list" count={10} />
       ) : !services?.length ? (
         <div style={{ padding: '40px 16px', textAlign: 'center', color: COLORS.textLight }}>
-          {searchText ? 'Keine Leistungen gefunden' : 'Keine Leistungen verfügbar'}
+          {searchText ? t('laboratories.noServicesFound') : t('laboratories.noServicesAvailable')}
         </div>
       ) : (
         <IonAccordionGroup
@@ -374,7 +374,7 @@ export const LaboratoryDetailPage: React.FC = () => {
                     {letter}
                   </h2>
                   <p style={{ fontSize: '12px', color: COLORS.textLight, margin: '4px 0 0 0' }}>
-                    {items.length} {items.length === 1 ? 'Leistung' : 'Leistungen'}
+                    {items.length} {items.length === 1 ? t('laboratories.service') : t('laboratories.services')}
                   </p>
                 </IonLabel>
               </IonItem>
@@ -533,7 +533,7 @@ export const LaboratoryDetailPage: React.FC = () => {
                 ref={searchbarRef}
                 value={searchText}
                 onIonInput={(e) => setSearchText(e.detail.value || '')}
-                placeholder="Leistung suchen..."
+                placeholder={t('laboratories.searchPlaceholder')}
                 animated
                 showCancelButton="never"
                 style={{ '--background': 'var(--labgate-selected-bg)' }}

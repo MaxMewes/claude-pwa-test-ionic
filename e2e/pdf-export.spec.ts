@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { login, waitForStable } from './helpers/auth';
+import { login, waitForStable, selectAllResultsFilter } from './helpers/auth';
 
 /**
  * PDF Export Tests
@@ -15,6 +15,7 @@ test.describe('PDF Export', () => {
   test.describe('Result Detail PDF Export', () => {
     test('should have PDF export button on result detail page', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Navigate to first result
@@ -44,6 +45,7 @@ test.describe('PDF Export', () => {
 
     test('should trigger PDF download when clicking export button', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const resultItem = page.locator('ion-item, ion-card, .result-card').first();
@@ -74,6 +76,7 @@ test.describe('PDF Export', () => {
 
     test('should show loading indicator during PDF generation', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const resultItem = page.locator('ion-item, ion-card, .result-card').first();
@@ -103,6 +106,7 @@ test.describe('PDF Export', () => {
   test.describe('Share/Print Options', () => {
     test('should have share functionality for results', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const resultItem = page.locator('ion-item, ion-card, .result-card').first();
@@ -128,6 +132,7 @@ test.describe('PDF Export', () => {
 
     test('should have print option in action sheet', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const resultItem = page.locator('ion-item, ion-card, .result-card').first();
@@ -160,6 +165,7 @@ test.describe('PDF Export', () => {
   test.describe('Batch PDF Export', () => {
     test('should allow selecting multiple results for export', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Check for multi-select or batch export functionality

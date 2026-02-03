@@ -164,7 +164,7 @@ export const HelpPage: React.FC = () => {
               threshold="100px"
               disabled={!hasNextPage || isFetchingNextPage}
             >
-              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Lade mehr..." />
+              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText={t('common.loadingMore')} />
             </IonInfiniteScroll>
           </>
         )}

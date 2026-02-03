@@ -94,13 +94,32 @@ function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage = ITEMS_P
     v3Filters.Area = 'NotArchived';
   }
 
+  // Favorites filter (from filter modal)
+  if (filters.isPinned || filters.isFavorite) {
+    v3Filters.ResultCategory = 'Favorites';
+  }
   // Category filter
-  if (filters.area === 'new') {
+  else if (filters.area === 'new') {
     v3Filters.ResultCategory = 'New';
   } else if (filters.area === 'pathological') {
     v3Filters.ResultCategory = 'Pathological';
   } else if (filters.area === 'urgent') {
     v3Filters.ResultCategory = 'Urgent';
+  }
+
+  // Result type filter (E=Endbefund, T=Teilbefund, V=Vorläufig, N=Nachforderung, A=Archiv)
+  if (filters.resultTypes?.length) {
+    const typeMap: Record<string, string> = {
+      final: 'E',
+      partial: 'T',
+      preliminary: 'V',
+      followUp: 'N',
+      archive: 'A',
+    };
+    const mappedTypes = filters.resultTypes.map(t => typeMap[t]).filter(Boolean);
+    if (mappedTypes.length) {
+      v3Filters.ResultType = mappedTypes.join(',');
+    }
   }
 
   // Date filter - only override if not set by period filter
@@ -137,6 +156,16 @@ function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage = ITEMS_P
   return v3Filters;
 }
 
+// Counter response type
+interface CounterResponse {
+  TotalCount?: number;
+  NonReadCount?: number;
+  PathologicalCount?: number;
+  HighPathologicalCount?: number;
+  UrgentCount?: number;
+  FavoriteCount?: number;
+}
+
 export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
   return useInfiniteQuery({
     queryKey: [RESULTS_KEY, filter, period],
@@ -144,21 +173,47 @@ export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
       // Build query params
       const params = mapFiltersToV3(filter, pageParam, ITEMS_PER_PAGE, period);
 
-      // labGate API v3 endpoint
-      const response = await axiosInstance.get<ResultsResponseV3>('/api/v3/results', { params });
+      // Build counter params (same period filter)
+      const counterParams: Record<string, string> = {};
+      if (period) {
+        const periodParams = mapPeriodToDateParams(period);
+        if (periodParams.StartDate) counterParams.StartDate = periodParams.StartDate;
+        if (periodParams.EndDate) counterParams.EndDate = periodParams.EndDate;
+        if (periodParams.Area) counterParams.Area = periodParams.Area;
+      }
+
+      // Fetch results first (required), then try counter (optional for total count)
+      const resultsResponse = await axiosInstance.get<ResultsResponseV3>('/api/v3/results', { params });
+      const results = resultsResponse.data.Results || [];
+
+      // Try to get counter for accurate total, but don't fail if it errors
+      let totalCount = results.length;
+      try {
+        const counterResponse = await axiosInstance.get<CounterResponse>('/api/v3/results/counter', { params: counterParams });
+        totalCount = counterResponse.data?.TotalCount ?? results.length;
+      } catch {
+        // Counter failed - estimate: if we got a full page, assume there are more
+        totalCount = results.length === ITEMS_PER_PAGE ? results.length + 1 : results.length;
+      }
 
       return {
-        Results: response.data.Results || [],
-        TotalCount: response.data.TotalCount || 0,
-        CurrentPage: response.data.CurrentPage || 0,
-        ItemsPerPage: response.data.ItemsPerPage || ITEMS_PER_PAGE,
-        TotalPages: response.data.TotalPages || 1,
+        Results: results,
+        TotalCount: totalCount,
+        CurrentPage: pageParam - 1, // API uses 0-based
+        ItemsPerPage: ITEMS_PER_PAGE,
+        TotalPages: Math.ceil(totalCount / ITEMS_PER_PAGE),
+        pageNumber: pageParam,
       };
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.CurrentPage + 2; // API uses 0-based, we use 1-based
-      return nextPage <= lastPage.TotalPages ? nextPage : undefined;
+    getNextPageParam: (lastPage, allPages) => {
+      // Calculate total items loaded across all pages
+      const totalLoaded = allPages.reduce((sum, page) => sum + page.Results.length, 0);
+      // If we've loaded fewer than total, there are more pages
+      if (totalLoaded < lastPage.TotalCount) {
+        return lastPage.pageNumber + 1;
+      }
+      return undefined;
     },
   });
 }
@@ -273,11 +328,20 @@ interface CounterResponseV3 {
   FavoriteCount?: number;
 }
 
-export function useResultCounter() {
+export function useResultCounter(period?: ResultPeriodFilter) {
   return useQuery({
-    queryKey: [RESULTS_KEY, 'counter'],
+    queryKey: [RESULTS_KEY, 'counter', period],
     queryFn: async () => {
-      const response = await axiosInstance.get<CounterResponseV3>('/api/v3/results/counter');
+      // Build params with period filter to match the results query
+      const params: Record<string, string> = {};
+      if (period) {
+        const periodParams = mapPeriodToDateParams(period);
+        if (periodParams.StartDate) params.StartDate = periodParams.StartDate;
+        if (periodParams.EndDate) params.EndDate = periodParams.EndDate;
+        if (periodParams.Area) params.Area = periodParams.Area;
+      }
+
+      const response = await axiosInstance.get<CounterResponseV3>('/api/v3/results/counter', { params });
       const data = response.data;
 
       // Map to local format
@@ -289,6 +353,9 @@ export function useResultCounter() {
         Urgent: data.UrgentCount || 0,
       } as ResultCounter;
     },
+    // Don't fail silently - allow fallback in component
+    retry: 1,
+    retryDelay: 1000,
   });
 }
 

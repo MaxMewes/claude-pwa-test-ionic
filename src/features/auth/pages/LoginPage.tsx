@@ -19,16 +19,19 @@ import { PasswordInput } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
 import { useIonRouter } from '@ionic/react';
 
-// labGate API v3 uses Username instead of email
-const loginSchema = z.object({
-  username: z.string().min(1, 'Bitte geben Sie Ihren Benutzernamen ein'),
-  password: z.string().min(1, 'Bitte geben Sie Ihr Passwort ein'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = {
+  username: string;
+  password: string;
+};
 
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
+
+  // labGate API v3 uses Username instead of email
+  const loginSchema = z.object({
+    username: z.string().min(1, t('auth.usernameRequired')),
+    password: z.string().min(1, t('auth.passwordRequired')),
+  });
   const router = useIonRouter();
   const { login, isLoggingIn, loginError } = useAuth();
 
@@ -69,7 +72,7 @@ export const LoginPage: React.FC = () => {
             margin: '0 auto',
           }}
         >
-          {/* Logo and Title - Modern Design */}
+          {/* Logo and Subtitle */}
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <img
               src="/assets/images/login-undraw-hire.svg"
@@ -81,22 +84,13 @@ export const LoginPage: React.FC = () => {
                 display: 'block',
               }}
             />
-            <h1 style={{
-              margin: '0 0 6px 0',
-              fontSize: '32px',
-              fontWeight: 700,
-              color: 'var(--labgate-text)',
-              letterSpacing: '-0.5px'
-            }}>
-              labGate
-            </h1>
             <p style={{
               margin: 0,
               color: 'var(--labgate-text-muted)',
               fontSize: '15px',
               fontWeight: 500
             }}>
-              Medizinische Laborbefunde
+              {t('auth.subtitle')}
             </p>
           </div>
 
@@ -107,7 +101,7 @@ export const LoginPage: React.FC = () => {
                 <IonLabel position="stacked">{t('auth.username')}</IonLabel>
                 <IonInput
                   type="text"
-                  placeholder="Benutzername"
+                  placeholder={t('auth.usernamePlaceholder')}
                   {...register('username')}
                   onIonInput={(e) => setValue('username', e.detail.value || '')}
                 />
@@ -121,6 +115,7 @@ export const LoginPage: React.FC = () => {
               <PasswordInput
                 label={t('auth.password')}
                 value={password}
+                placeholder={t('auth.password')}
                 onChange={(value) => setValue('password', value)}
                 error={errors.password?.message}
               />

@@ -131,7 +131,7 @@ export const ResetPasswordPage: React.FC = () => {
                 <IonLabel position="stacked">{t('auth.email')}</IonLabel>
                 <IonInput
                   type="email"
-                  placeholder="name@example.de"
+                  placeholder={t('auth.emailPlaceholder')}
                   {...register('email')}
                   onIonInput={(e) => setValue('email', e.detail.value || '')}
                 />

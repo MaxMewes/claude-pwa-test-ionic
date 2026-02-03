@@ -8,8 +8,25 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const isApkBuild = mode === 'production'
+  const buildTimestamp = Date.now()
 
   return {
+    define: {
+      __BUILD_TIMESTAMP__: buildTimestamp,
+    },
+    build: {
+      rollupOptions: {
+        output: isApkBuild
+          ? {
+              // Cache busting for APK build: Content hashes + timestamp in filenames
+              entryFileNames: `assets/[name]-[hash]-${buildTimestamp}.js`,
+              chunkFileNames: `assets/[name]-[hash]-${buildTimestamp}.js`,
+              assetFileNames: `assets/[name]-[hash]-${buildTimestamp}.[ext]`,
+            }
+          : {},
+      },
+    },
     server: {
       port: parseInt(env.VITE_PORT) || 3000,
       headers: {
@@ -18,7 +35,9 @@ export default defineConfig(({ mode }) => {
         'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), payment=()',
+        'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(self), payment=()',
+        // frame-ancestors must be set via HTTP header (not meta tag)
+        'Content-Security-Policy': "frame-ancestors 'none'",
       },
       proxy: {
         // Proxy API requests to avoid CORS issues during development
@@ -71,6 +90,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB - increased for legacy bundle
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
           runtimeCaching: [
             {

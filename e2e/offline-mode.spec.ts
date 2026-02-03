@@ -1,5 +1,5 @@
 import { test, expect, Page, BrowserContext } from '@playwright/test';
-import { login, waitForStable } from './helpers/auth';
+import { login, waitForStable, selectAllResultsFilter } from './helpers/auth';
 
 /**
  * Offline Mode Tests
@@ -15,10 +15,12 @@ test.describe('Offline Mode', () => {
     test('should show offline indicator when network is disconnected', async ({ page, context }) => {
       // First, login and load some data while online
       await login(page);
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Navigate to results to cache some data
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page, 2000);
 
       // Go offline
@@ -40,6 +42,7 @@ test.describe('Offline Mode', () => {
     test('should restore online status when network reconnects', async ({ page, context }) => {
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Go offline then back online
@@ -50,7 +53,7 @@ test.describe('Offline Mode', () => {
       await page.waitForTimeout(2000);
 
       // Page should be usable after reconnection
-      await expect(page.locator('ion-content')).toBeVisible();
+      await expect(page.locator('ion-content').first()).toBeVisible();
     });
   });
 
@@ -59,6 +62,7 @@ test.describe('Offline Mode', () => {
       // Login and cache data while online
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page, 3000);
 
       // Check if there are results
@@ -73,7 +77,7 @@ test.describe('Offline Mode', () => {
       await waitForStable(page, 2000);
 
       // Cached content should still be visible
-      const content = page.locator('ion-content');
+      const content = page.locator('ion-content').first();
       await expect(content).toBeVisible();
 
       // If there were results before, they should still be accessible from cache
@@ -87,6 +91,7 @@ test.describe('Offline Mode', () => {
     test('should cache static assets for offline use', async ({ page, context }) => {
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Go offline
@@ -129,6 +134,7 @@ test.describe('Offline Mode', () => {
     test('should allow tab navigation while offline', async ({ page, context }) => {
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Cache other pages by visiting them
@@ -137,6 +143,7 @@ test.describe('Offline Mode', () => {
       await page.goto('/settings');
       await waitForStable(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Go offline
@@ -150,7 +157,7 @@ test.describe('Offline Mode', () => {
         await waitForStable(page);
 
         // Should still show settings page from cache
-        await expect(page.locator('ion-content')).toBeVisible();
+        await expect(page.locator('ion-content').first()).toBeVisible();
       }
     });
 
@@ -189,6 +196,7 @@ test.describe('Offline Mode', () => {
     test('should sync data when coming back online', async ({ page, context }) => {
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Go offline
@@ -204,12 +212,13 @@ test.describe('Offline Mode', () => {
       await waitForStable(page, 3000);
 
       // Page should load fresh data
-      await expect(page.locator('ion-content')).toBeVisible();
+      await expect(page.locator('ion-content').first()).toBeVisible();
     });
 
     test('should queue actions performed offline', async ({ page, context }) => {
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Find a result to favorite
@@ -272,7 +281,7 @@ test.describe('Offline Mode', () => {
       await waitForStable(page);
 
       // Login page should render from cache
-      await expect(page.locator('ion-content')).toBeVisible();
+      await expect(page.locator('ion-content').first()).toBeVisible();
     });
   });
 
@@ -280,6 +289,7 @@ test.describe('Offline Mode', () => {
     test('should show user-friendly error when fetch fails offline', async ({ page, context }) => {
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Go offline
@@ -290,7 +300,7 @@ test.describe('Offline Mode', () => {
       await waitForStable(page, 2000);
 
       // Should show error message or cached empty state
-      const content = page.locator('ion-content');
+      const content = page.locator('ion-content').first();
       await expect(content).toBeVisible();
 
       // Check for error indicator
@@ -304,6 +314,7 @@ test.describe('Offline Mode', () => {
     test('should allow retry when network is available again', async ({ page, context }) => {
       await login(page);
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Go offline
@@ -328,7 +339,7 @@ test.describe('Offline Mode', () => {
       }
 
       // Should load successfully now
-      await expect(page.locator('ion-content')).toBeVisible();
+      await expect(page.locator('ion-content').first()).toBeVisible();
     });
   });
 });

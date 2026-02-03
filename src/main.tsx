@@ -3,14 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { queryClient } from './config/queryClient';
-import { axiosInstance } from './api/client/axiosInstance';
-import { setupMockAdapter } from './api/client/mockAdapter';
 import './config/i18n';
-
-// Setup mock API only when VITE_USE_MOCK_API is true
-if (import.meta.env.VITE_USE_MOCK_API === 'true') {
-  setupMockAdapter(axiosInstance);
-}
 
 const container = document.getElementById('root');
 const root = createRoot(container!);

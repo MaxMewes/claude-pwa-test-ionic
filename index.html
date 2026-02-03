@@ -17,6 +17,7 @@
     <meta name="description" content="labGate - Ihre medizinischen Laborbefunde sicher und schnell abrufen" />
 
     <!-- Security Headers -->
+    <!-- Note: frame-ancestors must be set via HTTP headers, not meta tags -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval';
@@ -24,7 +25,7 @@
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: https: blob:;
       connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss: ws:;
-      frame-ancestors 'none';
+      media-src 'self' blob:;
       base-uri 'self';
       form-action 'self';
     " />

@@ -154,7 +154,7 @@ export const PatientsPage: React.FC = () => {
                 ref={searchbarRef}
                 value={search}
                 onIonInput={(e) => handleSearch(e.detail.value || '')}
-                placeholder="Patient suchen..."
+                placeholder={t('patients.searchPlaceholder')}
                 animated
                 showCancelButton="never"
                 style={{ '--background': 'var(--labgate-selected-bg)' }}

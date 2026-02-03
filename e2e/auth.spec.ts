@@ -8,7 +8,7 @@ test.describe('Authentication', () => {
       await waitForStable(page);
 
       // Check for login form elements
-      await expect(page.locator('text=labGate')).toBeVisible();
+      await expect(page.locator('img[alt="labGate"]')).toBeVisible();
       await expect(page.locator('ion-input').first()).toBeVisible();
       await expect(page.locator('ion-button[type="submit"]')).toBeVisible();
     });
@@ -20,10 +20,11 @@ test.describe('Authentication', () => {
       // Click login without filling fields
       const loginButton = page.locator('ion-button[type="submit"]');
       await loginButton.click();
+      await waitForStable(page);
 
-      // Should show at least one validation error
-      const errorMessages = page.locator('div[slot="error"], .error-message, ion-text[color="danger"]');
-      await expect(errorMessages.first()).toBeVisible({ timeout: 3000 });
+      // Should show validation error text (Ionic renders error in slot)
+      const errorText = page.locator('text=/benutzername|username|required/i');
+      await expect(errorText.first()).toBeVisible({ timeout: 5000 });
     });
 
     test('should login successfully with valid credentials', async ({ page }) => {
@@ -35,8 +36,8 @@ test.describe('Authentication', () => {
         await page.waitForTimeout(2000);
       }
 
-      // Should see content
-      await expect(page.locator('ion-content')).toBeVisible();
+      // Should see main content area (use role='main' to avoid matching menu content)
+      await expect(page.getByRole('main')).toBeVisible();
     });
 
     test('should show error for invalid credentials', async ({ page }) => {

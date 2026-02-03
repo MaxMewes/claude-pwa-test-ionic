@@ -10,8 +10,7 @@ import {
   IonButton,
   IonIcon,
   IonSearchbar,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
+  IonSpinner,
   IonMenuButton,
 } from '@ionic/react';
 import { searchOutline, closeOutline, barcodeOutline, funnelOutline } from 'ionicons/icons';
@@ -27,6 +26,9 @@ import { LabResult, ResultFilter } from '../../../api/types';
 
 type ResultCategory = 'all' | 'unread' | 'pathological' | 'highPatho' | 'urgent';
 
+// Valid period values for URL parameter validation
+const VALID_PERIODS: ResultPeriodFilter[] = ['today', '7days', '30days', 'all', 'archive'];
+
 export const ResultsPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -39,7 +41,19 @@ export const ResultsPage: React.FC = () => {
   const [filter, setFilter] = useState<ResultFilter>({});
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
 
-  const { isFavorite, toggleFavorite, resultsPeriod } = useSettingsStore();
+  const { isFavorite, toggleFavorite, resultsPeriod: storedPeriod, setResultsPeriod } = useSettingsStore();
+
+  // Read period and search from URL, fall back to store
+  const urlParams = new URLSearchParams(location.search);
+  const urlPeriod = urlParams.get('period') as ResultPeriodFilter | null;
+  const effectivePeriod: ResultPeriodFilter = (urlPeriod && VALID_PERIODS.includes(urlPeriod)) ? urlPeriod : storedPeriod;
+
+  // Sync URL period to store on mount/change
+  useEffect(() => {
+    if (urlPeriod && VALID_PERIODS.includes(urlPeriod) && urlPeriod !== storedPeriod) {
+      setResultsPeriod(urlPeriod);
+    }
+  }, [urlPeriod, storedPeriod, setResultsPeriod]);
 
   // Read search parameter from URL on mount/change
   useEffect(() => {
@@ -51,8 +65,18 @@ export const ResultsPage: React.FC = () => {
     }
   }, [location.search]);
 
-  const { data, isLoading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useResults(undefined, resultsPeriod);
-  const { data: counter } = useResultCounter();
+  // Update URL when period changes (from settings page)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const currentUrlPeriod = params.get('period');
+    if (currentUrlPeriod !== storedPeriod) {
+      params.set('period', storedPeriod);
+      history.replace({ pathname: location.pathname, search: params.toString() });
+    }
+  }, [storedPeriod, location.pathname, location.search, history]);
+
+  const { data, isLoading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useResults(filter, effectivePeriod);
+  const { data: counter } = useResultCounter(effectivePeriod);
 
   // Flatten paginated results
   const allResults = data?.pages?.flatMap((page) => page.Results) || [];
@@ -60,11 +84,11 @@ export const ResultsPage: React.FC = () => {
 
   // Period title mapping
   const periodTitles: Record<ResultPeriodFilter, string> = {
-    today: 'Heute',
-    '7days': 'Letzten 7 Tage',
-    '30days': 'Letzten 30 Tage',
-    all: 'Alle',
-    archive: 'Archiv',
+    today: t('results.period.today'),
+    '7days': t('results.period.7days'),
+    '30days': t('results.period.30days'),
+    all: t('results.period.all'),
+    archive: t('results.period.archive'),
   };
 
   // Focus searchbar when opening
@@ -75,6 +99,22 @@ export const ResultsPage: React.FC = () => {
       }, 100);
     }
   }, [isSearchOpen]);
+
+  // Handle infinite scroll via IonContent scroll event
+  const handleScroll = useCallback((event: CustomEvent) => {
+    const target = event.target as HTMLIonContentElement;
+    target.getScrollElement().then((scrollElement) => {
+      const scrollTop = scrollElement.scrollTop;
+      const scrollHeight = scrollElement.scrollHeight;
+      const clientHeight = scrollElement.clientHeight;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Load more when within 400px of bottom
+      if (distanceFromBottom < 400 && hasNextPage && !isFetchingNextPage && !isLoading) {
+        fetchNextPage();
+      }
+    });
+  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
@@ -112,26 +152,57 @@ export const ResultsPage: React.FC = () => {
     toggleFavorite(resultId);
   };
 
-  // Filter results based on category and search (period is now filtered by API)
+  // Filter results based on category, search, and filter modal settings
+  // Note: Some filters (favorites, resultTypes) are sent to API, others need client-side filtering
   const filteredResults = useMemo(() => {
     let results = allResults;
 
-    // Apply category filter
+    // Apply category filter (using correct API field names: IsPatho, IsHighPatho, IsEmergency)
     switch (category) {
       case 'unread':
         results = results.filter((r) => !r.IsRead);
         break;
       case 'pathological':
-        results = results.filter((r) => r.IsPathological && !r.IsUrgent);
+        results = results.filter((r) => r.IsPatho && !r.IsEmergency);
         break;
       case 'highPatho':
         // High pathological - has critical values (HH or LL indicators)
-        results = results.filter((r) => r.IsPathological && r.HasCriticalValues);
+        results = results.filter((r) => r.IsHighPatho);
         break;
       case 'urgent':
-        results = results.filter((r) => r.IsUrgent);
+        results = results.filter((r) => r.IsEmergency);
         break;
     }
+
+    // Client-side filter for result types (fallback if API doesn't support or as additional filter)
+    // Type codes: E=Endbefund, T=Teilbefund, V=Vorläufig, N=Nachforderung, A=Archiv
+    if (filter.resultTypes?.length) {
+      const typeMap: Record<string, string> = {
+        final: 'E',
+        partial: 'T',
+        preliminary: 'V',
+        followUp: 'N',
+        archive: 'A',
+      };
+      const allowedTypes = filter.resultTypes.map(t => typeMap[t]).filter(Boolean);
+      if (allowedTypes.length) {
+        results = results.filter((r) => {
+          const resultType = (r as LabResult & { Type?: string }).Type;
+          return resultType && allowedTypes.includes(resultType);
+        });
+      }
+    }
+
+    // Client-side filter for favorites (fallback if API doesn't support)
+    if (filter.isPinned) {
+      results = results.filter((r) => r.IsFavorite || isFavorite(r.Id));
+    }
+
+    // Client-side filter for lab categories (API doesn't support this)
+    // Note: labCategories filter would need Sender.SpecialField or similar, skipping if not available
+    // if (filter.labCategories?.length) {
+    //   results = results.filter based on sender/laboratory type
+    // }
 
     // Apply search filter
     if (searchQuery) {
@@ -147,33 +218,35 @@ export const ResultsPage: React.FC = () => {
     }
 
     return results;
-  }, [allResults, category, searchQuery]);
+  }, [allResults, category, searchQuery, filter, isFavorite]);
 
-  // Calculate counts for each category (based on API-filtered results)
+  // Use API counter for total counts, fall back to loaded results if counter not available
   const counts = useMemo(() => {
+    if (counter) {
+      return {
+        all: counter.Total,
+        unread: counter.New,
+        pathological: counter.Pathological,
+        highPatho: counter.HighPathological ?? 0,
+        urgent: counter.Urgent,
+      };
+    }
+    // Fallback to loaded results count (using correct API field names)
     return {
       all: allResults.length,
       unread: allResults.filter((r) => !r.IsRead).length,
-      pathological: allResults.filter((r) => r.IsPathological && !r.IsUrgent).length,
-      highPatho: allResults.filter((r) => r.IsPathological && r.HasCriticalValues).length,
-      urgent: allResults.filter((r) => r.IsUrgent).length,
+      pathological: allResults.filter((r) => r.IsPatho && !r.IsEmergency).length,
+      highPatho: allResults.filter((r) => r.IsHighPatho).length,
+      urgent: allResults.filter((r) => r.IsEmergency).length,
     };
-  }, [allResults]);
-
-  // Handle infinite scroll
-  const handleLoadMore = async (event: CustomEvent<void>) => {
-    if (hasNextPage) {
-      await fetchNextPage();
-    }
-    (event.target as HTMLIonInfiniteScrollElement).complete();
-  };
+  }, [counter, allResults]);
 
   const tabs: { key: ResultCategory; label: string; count: number; color: string }[] = [
-    { key: 'all', label: 'Alle', count: counts.all, color: '#000000' },
-    { key: 'unread', label: 'Ungelesen', count: counts.unread, color: '#000000' },
-    { key: 'pathological', label: 'Pathologisch', count: counts.pathological, color: '#F59E0B' },
-    { key: 'highPatho', label: 'Hochpatho.', count: counts.highPatho, color: '#EF4444' },
-    { key: 'urgent', label: 'Notfall', count: counts.urgent, color: '#EF4444' },
+    { key: 'all', label: t('results.tabs.all'), count: counts.all, color: '#000000' },
+    { key: 'unread', label: t('results.tabs.unread'), count: counts.unread, color: '#000000' },
+    { key: 'pathological', label: t('results.tabs.pathological'), count: counts.pathological, color: '#F59E0B' },
+    { key: 'highPatho', label: t('results.tabs.highPatho'), count: counts.highPatho, color: '#EF4444' },
+    { key: 'urgent', label: t('results.tabs.urgent'), count: counts.urgent, color: '#EF4444' },
   ];
 
   return (
@@ -187,7 +260,7 @@ export const ResultsPage: React.FC = () => {
                 ref={searchbarRef}
                 value={searchQuery}
                 onIonInput={(e) => handleSearch(e.detail.value || '')}
-                placeholder="Patient oder Labor-Nr. suchen..."
+                placeholder={t('results.searchPlaceholder')}
                 animated
                 showCancelButton="never"
                 style={{ '--background': 'var(--labgate-selected-bg)' }}
@@ -207,7 +280,7 @@ export const ResultsPage: React.FC = () => {
               <IonButtons slot="start">
                 <IonMenuButton />
               </IonButtons>
-              <IonTitle className="ion-text-center">Befunde - {periodTitles[resultsPeriod]}</IonTitle>
+              <IonTitle className="ion-text-center">{t('results.title')} - {periodTitles[effectivePeriod]}</IonTitle>
               <IonButtons slot="end">
                 <IonButton onClick={() => setIsFilterOpen(true)}>
                   <IonIcon icon={funnelOutline} />
@@ -288,7 +361,7 @@ export const ResultsPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent scrollEvents onIonScroll={handleScroll}>
         <PullToRefresh onRefresh={handleRefresh} />
 
         {isLoading ? (
@@ -296,8 +369,8 @@ export const ResultsPage: React.FC = () => {
         ) : !filteredResults.length ? (
           <EmptyState
             type="results"
-            title="Keine Befunde mit dem angewendeten Filter gefunden."
-            message="Versuchen Sie einen anderen Filter."
+            title={t('results.noFilterResults')}
+            message={t('results.tryDifferentFilter')}
           />
         ) : (
           <>
@@ -312,13 +385,22 @@ export const ResultsPage: React.FC = () => {
                 />
               ))}
             </IonList>
-            <IonInfiniteScroll
-              onIonInfinite={handleLoadMore}
-              threshold="100px"
-              disabled={!hasNextPage || isFetchingNextPage}
-            >
-              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Lade mehr..." />
-            </IonInfiniteScroll>
+{/* Load more trigger */}
+            <div style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
+              {isFetchingNextPage && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ion-color-medium)' }}>
+                  <IonSpinner name="bubbles" />
+                  <span>{t('common.loadingMore')}</span>
+                </div>
+              )}
+              {!hasNextPage && allResults.length > 0 && !isFetchingNextPage && (
+                <span style={{ fontSize: '14px', color: 'var(--ion-color-medium)' }}>
+                  {category !== 'all' || searchQuery
+                    ? t('results.showingFiltered', { shown: filteredResults.length, total: allResults.length })
+                    : t('results.allLoaded', { count: allResults.length })}
+                </span>
+              )}
+            </div>
           </>
         )}
       </IonContent>

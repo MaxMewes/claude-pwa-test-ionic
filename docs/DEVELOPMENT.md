@@ -49,15 +49,7 @@ npm run test.unit # Unit-Tests ausfuehren
 src/
 ├── api/
 │   ├── client/
-│   │   ├── axiosInstance.ts    # HTTP Client mit Interceptors
-│   │   └── mockAdapter.ts      # Mock-API fuer Entwicklung
-│   ├── mocks/                  # Mock-Daten
-│   │   ├── auth.ts
-│   │   ├── results.ts
-│   │   ├── patients.ts
-│   │   ├── laboratories.ts
-│   │   ├── news.ts
-│   │   └── settings.ts
+│   │   └── axiosInstance.ts    # HTTP Client mit Interceptors
 │   └── types/
 │       └── index.ts            # TypeScript Interfaces
 ├── features/
@@ -112,24 +104,6 @@ Jedes Feature-Modul ist eigenstaendig und enthaelt:
 Die API-Schicht verwendet Axios mit:
 - Request Interceptor fuer Auth Token
 - Response Interceptor fuer Token Refresh
-- Mock Adapter fuer Entwicklung
-
-## Mock-API
-
-In der Entwicklung wird automatisch ein Mock-Adapter aktiviert:
-
-```typescript
-// main.tsx
-if (import.meta.env.DEV) {
-  setupMockAdapter(axiosInstance);
-}
-```
-
-### Demo-Zugangsdaten
-
-- **E-Mail:** demo@labgate.de
-- **Passwort:** demo123
-- **2FA-Code:** 123456
 
 ## Komponenten
 
@@ -225,12 +199,6 @@ VITE_API_URL=https://api.labgate.de
 ```
 
 ## Weiterentwicklung
-
-### Echte API anbinden
-
-1. Mock-Adapter in Produktion deaktivieren
-2. API-URL in `.env` setzen
-3. API-Typen ggf. anpassen
 
 ### Neue Features hinzufuegen
 

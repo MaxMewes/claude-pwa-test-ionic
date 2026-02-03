@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, waitForStable } from './helpers/auth';
+import { login, waitForStable, selectAllResultsFilter } from './helpers/auth';
 
 /**
  * These tests verify responsive design behavior across different viewports
@@ -13,6 +13,7 @@ test.describe('Responsive Design', () => {
   test.describe('Layout', () => {
     test('should display bottom tab bar on mobile', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const tabBar = page.locator('ion-tab-bar');
@@ -21,6 +22,7 @@ test.describe('Responsive Design', () => {
 
     test('should display side menu button', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const menuButton = page.locator('ion-menu-button');
@@ -32,14 +34,16 @@ test.describe('Responsive Design', () => {
 
     test('should have scrollable content area', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
-      const content = page.locator('ion-content');
+      const content = page.locator('ion-content').first();
       await expect(content).toBeVisible();
     });
 
     test('should display header correctly', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const header = page.locator('ion-header');
@@ -50,6 +54,7 @@ test.describe('Responsive Design', () => {
   test.describe('Touch Interactions', () => {
     test('should support touch scrolling', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Scroll down
@@ -63,6 +68,7 @@ test.describe('Responsive Design', () => {
 
     test('should handle tap on items', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const item = page.locator('ion-item, ion-card').first();
@@ -76,6 +82,7 @@ test.describe('Responsive Design', () => {
   test.describe('Navigation', () => {
     test('should navigate via tabs', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Click patients tab
@@ -97,6 +104,7 @@ test.describe('Responsive Design', () => {
 
     test('should navigate via side menu', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       const menuButton = page.locator('ion-menu-button').first();
@@ -187,6 +195,7 @@ test.describe('Responsive Design', () => {
   test.describe('Modals and Popovers', () => {
     test('should display modals appropriately sized', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Try to open filter modal
@@ -208,10 +217,11 @@ test.describe('Responsive Design', () => {
   test.describe('Empty States', () => {
     test('should display empty state messages when no data', async ({ page }) => {
       await page.goto('/results');
+      await selectAllResultsFilter(page);
       await waitForStable(page);
 
       // Either has data or shows empty state
-      const content = page.locator('ion-content');
+      const content = page.locator('ion-content').first();
       await expect(content).toBeVisible();
     });
   });
@@ -220,6 +230,7 @@ test.describe('Responsive Design', () => {
     test('should show loading indicator during data fetch', async ({ page }) => {
       // Navigate to a page that loads data
       await page.goto('/results');
+      await selectAllResultsFilter(page);
 
       // Loading spinner might appear briefly
       const spinner = page.locator('ion-spinner, ion-skeleton-text, .loading');

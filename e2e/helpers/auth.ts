@@ -81,3 +81,16 @@ export async function waitForStable(page: Page, delay = 500) {
   }
   await page.waitForTimeout(delay);
 }
+
+/**
+ * Select "Alle" (All) time filter on results page to show all results
+ */
+export async function selectAllResultsFilter(page: Page) {
+  // Look for the "Alle" segment button or filter option
+  const alleButton = page.locator('ion-segment-button').filter({ hasText: /alle/i });
+
+  if (await alleButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await alleButton.click();
+    await waitForStable(page, 1000);
+  }
+}

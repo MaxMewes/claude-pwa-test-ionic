@@ -1,0 +1,344 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "loadingMore": "Loading more...",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "noData": "No data available",
+    "offline": "You are offline",
+    "pullToRefresh": "Pull to refresh",
+    "all": "All",
+    "general": "General"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Request Access",
+    "registerDescription": "Create a new account",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "username": "Username",
+    "email": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "resetPasswordDescription": "Enter your email address and we will send you a link to reset your password.",
+    "sendResetLink": "Send Link",
+    "backToLogin": "Back to Login",
+    "alreadyHaveAccount": "Already have an account? Login",
+    "noAccount": "No account yet? Request Access",
+    "loginError": "Login failed",
+    "invalidCredentials": "Invalid credentials",
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "description": "Please enter the code from your authenticator app",
+      "code": "Code",
+      "verify": "Verify",
+      "invalidCode": "Invalid code"
+    },
+    "pin": {
+      "title": "Enter PIN",
+      "description": "Please enter your PIN",
+      "setup": "Set up PIN",
+      "confirm": "Confirm PIN",
+      "mismatch": "PINs do not match"
+    },
+    "biometric": {
+      "title": "Biometric Login",
+      "useFingerprint": "Login with Fingerprint",
+      "useFaceId": "Login with Face ID"
+    },
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "autoLogout": "For security reasons, you have been automatically logged out.",
+    "usernamePlaceholder": "Username",
+    "emailPlaceholder": "name@example.com",
+    "usernameRequired": "Please enter your username",
+    "passwordRequired": "Please enter your password",
+    "subtitle": "Medical Laboratory Results"
+  },
+  "results": {
+    "title": "Results",
+    "detail": "Result Details",
+    "noResults": "No results available",
+    "newResult": "New Result",
+    "status": {
+      "pending": "Pending",
+      "partial": "Partial",
+      "final": "Final",
+      "corrected": "Corrected"
+    },
+    "category": {
+      "hematology": "Hematology",
+      "chemistry": "Clinical Chemistry",
+      "immunology": "Immunology",
+      "microbiology": "Microbiology",
+      "urinalysis": "Urinalysis",
+      "coagulation": "Coagulation",
+      "other": "Other"
+    },
+    "flag": {
+      "normal": "Normal",
+      "low": "Low",
+      "high": "High",
+      "critical_low": "Critical Low",
+      "critical_high": "Critical High",
+      "abnormal": "Abnormal"
+    },
+    "filter": {
+      "title": "Filter",
+      "status": "Status",
+      "category": "Category",
+      "dateRange": "Date Range",
+      "unread": "Unread",
+      "pinned": "Pinned"
+    },
+    "trend": "Trend",
+    "cumulative": "Cumulative",
+    "referenceRange": "Reference Range",
+    "previousValue": "Previous Value",
+    "collectionDate": "Collection Date",
+    "reportDate": "Report Date",
+    "orderNumber": "Order Number",
+    "pdf": "Download PDF",
+    "searchPlaceholder": "Search patient or lab no...",
+    "noFilterResults": "No results found with the applied filter.",
+    "tryDifferentFilter": "Try a different filter.",
+    "period": {
+      "today": "Today",
+      "7days": "Last 7 days",
+      "30days": "Last 30 days",
+      "all": "All",
+      "archive": "Archive"
+    },
+    "tabs": {
+      "all": "All",
+      "unread": "Unread",
+      "pathological": "Pathological",
+      "highPatho": "High Patho.",
+      "urgent": "Urgent"
+    },
+    "allLoaded": "All {{count}} results loaded",
+    "showingFiltered": "{{shown}} of {{total}} results"
+  },
+  "patients": {
+    "title": "Patients",
+    "detail": "Patient Details",
+    "noPatients": "No patients available",
+    "dateOfBirth": "Date of Birth",
+    "years": "years",
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "diverse": "Diverse",
+      "other": "Other",
+      "unknown": "Unknown"
+    },
+    "insuranceNumber": "Insurance Number",
+    "insurantId": "Insured ID",
+    "hzvPatient": "HzV Patient",
+    "contact": "Contact",
+    "address": "Address",
+    "lastVisit": "Last Visit",
+    "resultCount": "Number of Results",
+    "searchPlaceholder": "Search patient..."
+  },
+  "laboratories": {
+    "title": "Laboratories",
+    "detail": "Laboratory Details",
+    "noLaboratories": "No laboratories available",
+    "openingHours": "Opening Hours",
+    "closed": "Closed",
+    "services": "Services",
+    "contact": "Contact",
+    "directions": "Get Directions",
+    "call": "Call",
+    "email": "Send Email",
+    "website": "Open Website",
+    "searchPlaceholder": "Search service...",
+    "serviceNotFound": "Service not found",
+    "serviceNotFoundMessage": "The requested service could not be loaded.",
+    "noServicesFound": "No services found",
+    "noServicesAvailable": "No services available",
+    "service": "service",
+    "services": "services",
+    "serviceDetail": "Service Details"
+  },
+  "news": {
+    "title": "News",
+    "detail": "Article",
+    "noNews": "No news available",
+    "category": {
+      "announcement": "Announcement",
+      "health_tip": "Health Tip",
+      "laboratory_news": "Laboratory News",
+      "app_update": "App Update"
+    },
+    "readMore": "Read More",
+    "publishedAt": "Published on"
+  },
+  "senders": {
+    "title": "Senders",
+    "detail": "Sender Details",
+    "noSenders": "No senders available",
+    "practice": "Practice/Facility",
+    "customerNo": "Customer Number",
+    "phone": "Phone",
+    "mobile": "Mobile",
+    "email": "Email",
+    "address": "Address",
+    "specialField": "Specialty",
+    "searchPlaceholder": "Search sender..."
+  },
+  "help": {
+    "title": "Help",
+    "about": "About the App",
+    "faq": "Frequently Asked Questions",
+    "noFAQs": "No FAQs found",
+    "searchFAQ": "Search FAQ...",
+    "feedback": "Feedback",
+    "feedbackDescription": "Share your suggestions, issues, or questions with us.",
+    "feedbackType": "Feedback Type",
+    "feedbackTypes": {
+      "bug": "Bug Report",
+      "feature": "Feature Request",
+      "question": "Question",
+      "other": "Other"
+    },
+    "subject": "Subject",
+    "subjectPlaceholder": "Brief description",
+    "message": "Message",
+    "messagePlaceholder": "Describe your concern...",
+    "emailOptional": "Email (optional)",
+    "emailPlaceholder": "For follow-up questions",
+    "sendFeedback": "Send Feedback",
+    "faqTitle": "FAQ",
+    "faqLoadError": "Loading error",
+    "faqLoadErrorMessage": "The FAQ could not be loaded. Please try again later.",
+    "noFAQAvailable": "No FAQ available",
+    "noMatchingEntries": "No FAQ entries found matching your search.",
+    "noEntriesAvailable": "No FAQ entries are currently available.",
+    "resetSearch": "Reset search"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "profile": "Profile",
+    "darkMode": "Dark Mode",
+    "changePassword": "Change Password",
+    "language": "Language",
+    "notifications": {
+      "title": "Notifications",
+      "enabled": "Notifications enabled",
+      "newResults": "New Results",
+      "criticalResults": "Critical Values",
+      "news": "News",
+      "reminders": "Reminders",
+      "sound": "Sound",
+      "vibration": "Vibration"
+    },
+    "biometric": {
+      "title": "Biometric Security",
+      "enabled": "Biometric login enabled",
+      "fingerprint": "Fingerprint",
+      "faceId": "Face ID"
+    },
+    "display": {
+      "title": "Display",
+      "language": "Language",
+      "theme": "Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "System",
+      "fontSize": "Font Size",
+      "fontSmall": "Small",
+      "fontMedium": "Medium",
+      "fontLarge": "Large"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "policy": "Privacy Policy",
+      "shareAnalytics": "Share Usage Data",
+      "showProfilePhoto": "Show Profile Photo"
+    },
+    "support": {
+      "title": "Help & Support",
+      "faq": "Frequently Asked Questions",
+      "contact": "Contact",
+      "feedback": "Give Feedback"
+    },
+    "about": {
+      "title": "About the App",
+      "version": "Version",
+      "terms": "Terms of Use",
+      "licenses": "Licenses"
+    },
+    "password": {
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm Password",
+      "mismatch": "Passwords do not match",
+      "success": "Password changed successfully",
+      "requirements": "At least 8 characters, uppercase/lowercase letters and numbers"
+    }
+  },
+  "emptyState": {
+    "results": {
+      "title": "No results",
+      "message": "No results available."
+    },
+    "patients": {
+      "title": "No patients",
+      "message": "No patients available."
+    },
+    "laboratories": {
+      "title": "No laboratories",
+      "message": "No laboratories available."
+    },
+    "news": {
+      "title": "No news",
+      "message": "No news available."
+    },
+    "search": {
+      "title": "No results",
+      "message": "Your search did not return any results."
+    },
+    "generic": {
+      "title": "No data",
+      "message": "No data available."
+    },
+    "error": {
+      "title": "Error",
+      "message": "An error occurred."
+    }
+  },
+  "scanner": {
+    "title": "Scan barcode",
+    "cameraNotStarted": "Camera could not be started",
+    "permissionDenied": "Camera permission denied. Please allow in app settings.",
+    "noCamera": "No camera found",
+    "cameraStarting": "Camera is starting...",
+    "allowCameraAccess": "Please allow camera access",
+    "positionBarcode": "Position barcode in frame",
+    "holdSteady": "Hold the phone steady and wait 1-2 seconds",
+    "manualInput": "Enter manually",
+    "manualInputPrompt": "Enter barcode manually:"
+  },
+  "errors": {
+    "network": "Network error. Please check your internet connection.",
+    "server": "Server error. Please try again later.",
+    "notFound": "The requested resource was not found.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "generic": "An unexpected error occurred."
+  }
+}

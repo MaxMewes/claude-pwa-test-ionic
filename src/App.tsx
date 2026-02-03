@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
@@ -19,6 +19,7 @@ import {
   IonAccordionGroup,
   IonAccordion,
   IonPage,
+  IonSpinner,
   setupIonicReact,
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
@@ -31,6 +32,7 @@ import {
   logOutOutline,
   statsChartOutline,
   flaskOutline,
+  helpCircleOutline,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 
@@ -56,45 +58,47 @@ import './theme/variables.css';
 /* Auth */
 import { useAuthStore } from './features/auth/store/authStore';
 import { useAutoLogout } from './features/auth/hooks/useAutoLogout';
-import { LoginPage } from './features/auth/pages/LoginPage';
-import { TwoFactorPage } from './features/auth/pages/TwoFactorPage';
-import { RegisterPage } from './features/auth/pages/RegisterPage';
-import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 
-/* Results */
-import { ResultsPage } from './features/results/pages/ResultsPage';
-import { ResultDetailPage } from './features/results/pages/ResultDetailPage';
+/* Lazy-loaded Auth Pages */
+const LoginPage = lazy(() => import('./features/auth/pages/LoginPage').then(m => ({ default: m.LoginPage })));
+const TwoFactorPage = lazy(() => import('./features/auth/pages/TwoFactorPage').then(m => ({ default: m.TwoFactorPage })));
+const RegisterPage = lazy(() => import('./features/auth/pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const ResetPasswordPage = lazy(() => import('./features/auth/pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 
-/* Patients */
-import { PatientsPage } from './features/patients/pages/PatientsPage';
-import { PatientDetailPage } from './features/patients/pages/PatientDetailPage';
+/* Lazy-loaded Results Pages */
+const ResultsPage = lazy(() => import('./features/results/pages/ResultsPage').then(m => ({ default: m.ResultsPage })));
+const ResultDetailPage = lazy(() => import('./features/results/pages/ResultDetailPage').then(m => ({ default: m.ResultDetailPage })));
 
-/* Laboratories */
-import { LaboratoriesPage } from './features/laboratories/pages/LaboratoriesPage';
-import { LaboratoryDetailPage } from './features/laboratories/pages/LaboratoryDetailPage';
-import { ServiceDetailPage } from './features/laboratories/pages/ServiceDetailPage';
+/* Lazy-loaded Patients Pages */
+const PatientsPage = lazy(() => import('./features/patients/pages/PatientsPage').then(m => ({ default: m.PatientsPage })));
+const PatientDetailPage = lazy(() => import('./features/patients/pages/PatientDetailPage').then(m => ({ default: m.PatientDetailPage })));
 
-/* News */
-import { NewsPage } from './features/news/pages/NewsPage';
-import { NewsDetailPage } from './features/news/pages/NewsDetailPage';
+/* Lazy-loaded Laboratories Pages */
+const LaboratoriesPage = lazy(() => import('./features/laboratories/pages/LaboratoriesPage').then(m => ({ default: m.LaboratoriesPage })));
+const LaboratoryDetailPage = lazy(() => import('./features/laboratories/pages/LaboratoryDetailPage').then(m => ({ default: m.LaboratoryDetailPage })));
+const ServiceDetailPage = lazy(() => import('./features/laboratories/pages/ServiceDetailPage').then(m => ({ default: m.ServiceDetailPage })));
 
-/* Senders */
-import { SendersPage } from './features/senders/pages/SendersPage';
-import { SenderDetailPage } from './features/senders/pages/SenderDetailPage';
+/* Lazy-loaded News Pages */
+const NewsPage = lazy(() => import('./features/news/pages/NewsPage').then(m => ({ default: m.NewsPage })));
+const NewsDetailPage = lazy(() => import('./features/news/pages/NewsDetailPage').then(m => ({ default: m.NewsDetailPage })));
+
+/* Lazy-loaded Senders Pages */
+const SendersPage = lazy(() => import('./features/senders/pages/SendersPage').then(m => ({ default: m.SendersPage })));
+const SenderDetailPage = lazy(() => import('./features/senders/pages/SenderDetailPage').then(m => ({ default: m.SenderDetailPage })));
 import { useSenders } from './features/senders/hooks/useSenders';
 
-/* Help */
-import { HelpPage } from './features/help/pages/HelpPage';
-import { FeedbackPage } from './features/help/pages/FeedbackPage';
-import { AboutPage } from './features/help/pages/AboutPage';
+/* Lazy-loaded Help Pages */
+const HelpPage = lazy(() => import('./features/help/pages/HelpPage').then(m => ({ default: m.HelpPage })));
+const FeedbackPage = lazy(() => import('./features/help/pages/FeedbackPage').then(m => ({ default: m.FeedbackPage })));
+const AboutPage = lazy(() => import('./features/help/pages/AboutPage').then(m => ({ default: m.AboutPage })));
 
-/* Settings */
-import { SettingsPage } from './features/settings/pages/SettingsPage';
-import { NotificationSettingsPage } from './features/settings/components/NotificationSettings';
-import { BiometricSettingsPage } from './features/settings/components/BiometricSettings';
-import { PasswordChangePage } from './features/settings/pages/PasswordChangePage';
-import { PrivacyPolicyPage } from './features/settings/pages/PrivacyPolicyPage';
-import { FAQPage } from './features/settings/pages/FAQPage';
+/* Lazy-loaded Settings Pages */
+const SettingsPage = lazy(() => import('./features/settings/pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const NotificationSettingsPage = lazy(() => import('./features/settings/components/NotificationSettings').then(m => ({ default: m.NotificationSettingsPage })));
+const BiometricSettingsPage = lazy(() => import('./features/settings/components/BiometricSettings').then(m => ({ default: m.BiometricSettingsPage })));
+const PasswordChangePage = lazy(() => import('./features/settings/pages/PasswordChangePage').then(m => ({ default: m.PasswordChangePage })));
+const PrivacyPolicyPage = lazy(() => import('./features/settings/pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyPage })));
+const FAQPage = lazy(() => import('./features/settings/pages/FAQPage').then(m => ({ default: m.FAQPage })));
 
 /* Shared */
 import { ErrorBoundary } from './shared/components';
@@ -105,6 +109,22 @@ import { useSettingsStore, ResultPeriodFilter } from './shared/store/useSettings
 import { ROUTES } from './config/routes';
 
 setupIonicReact();
+
+// Loading fallback for lazy-loaded pages
+const PageLoader: React.FC = () => (
+  <IonPage>
+    <IonContent className="ion-padding">
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+      }}>
+        <IonSpinner name="crescent" />
+      </div>
+    </IonContent>
+  </IonPage>
+);
 
 // Menu colors use CSS variables for dark mode support
 const MENU_STYLES = {
@@ -197,6 +217,51 @@ const AppMenu: React.FC = () => {
             </IonItem>
           </IonMenuToggle>
 
+          {/* Hilfe - Expandable */}
+          <IonAccordionGroup>
+            <IonAccordion value="help">
+              <IonItem slot="header" lines="full">
+                <IonIcon slot="start" icon={helpCircleOutline} style={{ color: MENU_STYLES.brand }} />
+                <IonLabel>Hilfe</IonLabel>
+              </IonItem>
+              <div slot="content">
+                <IonMenuToggle autoHide={false}>
+                  <IonItem
+                    button
+                    routerLink={ROUTES.HELP_ABOUT}
+                    routerDirection="root"
+                    lines="none"
+                    style={{ '--padding-start': '48px' }}
+                  >
+                    <IonLabel>Über</IonLabel>
+                  </IonItem>
+                </IonMenuToggle>
+                <IonMenuToggle autoHide={false}>
+                  <IonItem
+                    button
+                    routerLink={ROUTES.SETTINGS_FAQ}
+                    routerDirection="root"
+                    lines="none"
+                    style={{ '--padding-start': '48px' }}
+                  >
+                    <IonLabel>FAQ</IonLabel>
+                  </IonItem>
+                </IonMenuToggle>
+                <IonMenuToggle autoHide={false}>
+                  <IonItem
+                    button
+                    routerLink={ROUTES.SETTINGS_PRIVACY}
+                    routerDirection="root"
+                    lines="none"
+                    style={{ '--padding-start': '48px' }}
+                  >
+                    <IonLabel>Datenschutz</IonLabel>
+                  </IonItem>
+                </IonMenuToggle>
+              </div>
+            </IonAccordion>
+          </IonAccordionGroup>
+
           {/* Abmelden */}
           <IonMenuToggle autoHide={false}>
             <IonItem button onClick={logout} lines="full">
@@ -218,37 +283,39 @@ const MainTabs: React.FC = () => {
   return (
     <IonTabs>
       <IonRouterOutlet>
-        <Route exact path={ROUTES.RESULTS} component={ResultsPage} />
-        <Route path="/results/:id" component={ResultDetailPage} />
+        <Suspense fallback={<PageLoader />}>
+          <Route exact path={ROUTES.RESULTS} component={ResultsPage} />
+          <Route path="/results/:id" component={ResultDetailPage} />
 
-        <Route exact path={ROUTES.PATIENTS} component={PatientsPage} />
-        <Route path="/patients/:id" component={PatientDetailPage} />
+          <Route exact path={ROUTES.PATIENTS} component={PatientsPage} />
+          <Route path="/patients/:id" component={PatientDetailPage} />
 
-        <Route exact path={ROUTES.LABORATORIES} component={LaboratoriesPage} />
-        <Route exact path={ROUTES.SERVICE_DETAIL} component={ServiceDetailPage} />
-        <Route path="/laboratories/:id" component={LaboratoryDetailPage} />
+          <Route exact path={ROUTES.LABORATORIES} component={LaboratoriesPage} />
+          <Route exact path={ROUTES.SERVICE_DETAIL} component={ServiceDetailPage} />
+          <Route path="/laboratories/:id" component={LaboratoryDetailPage} />
 
-        <Route exact path={ROUTES.NEWS} component={NewsPage} />
-        <Route path="/news/:id" component={NewsDetailPage} />
+          <Route exact path={ROUTES.NEWS} component={NewsPage} />
+          <Route path="/news/:id" component={NewsDetailPage} />
 
-        <Route exact path={ROUTES.SENDERS} component={SendersPage} />
-        <Route path="/senders/:id" component={SenderDetailPage} />
+          <Route exact path={ROUTES.SENDERS} component={SendersPage} />
+          <Route path="/senders/:id" component={SenderDetailPage} />
 
-        <Route exact path={ROUTES.SETTINGS} component={SettingsPage} />
-        <Route path={ROUTES.SETTINGS_NOTIFICATIONS} component={NotificationSettingsPage} />
-        <Route path={ROUTES.SETTINGS_BIOMETRIC} component={BiometricSettingsPage} />
-        <Route path={ROUTES.SETTINGS_PASSWORD} component={PasswordChangePage} />
-        <Route path={ROUTES.SETTINGS_PRIVACY} component={PrivacyPolicyPage} />
-        <Route path={ROUTES.SETTINGS_FAQ} component={FAQPage} />
+          <Route exact path={ROUTES.SETTINGS} component={SettingsPage} />
+          <Route path={ROUTES.SETTINGS_NOTIFICATIONS} component={NotificationSettingsPage} />
+          <Route path={ROUTES.SETTINGS_BIOMETRIC} component={BiometricSettingsPage} />
+          <Route path={ROUTES.SETTINGS_PASSWORD} component={PasswordChangePage} />
+          <Route path={ROUTES.SETTINGS_PRIVACY} component={PrivacyPolicyPage} />
+          <Route path={ROUTES.SETTINGS_FAQ} component={FAQPage} />
 
-        <Route exact path={ROUTES.HELP} component={HelpPage} />
-        <Route path={ROUTES.HELP_ABOUT} component={AboutPage} />
-        <Route path={ROUTES.HELP_PRIVACY} component={PrivacyPolicyPage} />
-        <Route path={ROUTES.HELP_FEEDBACK} component={FeedbackPage} />
+          <Route exact path={ROUTES.HELP} component={HelpPage} />
+          <Route path={ROUTES.HELP_ABOUT} component={AboutPage} />
+          <Route path={ROUTES.HELP_PRIVACY} component={PrivacyPolicyPage} />
+          <Route path={ROUTES.HELP_FEEDBACK} component={FeedbackPage} />
 
-        <Route exact path="/">
-          <Redirect to={ROUTES.RESULTS} />
-        </Route>
+          <Route exact path="/">
+            <Redirect to={ROUTES.RESULTS} />
+          </Route>
+        </Suspense>
       </IonRouterOutlet>
 
       <IonTabBar slot="bottom">
@@ -288,13 +355,15 @@ const AppContent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <IonRouterOutlet>
-        <Route exact path={ROUTES.LOGIN} component={LoginPage} />
-        <Route exact path={ROUTES.REGISTER} component={RegisterPage} />
-        <Route exact path={ROUTES.RESET_PASSWORD} component={ResetPasswordPage} />
-        <Route exact path={ROUTES.TWO_FACTOR} component={TwoFactorPage} />
-        <Route>
-          <Redirect to={ROUTES.LOGIN} />
-        </Route>
+        <Suspense fallback={<PageLoader />}>
+          <Route exact path={ROUTES.LOGIN} component={LoginPage} />
+          <Route exact path={ROUTES.REGISTER} component={RegisterPage} />
+          <Route exact path={ROUTES.RESET_PASSWORD} component={ResetPasswordPage} />
+          <Route exact path={ROUTES.TWO_FACTOR} component={TwoFactorPage} />
+          <Route>
+            <Redirect to={ROUTES.LOGIN} />
+          </Route>
+        </Suspense>
       </IonRouterOutlet>
     );
   }

@@ -95,9 +95,10 @@ After`;
       expect(parseColorMarkup(input)).toBe(expected);
     });
 
-    it('should handle special characters within colored text', () => {
+    it('should handle special characters within colored text (XSS-safe)', () => {
       const input = '{color:#ff0000}<>&"\'special chars{color}';
-      const expected = '<span style="color:#ff0000"><>&"\'special chars</span>';
+      // HTML special characters are escaped to prevent XSS
+      const expected = '<span style="color:#ff0000">&lt;&gt;&amp;&quot;&#39;special chars</span>';
       expect(parseColorMarkup(input)).toBe(expected);
     });
 

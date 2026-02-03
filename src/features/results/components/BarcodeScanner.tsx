@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   IonModal,
   IonHeader,
@@ -31,6 +31,24 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const mountedRef = useRef(false);
+
+  // Stable callback for barcode scanning to prevent memory leaks
+  const handleScanSuccess = useCallback((decodedText: string) => {
+    if (!mountedRef.current) return;
+
+    console.log('Barcode detected:', decodedText);
+
+    // Vibrate on success
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
+    }
+
+    // Stop and return result
+    stopScanner().then(() => {
+      onScan(decodedText);
+      onClose();
+    });
+  }, [onScan, onClose]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -89,20 +107,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             aspectRatio: 1.0,
           },
           (decodedText, decodedResult) => {
-            if (!mountedRef.current) return;
-
-            console.log('Barcode detected:', decodedText, 'Format:', decodedResult.result.format);
-
-            // Vibrate on success
-            if (navigator.vibrate) {
-              navigator.vibrate(100);
-            }
-
-            // Stop and return result
-            stopScanner().then(() => {
-              onScan(decodedText);
-              onClose();
-            });
+            handleScanSuccess(decodedText);
           },
           (errorMessage) => {
             // Scanning errors are normal and continuous, ignore them
@@ -137,7 +142,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       mountedRef.current = false;
       stopScanner();
     };
-  }, [isOpen, retryCount, onScan, onClose]);
+  }, [isOpen, retryCount, handleScanSuccess, t]);
 
   const stopScanner = async () => {
     if (scannerRef.current) {

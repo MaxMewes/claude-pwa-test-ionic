@@ -50,6 +50,14 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    // Add CSRF protection for state-changing requests
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method?.toUpperCase() || '')) {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
+      }
+    }
+
     // Log the full URL being requested
     const fullUrl = config.baseURL ? `${config.baseURL}${config.url}` : config.url;
     console.log('[API] Request:', config.method?.toUpperCase(), fullUrl);
@@ -60,6 +68,9 @@ axiosInstance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// Prevent concurrent token refresh requests - only allow one refresh at a time
+let refreshTokenPromise: Promise<string> | null = null;
 
 // Response interceptor - handle token refresh and errors
 axiosInstance.interceptors.response.use(
@@ -74,12 +85,21 @@ axiosInstance.interceptors.response.use(
       const currentToken = useAuthStore.getState().token;
       if (currentToken) {
         try {
-          // labGate API v3 refresh endpoint
-          const response = await axios.post(`${API_BASE_URL}/api/v3/authentication/refresh`, {
-            Token: currentToken,
-          });
+          // Reuse existing refresh promise if one is already in flight
+          // This prevents race conditions when multiple 401 errors occur simultaneously
+          if (!refreshTokenPromise) {
+            refreshTokenPromise = axios
+              .post(`${API_BASE_URL}/api/v3/authentication/refresh`, {
+                Token: currentToken,
+              })
+              .then((response) => response.data.Token)
+              .finally(() => {
+                // Clear the promise when done to allow future refreshes
+                refreshTokenPromise = null;
+              });
+          }
 
-          const { Token: newToken } = response.data;
+          const newToken = await refreshTokenPromise;
           useAuthStore.getState().setToken(newToken);
 
           originalRequest.headers.Authorization = `Bearer ${newToken}`;

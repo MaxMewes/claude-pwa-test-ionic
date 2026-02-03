@@ -68,55 +68,65 @@ export function usePatientLabTrends(patientId: number | undefined) {
       const testsMap = new Map<string, TestInfo>();
       const trendData = new Map<string, TrendDataPoint[]>();
 
-      await Promise.all(
-        recentIds.map(async (resultId) => {
-          try {
-            const detailResponse = await axiosInstance.get<ResultDetailResponse>(`/api/v3/results/${resultId}`);
-            const result = detailResponse.data.Result;
+      // Helper function to process requests with concurrency limit
+      // This prevents overwhelming the server with 20 simultaneous requests
+      const processBatch = async (ids: number[], concurrencyLimit: number) => {
+        for (let i = 0; i < ids.length; i += concurrencyLimit) {
+          const batch = ids.slice(i, i + concurrencyLimit);
+          await Promise.all(
+            batch.map(async (resultId) => {
+              try {
+                const detailResponse = await axiosInstance.get<ResultDetailResponse>(`/api/v3/results/${resultId}`);
+                const result = detailResponse.data.Result;
 
-            // Process all tests from ResultData
-            if (result.ResultData) {
-              for (const sectionTests of Object.values(result.ResultData)) {
-                for (const test of sectionTests) {
-                  if (!test.ValueText) continue;
+                // Process all tests from ResultData
+                if (result.ResultData) {
+                  for (const sectionTests of Object.values(result.ResultData)) {
+                    for (const test of sectionTests) {
+                      if (!test.ValueText) continue;
 
-                  // Try to parse numeric value
-                  const numericMatch = test.ValueText.match(/^[\d.,]+/);
-                  if (!numericMatch) continue;
+                      // Try to parse numeric value
+                      const numericMatch = test.ValueText.match(/^[\d.,]+/);
+                      if (!numericMatch) continue;
 
-                  const value = parseFloat(numericMatch[0].replace(',', '.'));
-                  if (isNaN(value)) continue;
+                      const value = parseFloat(numericMatch[0].replace(',', '.'));
+                      if (isNaN(value)) continue;
 
-                  // Store test info
-                  if (!testsMap.has(test.TestIdent)) {
-                    testsMap.set(test.TestIdent, {
-                      testIdent: test.TestIdent,
-                      testName: test.TestName,
-                      unit: test.Unit,
-                      normalLow: test.NormalLow,
-                      normalHigh: test.NormalHigh,
-                      normalText: test.NormalText,
-                    });
+                      // Store test info
+                      if (!testsMap.has(test.TestIdent)) {
+                        testsMap.set(test.TestIdent, {
+                          testIdent: test.TestIdent,
+                          testName: test.TestName,
+                          unit: test.Unit,
+                          normalLow: test.NormalLow,
+                          normalHigh: test.NormalHigh,
+                          normalText: test.NormalText,
+                        });
+                      }
+
+                      // Add to trend data
+                      const existing = trendData.get(test.TestIdent) || [];
+                      existing.push({
+                        date: new Date(result.ReportDate).toLocaleDateString('de-DE'),
+                        dateRaw: result.ReportDate,
+                        value,
+                        resultId: result.Id,
+                        labNo: result.LabNo,
+                      });
+                      trendData.set(test.TestIdent, existing);
+                    }
                   }
-
-                  // Add to trend data
-                  const existing = trendData.get(test.TestIdent) || [];
-                  existing.push({
-                    date: new Date(result.ReportDate).toLocaleDateString('de-DE'),
-                    dateRaw: result.ReportDate,
-                    value,
-                    resultId: result.Id,
-                    labNo: result.LabNo,
-                  });
-                  trendData.set(test.TestIdent, existing);
                 }
+              } catch (err) {
+                console.error('Error fetching result details:', err);
               }
-            }
-          } catch (err) {
-            console.error('Error fetching result details:', err);
-          }
-        })
-      );
+            })
+          );
+        }
+      };
+
+      // Process with max 5 concurrent requests to prevent race conditions and server overload
+      await processBatch(recentIds, 5);
 
       // Sort trend data by date
       trendData.forEach((data, key) => {

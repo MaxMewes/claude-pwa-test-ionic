@@ -53,7 +53,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
   const padding = (maxValue - minValue) * 0.1 || 1;
   const yDomain: [number, number] = [Math.floor(minValue - padding), Math.ceil(maxValue + padding)];
 
-  // Export chart as image
+  // Export chart as image with proper cleanup
   const handleExport = () => {
     if (!chartRef.current) return;
 
@@ -65,7 +65,11 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
     const ctx = canvas.getContext('2d');
     const img = new Image();
 
+    // Track if cleanup is needed
+    let isLoadComplete = false;
+
     img.onload = () => {
+      isLoadComplete = true;
       canvas.width = img.width * 2;
       canvas.height = img.height * 2;
       ctx!.fillStyle = 'white';
@@ -76,9 +80,26 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
       link.download = `laborwert-${testInfo?.testName || selectedTest}-verlauf.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
+
+      // Clean up DOM elements
+      canvas.remove();
+    };
+
+    img.onerror = () => {
+      isLoadComplete = true;
+      console.error('Failed to export chart image');
+      // Clean up on error
+      canvas.remove();
     };
 
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+
+    // Cleanup timeout in case image never loads
+    setTimeout(() => {
+      if (!isLoadComplete) {
+        canvas.remove();
+      }
+    }, 10000);
   };
 
   if (isLoading) {

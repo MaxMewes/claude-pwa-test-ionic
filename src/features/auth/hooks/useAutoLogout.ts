@@ -34,20 +34,25 @@ export function useAutoLogout() {
       resetTimer();
     };
 
+    // Add event listeners once
     events.forEach((event) => {
       document.addEventListener(event, handleActivity);
     });
 
+    // Set initial timer
     resetTimer();
 
+    // Cleanup: remove event listeners and clear timeout
     return () => {
       events.forEach((event) => {
         document.removeEventListener(event, handleActivity);
       });
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
+    // Note: resetTimer is stable due to useCallback, preventing infinite re-registration
   }, [isAuthenticated, resetTimer]);
 
   return { resetTimer };

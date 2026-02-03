@@ -100,6 +100,9 @@ export const ResultsPage: React.FC = () => {
     }
   }, [isSearchOpen]);
 
+  // Debounce scroll event to prevent race conditions in infinite scroll
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Handle infinite scroll via IonContent scroll event
   const handleScroll = useCallback((event: CustomEvent) => {
     const target = event.target as HTMLIonContentElement;
@@ -111,10 +114,23 @@ export const ResultsPage: React.FC = () => {
 
       // Load more when within 400px of bottom
       if (distanceFromBottom < 400 && hasNextPage && !isFetchingNextPage && !isLoading) {
-        fetchNextPage();
+        // Debounce to prevent multiple rapid calls
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+          fetchNextPage();
+        }, 150);
       }
     });
   }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
+
+  // Cleanup scroll timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);

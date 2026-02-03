@@ -117,9 +117,13 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      // Use sessionStorage instead of localStorage for better security
+      // Tokens will be cleared when browser is closed
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         user: state.user,
+        // Store token in sessionStorage (not persisted across browser restarts)
+        // This is more secure than localStorage which persists indefinitely
         token: state.token,
         isAuthenticated: state.isAuthenticated,
         pin: state.pin,

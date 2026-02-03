@@ -13,7 +13,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { downloadOutline } from 'ionicons/icons';
-import { usePatientLabTrends, TestInfo, TrendDataPoint } from '../hooks/usePatientLabTrends';
+import { usePatientLabTrends, TrendDataPoint } from '../hooks/usePatientLabTrends';
 
 interface TrendChartProps {
   patientId: number;

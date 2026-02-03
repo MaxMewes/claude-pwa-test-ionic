@@ -29,7 +29,7 @@ export const resultsKeys = {
     [...resultsKeys.lists(), { filters, period }] as const,
   details: () => [...resultsKeys.all, 'detail'] as const,
   detail: (id: number | string) => [...resultsKeys.details(), id] as const,
-  counters: () => [...resultsKeys.all, 'counters'] as const,
+  counters: (period?: ResultPeriodFilter) => [...resultsKeys.all, 'counters', { period }] as const,
 } as const;
 
 /**
@@ -44,7 +44,7 @@ export const patientsKeys = {
   results: (patientId: number | string) => 
     [...patientsKeys.detail(patientId), 'results'] as const,
   labTrends: (patientId: number | undefined) => 
-    ['patient-lab-trends', patientId] as const,
+    patientId ? [...patientsKeys.detail(patientId), 'lab-trends'] as const : ['patients', 'lab-trends', undefined] as const,
 } as const;
 
 /**

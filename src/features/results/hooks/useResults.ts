@@ -181,7 +181,7 @@ interface CounterResponseV3 {
 
 export function useResultCounter(period?: ResultPeriodFilter) {
   return useQuery({
-    queryKey: resultsKeys.counters(),
+    queryKey: resultsKeys.counters(period),
     queryFn: async () => {
       // Build params with period filter to match the results query
       // Counter endpoint uses startDateTime/endDateTime (not startDate/endDate)

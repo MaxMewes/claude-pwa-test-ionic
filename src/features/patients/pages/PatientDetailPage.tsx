@@ -24,6 +24,7 @@ import { useParams, useHistory } from 'react-router-dom';
 import { format, differenceInYears } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import type { PatientStreetAddress, PatientAddressLegacy } from '../../../api/types';
 import { usePatient } from '../hooks/usePatients';
 import { SkeletonLoader } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
@@ -114,23 +115,24 @@ export const PatientDetailPage: React.FC = () => {
   let addressLine1 = '';
   let addressLine2 = '';
   if (address) {
-    // Type guard: PatientStreetAddress has Street property
-    const isStreetAddress = 'Street' in address || 'Zip' in address;
+    // Type guard: PatientStreetAddress has HouseNumber (unique to API v3 format)
+    // PatientAddressLegacy uses 'street' (lowercase) property
+    const isStreetAddress = 'HouseNumber' in address || !('street' in address);
     const street = isStreetAddress 
-      ? (address as import('../../../api/types').PatientStreetAddress).Street ?? ''
-      : (address as import('../../../api/types').PatientAddressLegacy).street ?? '';
+      ? (address as PatientStreetAddress).Street ?? ''
+      : (address as PatientAddressLegacy).street ?? '';
     const houseNumber = isStreetAddress
-      ? (address as import('../../../api/types').PatientStreetAddress).HouseNumber ?? ''
+      ? (address as PatientStreetAddress).HouseNumber ?? ''
       : '';
     const zip = isStreetAddress
-      ? (address as import('../../../api/types').PatientStreetAddress).Zip ?? ''
-      : (address as import('../../../api/types').PatientAddressLegacy).postalCode ?? '';
+      ? (address as PatientStreetAddress).Zip ?? ''
+      : (address as PatientAddressLegacy).postalCode ?? '';
     const city = isStreetAddress
-      ? (address as import('../../../api/types').PatientStreetAddress).City ?? ''
-      : (address as import('../../../api/types').PatientAddressLegacy).city ?? '';
+      ? (address as PatientStreetAddress).City ?? ''
+      : (address as PatientAddressLegacy).city ?? '';
     const country = isStreetAddress
-      ? (address as import('../../../api/types').PatientStreetAddress).CountryCode ?? ''
-      : (address as import('../../../api/types').PatientAddressLegacy).country ?? '';
+      ? (address as PatientStreetAddress).CountryCode ?? ''
+      : (address as PatientAddressLegacy).country ?? '';
 
     addressLine1 = `${street} ${houseNumber}`.trim();
     addressLine2 = `${country ? country + ' - ' : ''}${zip} ${city}`.trim();

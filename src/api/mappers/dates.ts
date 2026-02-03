@@ -7,9 +7,12 @@ import type { ResultPeriodFilter } from '../../shared/store/useSettingsStore';
 
 /**
  * Date range parameters for API queries
+ * Dates should be in yyyy-MM-dd format
  */
 export interface DateRangeParams {
+  /** Start date in yyyy-MM-dd format */
   startDate?: string;
+  /** End date in yyyy-MM-dd format */
   endDate?: string;
   area?: 'NotArchived' | 'Archived' | 'All';
 }

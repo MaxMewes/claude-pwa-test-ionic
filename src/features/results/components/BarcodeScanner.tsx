@@ -8,10 +8,10 @@ import {
   IonButton,
   IonIcon,
   IonButtons,
-  IonSpinner,
 } from '@ionic/react';
 import { closeOutline, cameraOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
+import { TestTubeLoader } from '../../../shared/components';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface BarcodeScannerProps {
@@ -205,7 +205,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         }}>
           {!isScanning && !error && (
             <div style={{ textAlign: 'center', color: '#fff' }}>
-              <IonSpinner name="crescent" style={{ width: '48px', height: '48px' }} />
+              <TestTubeLoader size={60} />
               <p style={{ marginTop: '16px' }}>{t('scanner.cameraStarting')}</p>
               <p style={{ marginTop: '8px', fontSize: '12px', color: '#aaa' }}>
                 {t('scanner.allowCameraAccess')}

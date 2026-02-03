@@ -26,8 +26,8 @@ test.describe('Results Page', () => {
     test('should have search functionality', async ({ page }) => {
       await waitForStable(page);
 
-      // Look for search button or search input
-      const searchButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="search"]') }).first();
+      // Search button is second in IonButtons slot="end" (after filter button)
+      const searchButton = page.locator('ion-toolbar ion-buttons[slot="end"] ion-button').nth(1);
       const searchInput = page.locator('ion-searchbar, input[type="search"]');
 
       const hasSearchButton = await searchButton.isVisible().catch(() => false);
@@ -53,10 +53,15 @@ test.describe('Results Page', () => {
   });
 
   test.describe('Results Search', () => {
+    // Helper to find search button - second button in end slot
+    const getSearchButton = (page: import('@playwright/test').Page) => {
+      return page.locator('ion-toolbar ion-buttons[slot="end"] ion-button').nth(1);
+    };
+
     test('should open search when clicking search button', async ({ page }) => {
       await waitForStable(page);
 
-      const searchButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="search"]') }).first();
+      const searchButton = getSearchButton(page);
 
       if (await searchButton.isVisible()) {
         await searchButton.click();
@@ -71,7 +76,7 @@ test.describe('Results Page', () => {
     test('should filter results when searching', async ({ page }) => {
       await waitForStable(page);
 
-      const searchButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="search"]') }).first();
+      const searchButton = getSearchButton(page);
 
       if (await searchButton.isVisible()) {
         await searchButton.click();
@@ -90,17 +95,23 @@ test.describe('Results Page', () => {
   });
 
   test.describe('Results Filter Modal', () => {
+    // Helper to find filter button - it's the first button in the end slot of the header toolbar
+    const getFilterButton = (page: import('@playwright/test').Page) => {
+      // Filter button is first in IonButtons slot="end", search is second
+      return page.locator('ion-toolbar ion-buttons[slot="end"] ion-button').first();
+    };
+
     test('should have filter button', async ({ page }) => {
       await waitForStable(page);
 
-      const filterButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="funnel"], ion-icon[name*="filter"]') }).first();
+      const filterButton = getFilterButton(page);
       await expect(filterButton).toBeVisible();
     });
 
     test('should open filter modal when clicking filter button', async ({ page }) => {
       await waitForStable(page);
 
-      const filterButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="funnel"], ion-icon[name*="filter"]') }).first();
+      const filterButton = getFilterButton(page);
 
       if (await filterButton.isVisible()) {
         await filterButton.click();
@@ -115,7 +126,7 @@ test.describe('Results Page', () => {
     test('should show favorites toggle in filter modal', async ({ page }) => {
       await waitForStable(page);
 
-      const filterButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="funnel"]') }).first();
+      const filterButton = getFilterButton(page);
 
       if (await filterButton.isVisible()) {
         await filterButton.click();
@@ -129,7 +140,7 @@ test.describe('Results Page', () => {
     test('should show result type filters in modal', async ({ page }) => {
       await waitForStable(page);
 
-      const filterButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="funnel"]') }).first();
+      const filterButton = getFilterButton(page);
 
       if (await filterButton.isVisible()) {
         await filterButton.click();
@@ -146,7 +157,7 @@ test.describe('Results Page', () => {
     test('should toggle filter and close modal', async ({ page }) => {
       await waitForStable(page);
 
-      const filterButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="funnel"]') }).first();
+      const filterButton = getFilterButton(page);
 
       if (await filterButton.isVisible()) {
         await filterButton.click();
@@ -158,7 +169,8 @@ test.describe('Results Page', () => {
           await waitForStable(page);
         }
 
-        const closeButton = page.locator('ion-modal ion-button').filter({ has: page.locator('ion-icon[name*="close"]') }).first();
+        // Close button or click outside modal
+        const closeButton = page.locator('ion-modal ion-buttons ion-button').first();
         if (await closeButton.isVisible()) {
           await closeButton.click();
           await waitForStable(page);
@@ -171,7 +183,7 @@ test.describe('Results Page', () => {
     test('should have reset filters button', async ({ page }) => {
       await waitForStable(page);
 
-      const filterButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="funnel"]') }).first();
+      const filterButton = getFilterButton(page);
 
       if (await filterButton.isVisible()) {
         await filterButton.click();
@@ -187,8 +199,15 @@ test.describe('Results Page', () => {
     test('should display category tabs', async ({ page }) => {
       await waitForStable(page);
 
-      const toolbar = page.locator('.results-filter-toolbar, ion-toolbar').filter({ has: page.locator('button') });
-      await expect(toolbar).toBeVisible();
+      // Look for the category tab buttons directly - more robust than finding the toolbar container
+      const allTab = page.locator('button').filter({ hasText: /alle/i }).first();
+      const unreadTab = page.locator('button').filter({ hasText: /ungelesen/i }).first();
+
+      // At least one of the tabs should be visible
+      const hasAllTab = await allTab.isVisible().catch(() => false);
+      const hasUnreadTab = await unreadTab.isVisible().catch(() => false);
+
+      expect(hasAllTab || hasUnreadTab).toBeTruthy();
     });
 
     test('should have All tab', async ({ page }) => {
@@ -272,7 +291,13 @@ test.describe('Results Page', () => {
     });
 
     test('should load all period from URL on refresh', async ({ page }) => {
+      // Already logged in from beforeEach, now navigate to specific period URL
       await page.goto('/results?period=all');
+      // If redirected to login, we need to login again
+      if (page.url().includes('/login')) {
+        await login(page);
+        await page.goto('/results?period=all');
+      }
       await waitForStable(page);
 
       const title = page.locator('ion-title').first();
@@ -280,7 +305,13 @@ test.describe('Results Page', () => {
     });
 
     test('should load today period from URL', async ({ page }) => {
+      // Already logged in from beforeEach, now navigate to specific period URL
       await page.goto('/results?period=today');
+      // If redirected to login, we need to login again
+      if (page.url().includes('/login')) {
+        await login(page);
+        await page.goto('/results?period=today');
+      }
       await waitForStable(page);
 
       const title = page.locator('ion-title').first();
@@ -288,7 +319,13 @@ test.describe('Results Page', () => {
     });
 
     test('should load 7days period from URL', async ({ page }) => {
+      // Already logged in from beforeEach, now navigate to specific period URL
       await page.goto('/results?period=7days');
+      // If redirected to login, we need to login again
+      if (page.url().includes('/login')) {
+        await login(page);
+        await page.goto('/results?period=7days');
+      }
       await waitForStable(page);
 
       const title = page.locator('ion-title').first();
@@ -296,7 +333,13 @@ test.describe('Results Page', () => {
     });
 
     test('should load archive period from URL', async ({ page }) => {
+      // Already logged in from beforeEach, now navigate to specific period URL
       await page.goto('/results?period=archive');
+      // If redirected to login, we need to login again
+      if (page.url().includes('/login')) {
+        await login(page);
+        await page.goto('/results?period=archive');
+      }
       await waitForStable(page);
 
       const title = page.locator('ion-title').first();
@@ -314,7 +357,8 @@ test.describe('Results Page', () => {
         await waitForStable(page);
       }
 
-      const searchButton = page.locator('ion-button').filter({ has: page.locator('ion-icon[name*="search"]') }).first();
+      // Search button is second in IonButtons slot="end"
+      const searchButton = page.locator('ion-toolbar ion-buttons[slot="end"] ion-button').nth(1);
       if (await searchButton.isVisible()) {
         await searchButton.click();
         await waitForStable(page);
@@ -421,7 +465,8 @@ test.describe('Results Page', () => {
     test('should navigate to news via tab', async ({ page }) => {
       await waitForStable(page);
 
-      const newsTab = page.locator('ion-tab-button').filter({ hasText: /news/i });
+      // Tab text is in German: "Neuigkeiten" (not "news")
+      const newsTab = page.locator('ion-tab-button').filter({ hasText: /neuigkeiten|news/i });
       await newsTab.click();
       await waitForStable(page);
 

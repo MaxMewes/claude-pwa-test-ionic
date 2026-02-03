@@ -21,7 +21,7 @@ import { de } from 'date-fns/locale';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePatients } from '../hooks/usePatients';
-import { PullToRefresh, SkeletonLoader, EmptyState } from '../../../shared/components';
+import { PullToRefresh, SkeletonLoader, EmptyState, TestTubeLoader } from '../../../shared/components';
 import { Patient } from '../../../api/types';
 
 // Colors matching the app design
@@ -41,8 +41,20 @@ export const PatientsPage: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<string[]>([]);
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
+  const lastFetchTimeRef = useRef<number>(0);
 
-  const { data: patients = [], isLoading, refetch } = usePatients({ search: search || undefined });
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isFetchingNextPage,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+  } = usePatients({ search: search || undefined });
+
+  // Flatten paginated results
+  const patients = data?.pages?.flatMap((page) => page.Results) || [];
 
   // Focus searchbar when opening
   useEffect(() => {
@@ -52,6 +64,40 @@ export const PatientsPage: React.FC = () => {
       }, 100);
     }
   }, [isSearchOpen]);
+
+  // Automatically fetch second page right after first page loads (only if first page was full)
+  useEffect(() => {
+    const firstPage = data?.pages?.[0];
+    const firstPageFull = firstPage && firstPage.Results.length >= firstPage.ItemsPerPage;
+    if (data?.pages?.length === 1 && firstPageFull && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
+      fetchNextPage();
+    }
+  }, [data?.pages, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
+
+  // Handle infinite scroll via IonContent scroll event
+  const handleScroll = useCallback((event: CustomEvent) => {
+    // Skip scroll-based loading during initial load or auto-prefetch
+    const pagesLoaded = data?.pages?.length ?? 0;
+    if (pagesLoaded < 2) return;
+
+    // Debounce: prevent fetching more than once per second
+    const now = Date.now();
+    if (now - lastFetchTimeRef.current < 1000) return;
+
+    const target = event.target as HTMLIonContentElement;
+    target.getScrollElement().then((scrollElement) => {
+      const scrollTop = scrollElement.scrollTop;
+      const scrollHeight = scrollElement.scrollHeight;
+      const clientHeight = scrollElement.clientHeight;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Load more when within 800px of bottom
+      if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
+        lastFetchTimeRef.current = now;
+        fetchNextPage();
+      }
+    });
+  }, [data?.pages?.length, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
 
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
@@ -181,7 +227,7 @@ export const PatientsPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent scrollEvents={true} onIonScroll={handleScroll}>
         <PullToRefresh onRefresh={handleRefresh} />
 
         {isLoading ? (
@@ -193,98 +239,115 @@ export const PatientsPage: React.FC = () => {
             onAction={search ? () => setSearch('') : undefined}
           />
         ) : (
-          <IonAccordionGroup
-            multiple={true}
-            value={openAccordions}
-            onIonChange={(e) => setOpenAccordions(e.detail.value as string[])}
-          >
-            {Object.entries(groupedPatients).map(([letter, items]) => (
-              <IonAccordion key={letter} value={letter}>
-                <IonItem slot="header" color="light">
-                  <IonLabel>
-                    <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
-                      {letter}
-                    </h2>
-                    <p style={{ fontSize: '12px', color: COLORS.textLight, margin: '4px 0 0 0' }}>
-                      {items.length} {items.length === 1 ? 'Patient' : 'Patienten'}
-                    </p>
-                  </IonLabel>
-                </IonItem>
-                <div slot="content" style={{ backgroundColor: '#FFFFFF' }}>
-                  {items.map((patient, index) => {
-                    const patientId = getPatientId(patient);
-                    const firstName = getPatientFirstName(patient);
-                    const lastName = getPatientLastName(patient);
-                    const dateOfBirth = getPatientDateOfBirth(patient);
-                    const age = calculateAge(dateOfBirth);
-                    const formattedDob = formatDateOfBirth(dateOfBirth);
-                    const genderDisplay = getGenderDisplay(getPatientGender(patient));
+          <>
+            <IonAccordionGroup
+              multiple={true}
+              value={openAccordions}
+              onIonChange={(e) => setOpenAccordions(e.detail.value as string[])}
+            >
+              {Object.entries(groupedPatients).map(([letter, items]) => (
+                <IonAccordion key={letter} value={letter}>
+                  <IonItem slot="header" color="light">
+                    <IonLabel>
+                      <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>
+                        {letter}
+                      </h2>
+                      <p style={{ fontSize: '12px', color: COLORS.textLight, margin: '4px 0 0 0' }}>
+                        {items.length} {items.length === 1 ? 'Patient' : 'Patienten'}
+                      </p>
+                    </IonLabel>
+                  </IonItem>
+                  <div slot="content" style={{ backgroundColor: '#FFFFFF' }}>
+                    {items.map((patient, index) => {
+                      const patientId = getPatientId(patient);
+                      const firstName = getPatientFirstName(patient);
+                      const lastName = getPatientLastName(patient);
+                      const dateOfBirth = getPatientDateOfBirth(patient);
+                      const age = calculateAge(dateOfBirth);
+                      const formattedDob = formatDateOfBirth(dateOfBirth);
+                      const genderDisplay = getGenderDisplay(getPatientGender(patient));
 
-                    return (
-                      <div
-                        key={patientId}
-                        onClick={() => handlePatientClick(patientId)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '12px 16px',
-                          backgroundColor: index % 2 === 0 ? COLORS.rowEven : COLORS.rowOdd,
-                          borderBottom: `1px solid ${COLORS.border}`,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontSize: '15px',
-                              color: COLORS.text,
-                              fontWeight: 500,
-                            }}
-                          >
-                            {lastName}, {firstName}
-                          </div>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              marginTop: '4px',
-                              fontSize: '13px',
-                              color: COLORS.textLight,
-                            }}
-                          >
-                            {formattedDob && (
-                              <span>
-                                {formattedDob}
-                                {age !== null && ` (${age} J.)`}
-                              </span>
-                            )}
-                            {genderDisplay && (
-                              <IonIcon
-                                icon={genderDisplay.icon}
-                                style={{
-                                  fontSize: '16px',
-                                  color: genderDisplay.color,
-                                }}
-                              />
-                            )}
-                          </div>
-                        </div>
-                        <IonIcon
-                          icon={chevronForwardOutline}
+                      return (
+                        <div
+                          key={patientId}
+                          onClick={() => handlePatientClick(patientId)}
                           style={{
-                            fontSize: '20px',
-                            color: COLORS.textLight,
-                            marginLeft: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '12px 16px',
+                            backgroundColor: index % 2 === 0 ? COLORS.rowEven : COLORS.rowOdd,
+                            borderBottom: `1px solid ${COLORS.border}`,
+                            cursor: 'pointer',
                           }}
-                        />
-                      </div>
-                    );
-                  })}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: '15px',
+                                color: COLORS.text,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {lastName}, {firstName}
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                marginTop: '4px',
+                                fontSize: '13px',
+                                color: COLORS.textLight,
+                              }}
+                            >
+                              {formattedDob && (
+                                <span>
+                                  {formattedDob}
+                                  {age !== null && ` (${age} J.)`}
+                                </span>
+                              )}
+                              {genderDisplay && (
+                                <IonIcon
+                                  icon={genderDisplay.icon}
+                                  style={{
+                                    fontSize: '16px',
+                                    color: genderDisplay.color,
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                          <IonIcon
+                            icon={chevronForwardOutline}
+                            style={{
+                              fontSize: '20px',
+                              color: COLORS.textLight,
+                              marginLeft: '8px',
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </IonAccordion>
+              ))}
+            </IonAccordionGroup>
+
+            {/* Load more indicator */}
+            <div style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
+              {isFetchingNextPage && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--ion-color-medium)' }}>
+                  <TestTubeLoader size={40} />
+                  <span>{t('common.loadingMore')}</span>
                 </div>
-              </IonAccordion>
-            ))}
-          </IonAccordionGroup>
+              )}
+              {!hasNextPage && patients.length > 0 && !isFetchingNextPage && (
+                <span style={{ fontSize: '14px', color: 'var(--ion-color-medium)' }}>
+                  {t('patients.allLoaded', { count: patients.length })}
+                </span>
+              )}
+            </div>
+          </>
         )}
       </IonContent>
     </IonPage>

@@ -10,7 +10,6 @@ import {
   IonButton,
   IonIcon,
   IonSearchbar,
-  IonSpinner,
   IonMenuButton,
 } from '@ionic/react';
 import { searchOutline, closeOutline, barcodeOutline, funnelOutline } from 'ionicons/icons';
@@ -19,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useResults, useResultCounter, useMarkResultAsRead } from '../hooks/useResults';
 import { useSettingsStore, ResultPeriodFilter } from '../../../shared/store/useSettingsStore';
 import { ResultCard } from '../components/ResultCard';
-import { PullToRefresh, SkeletonLoader, EmptyState } from '../../../shared/components';
+import { PullToRefresh, EmptyState, TestTubeLoader } from '../../../shared/components';
 import { BarcodeScanner } from '../components/BarcodeScanner';
 import { ResultFilterModal } from '../components/ResultFilter';
 import { LabResult, ResultFilter } from '../../../api/types';
@@ -40,6 +39,7 @@ export const ResultsPage: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filter, setFilter] = useState<ResultFilter>({});
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
+  const lastFetchTimeRef = useRef<number>(0);
 
   const { isFavorite, toggleFavorite, resultsPeriod: storedPeriod, setResultsPeriod } = useSettingsStore();
 
@@ -75,7 +75,25 @@ export const ResultsPage: React.FC = () => {
     }
   }, [storedPeriod, location.pathname, location.search, history]);
 
-  const { data, isLoading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useResults(filter, effectivePeriod);
+  // Combine filter state with category for API - maps UI category to API area filter
+  const effectiveFilter = useMemo((): ResultFilter => {
+    const categoryToArea: Record<ResultCategory, ResultFilter['area']> = {
+      all: undefined,        // No filter - show all
+      unread: 'new',         // API: resultCategory = 'New'
+      pathological: 'pathological',
+      highPatho: 'highPathological',
+      urgent: 'urgent',
+    };
+    return {
+      ...filter,
+      area: categoryToArea[category] || filter.area,
+    };
+  }, [filter, category]);
+
+  const { data, isLoading, isFetching, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useResults(effectiveFilter, effectivePeriod);
+
+  // Show skeleton when loading fresh data (initial load or filter/category change), but not during pagination
+  const showSkeleton = isLoading || (isFetching && !isFetchingNextPage && !data?.pages?.length);
   const { data: counter } = useResultCounter(effectivePeriod);
 
   // Flatten paginated results
@@ -100,8 +118,26 @@ export const ResultsPage: React.FC = () => {
     }
   }, [isSearchOpen]);
 
+  // Automatically fetch second page right after first page loads (only if first page was full)
+  useEffect(() => {
+    const firstPage = data?.pages?.[0];
+    const firstPageFull = firstPage && firstPage.Results.length >= firstPage.ItemsPerPage;
+    if (data?.pages?.length === 1 && firstPageFull && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
+      fetchNextPage();
+    }
+  }, [data?.pages, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
+
   // Handle infinite scroll via IonContent scroll event
+  // Only trigger scroll-based loading after auto-prefetch is done (pages > 1)
   const handleScroll = useCallback((event: CustomEvent) => {
+    // Skip scroll-based loading during initial load or auto-prefetch
+    const pagesLoaded = data?.pages?.length ?? 0;
+    if (pagesLoaded < 2) return;
+
+    // Debounce: prevent fetching more than once per second
+    const now = Date.now();
+    if (now - lastFetchTimeRef.current < 1000) return;
+
     const target = event.target as HTMLIonContentElement;
     target.getScrollElement().then((scrollElement) => {
       const scrollTop = scrollElement.scrollTop;
@@ -109,12 +145,13 @@ export const ResultsPage: React.FC = () => {
       const clientHeight = scrollElement.clientHeight;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
-      // Load more when within 400px of bottom
-      if (distanceFromBottom < 400 && hasNextPage && !isFetchingNextPage && !isLoading) {
+      // Load more when within 800px of bottom (start loading earlier)
+      if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
+        lastFetchTimeRef.current = now;
         fetchNextPage();
       }
     });
-  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
+  }, [data?.pages?.length, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
@@ -152,27 +189,13 @@ export const ResultsPage: React.FC = () => {
     toggleFavorite(resultId);
   };
 
-  // Filter results based on category, search, and filter modal settings
-  // Note: Some filters (favorites, resultTypes) are sent to API, others need client-side filtering
+  // Filter results based on search and filter modal settings
+  // Note: Category filter is now passed to API via effectiveFilter.area
   const filteredResults = useMemo(() => {
     let results = allResults;
 
-    // Apply category filter (using correct API field names: IsPatho, IsHighPatho, IsEmergency)
-    switch (category) {
-      case 'unread':
-        results = results.filter((r) => !r.IsRead);
-        break;
-      case 'pathological':
-        results = results.filter((r) => r.IsPatho && !r.IsEmergency);
-        break;
-      case 'highPatho':
-        // High pathological - has critical values (HH or LL indicators)
-        results = results.filter((r) => r.IsHighPatho);
-        break;
-      case 'urgent':
-        results = results.filter((r) => r.IsEmergency);
-        break;
-    }
+    // Category filtering is now handled by API (via effectiveFilter.area -> resultCategory)
+    // No need for client-side category filtering anymore
 
     // Client-side filter for result types (fallback if API doesn't support or as additional filter)
     // Type codes: E=Endbefund, T=Teilbefund, V=Vorläufig, N=Nachforderung, A=Archiv
@@ -218,7 +241,7 @@ export const ResultsPage: React.FC = () => {
     }
 
     return results;
-  }, [allResults, category, searchQuery, filter, isFavorite]);
+  }, [allResults, searchQuery, filter, isFavorite]);
 
   // Use API counter for total counts, fall back to loaded results if counter not available
   const counts = useMemo(() => {
@@ -364,8 +387,10 @@ export const ResultsPage: React.FC = () => {
       <IonContent scrollEvents onIonScroll={handleScroll}>
         <PullToRefresh onRefresh={handleRefresh} />
 
-        {isLoading ? (
-          <SkeletonLoader type="list" count={8} />
+        {showSkeleton ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '48px 16px' }}>
+            <TestTubeLoader size={80} />
+          </div>
         ) : !filteredResults.length ? (
           <EmptyState
             type="results"
@@ -388,8 +413,8 @@ export const ResultsPage: React.FC = () => {
 {/* Load more trigger */}
             <div style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
               {isFetchingNextPage && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ion-color-medium)' }}>
-                  <IonSpinner name="bubbles" />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: 'var(--ion-color-medium)' }}>
+                  <TestTubeLoader size={40} />
                   <span>{t('common.loadingMore')}</span>
                 </div>
               )}

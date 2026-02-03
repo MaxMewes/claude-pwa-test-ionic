@@ -27,35 +27,6 @@ A Progressive Web Application for accessing medical laboratory results, built wi
 
 ## Performance Optimizations
 
-### Route-Based Code Splitting
-
-The application uses React's `lazy()` and `Suspense` for route-based code splitting. This reduces the initial bundle size by loading page components only when they are needed.
-
-**Implementation** ([App.tsx](src/App.tsx)):
-
-```tsx
-// Pages are lazy-loaded
-const ResultsPage = lazy(() => import('./features/results/pages/ResultsPage')
-  .then(m => ({ default: m.ResultsPage })));
-
-// Routes are wrapped with Suspense
-<Suspense fallback={<PageLoader />}>
-  <Route path="/results" component={ResultsPage} />
-</Suspense>
-```
-
-**Benefits:**
-
-- Smaller initial JavaScript bundle
-- Faster first page load
-- Pages load on-demand when navigating
-
-**Lazy-loaded pages:**
-
-- All auth pages (Login, Register, Reset Password, Two-Factor)
-- All feature pages (Results, Patients, Laboratories, News, Settings)
-- All detail pages (ResultDetail, PatientDetail, etc.)
-
 ### Infinite Scroll (Data Lazy Loading)
 
 The Results page uses TanStack Query's `useInfiniteQuery` combined with Ionic's `IonInfiniteScroll` for efficient data pagination:

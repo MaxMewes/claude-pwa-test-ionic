@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { IonSpinner, IonText, IonSelect, IonSelectOption, IonButton, IonIcon } from '@ionic/react';
+import { IonText, IonSelect, IonSelectOption, IonButton, IonIcon } from '@ionic/react';
+import { TestTubeLoader } from '../../../shared/components';
 import {
   LineChart,
   Line,
@@ -87,9 +88,9 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
         <IonText color="dark">
           <h3 style={{ margin: '0 0 16px 0' }}>Laborwert-Verlauf</h3>
         </IonText>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
-          <IonSpinner />
-          <IonText color="medium" style={{ marginLeft: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
+          <TestTubeLoader size={60} />
+          <IonText color="medium" style={{ marginTop: '16px' }}>
             Lade Verlaufsdaten...
           </IonText>
         </div>

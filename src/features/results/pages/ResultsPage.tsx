@@ -119,24 +119,25 @@ export const ResultsPage: React.FC = () => {
   }, [isSearchOpen]);
 
   // Automatically fetch second page right after first page loads (only if first page was full)
+  const firstPage = data?.pages?.[0];
+  const firstPageResultCount = firstPage?.Results?.length ?? 0;
+  const firstPageItemsPerPage = firstPage?.ItemsPerPage ?? 0;
+
   useEffect(() => {
-    const firstPage = data?.pages?.[0];
-    const firstPageFull = firstPage && firstPage.Results.length >= firstPage.ItemsPerPage;
-    if (data?.pages?.length === 1 && firstPageFull && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
+    const firstPageFull = firstPageResultCount > 0 && firstPageResultCount >= firstPageItemsPerPage;
+    if (data?.pages?.length === 1 && firstPageFull && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [data?.pages, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
+  }, [data?.pages?.length, firstPageResultCount, firstPageItemsPerPage, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Handle infinite scroll via IonContent scroll event
-  // Only trigger scroll-based loading after auto-prefetch is done (pages > 1)
   const handleScroll = useCallback((event: CustomEvent) => {
-    // Skip scroll-based loading during initial load or auto-prefetch
-    const pagesLoaded = data?.pages?.length ?? 0;
-    if (pagesLoaded < 2) return;
-
     // Debounce: prevent fetching more than once per second
     const now = Date.now();
     if (now - lastFetchTimeRef.current < 1000) return;
+
+    // Don't trigger if already fetching next page or no more pages
+    if (!hasNextPage || isFetchingNextPage) return;
 
     const target = event.target as HTMLIonContentElement;
     target.getScrollElement().then((scrollElement) => {
@@ -145,13 +146,13 @@ export const ResultsPage: React.FC = () => {
       const clientHeight = scrollElement.clientHeight;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
-      // Load more when within 800px of bottom (start loading earlier)
-      if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
+      // Load more when within 800px of bottom
+      if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage) {
         lastFetchTimeRef.current = now;
         fetchNextPage();
       }
     });
-  }, [data?.pages?.length, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);

@@ -114,11 +114,23 @@ export const PatientDetailPage: React.FC = () => {
   let addressLine1 = '';
   let addressLine2 = '';
   if (address) {
-    const street = address.Street ?? address.street ?? '';
-    const houseNumber = address.HouseNumber ?? address.Number ?? '';
-    const zip = address.Zip ?? address.postalCode ?? '';
-    const city = address.City ?? address.city ?? '';
-    const country = address.CountryCode ?? address.country ?? '';
+    // Type guard: PatientStreetAddress has Street property
+    const isStreetAddress = 'Street' in address || 'Zip' in address;
+    const street = isStreetAddress 
+      ? (address as import('../../../api/types').PatientStreetAddress).Street ?? ''
+      : (address as import('../../../api/types').PatientAddressLegacy).street ?? '';
+    const houseNumber = isStreetAddress
+      ? (address as import('../../../api/types').PatientStreetAddress).HouseNumber ?? ''
+      : '';
+    const zip = isStreetAddress
+      ? (address as import('../../../api/types').PatientStreetAddress).Zip ?? ''
+      : (address as import('../../../api/types').PatientAddressLegacy).postalCode ?? '';
+    const city = isStreetAddress
+      ? (address as import('../../../api/types').PatientStreetAddress).City ?? ''
+      : (address as import('../../../api/types').PatientAddressLegacy).city ?? '';
+    const country = isStreetAddress
+      ? (address as import('../../../api/types').PatientStreetAddress).CountryCode ?? ''
+      : (address as import('../../../api/types').PatientAddressLegacy).country ?? '';
 
     addressLine1 = `${street} ${houseNumber}`.trim();
     addressLine2 = `${country ? country + ' - ' : ''}${zip} ${city}`.trim();

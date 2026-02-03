@@ -315,7 +315,7 @@ export function useToggleResultPin() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }

@@ -9,7 +9,9 @@ import {
   IonLabel,
   IonInput,
   IonList,
+  IonIcon,
 } from '@ionic/react';
+import { fingerPrint } from 'ionicons/icons';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -66,19 +68,18 @@ export const LoginPage: React.FC = () => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
             minHeight: '100%',
             maxWidth: '400px',
             margin: '0 auto',
           }}
         >
           {/* Logo and Subtitle */}
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px', paddingTop: '24px' }}>
             <img
               src="/assets/images/login-undraw-hire.svg"
               alt="labGate"
               style={{
-                width: '200px',
+                width: '260px',
                 height: 'auto',
                 margin: '0 auto 20px',
                 display: 'block',
@@ -95,69 +96,105 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <IonList>
-              <IonItem className={errors.username ? 'ion-invalid' : ''}>
-                <IonLabel position="stacked">{t('auth.username')}</IonLabel>
-                <IonInput
-                  type="text"
-                  placeholder={t('auth.usernamePlaceholder')}
-                  {...register('username')}
-                  onIonInput={(e) => setValue('username', e.detail.value || '')}
+          <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+            <div>
+              <IonList>
+                <IonItem className={errors.username ? 'ion-invalid' : ''}>
+                  <IonLabel position="stacked">{t('auth.username')}</IonLabel>
+                  <IonInput
+                    type="text"
+                    placeholder={t('auth.usernamePlaceholder')}
+                    {...register('username')}
+                    onIonInput={(e) => setValue('username', e.detail.value || '')}
+                  />
+                  {errors.username && (
+                    <div slot="error" style={{ color: 'var(--ion-color-danger)', fontSize: '12px', padding: '4px 0' }}>
+                      {errors.username.message}
+                    </div>
+                  )}
+                </IonItem>
+
+                <PasswordInput
+                  label={t('auth.password')}
+                  value={password}
+                  placeholder={t('auth.password')}
+                  onChange={(value) => setValue('password', value)}
+                  error={errors.password?.message}
                 />
-                {errors.username && (
-                  <div slot="error" style={{ color: 'var(--ion-color-danger)', fontSize: '12px', padding: '4px 0' }}>
-                    {errors.username.message}
-                  </div>
-                )}
-              </IonItem>
+              </IonList>
 
-              <PasswordInput
-                label={t('auth.password')}
-                value={password}
-                placeholder={t('auth.password')}
-                onChange={(value) => setValue('password', value)}
-                error={errors.password?.message}
-              />
-            </IonList>
+              {/* Mobile only: Links right below password field */}
+              <div className="login-links-mobile" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                <IonButton
+                  fill="clear"
+                  size="small"
+                  onClick={() => router.push(ROUTES.RESET_PASSWORD)}
+                >
+                  {t('auth.forgotPassword')}
+                </IonButton>
+                <IonButton
+                  fill="clear"
+                  size="small"
+                  onClick={() => router.push(ROUTES.REGISTER)}
+                >
+                  {t('auth.register')}
+                </IonButton>
+              </div>
 
-            {/* Error Message */}
-            {loginError && (
-              <IonText color="danger">
-                <p style={{ textAlign: 'center', marginTop: '16px' }}>
-                  {t('auth.invalidCredentials')}
-                </p>
-              </IonText>
-            )}
+              {/* Error Message */}
+              {loginError && (
+                <IonText color="danger">
+                  <p style={{ textAlign: 'center', marginTop: '16px' }}>
+                    {t('auth.invalidCredentials')}
+                  </p>
+                </IonText>
+              )}
+            </div>
 
-            {/* Submit Button */}
-            <IonButton
-              type="submit"
-              expand="block"
-              style={{ marginTop: '24px' }}
-              disabled={isLoggingIn}
-            >
-              {isLoggingIn ? <IonSpinner name="crescent" /> : t('auth.login')}
-            </IonButton>
+            {/* Spacer to push buttons to bottom on mobile */}
+            <div className="login-spacer" />
 
-            {/* Forgot Password Link */}
-            <IonButton
-              fill="clear"
-              expand="block"
-              style={{ marginTop: '8px' }}
-              onClick={() => router.push(ROUTES.RESET_PASSWORD)}
-            >
-              {t('auth.forgotPassword')}
-            </IonButton>
+            {/* Buttons at bottom */}
+            <div style={{ paddingBottom: '16px' }}>
+              {/* Fingerprint icon - mobile only */}
+              <div className="fingerprint-mobile-only" style={{ textAlign: 'center', marginBottom: '16px' }}>
+                <IonIcon
+                  icon={fingerPrint}
+                  style={{
+                    fontSize: '48px',
+                    color: 'var(--labgate-brand, #4E8B3B)',
+                  }}
+                />
+              </div>
 
-            {/* Register Link */}
-            <IonButton
-              fill="clear"
-              expand="block"
-              onClick={() => router.push(ROUTES.REGISTER)}
-            >
-              {t('auth.register')}
-            </IonButton>
+              {/* Submit Button */}
+              <IonButton
+                type="submit"
+                expand="block"
+                disabled={isLoggingIn}
+              >
+                {isLoggingIn ? <IonSpinner name="crescent" /> : t('auth.login')}
+              </IonButton>
+
+              {/* Desktop only: Links below login button */}
+              <div className="login-links-desktop">
+                <IonButton
+                  fill="clear"
+                  expand="block"
+                  style={{ marginTop: '8px' }}
+                  onClick={() => router.push(ROUTES.RESET_PASSWORD)}
+                >
+                  {t('auth.forgotPassword')}
+                </IonButton>
+                <IonButton
+                  fill="clear"
+                  expand="block"
+                  onClick={() => router.push(ROUTES.REGISTER)}
+                >
+                  {t('auth.register')}
+                </IonButton>
+              </div>
+            </div>
           </form>
 
         </div>

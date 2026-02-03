@@ -237,7 +237,7 @@ export interface ResultFilter {
   isFavorite?: boolean;
   isArchived?: boolean;
   isPinned?: boolean;
-  area?: 'new' | 'pathological' | 'urgent' | 'all';
+  area?: 'new' | 'pathological' | 'highPathological' | 'urgent' | 'all';
   sortColumn?: string;
   sortDirection?: 'asc' | 'desc';
 }

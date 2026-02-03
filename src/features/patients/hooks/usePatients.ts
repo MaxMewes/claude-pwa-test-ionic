@@ -1,8 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { Patient } from '../../../api/types';
 
 const PATIENTS_KEY = 'patients';
+
+// Different page sizes for different loading scenarios
+const INITIAL_PAGE_SIZE = 25;      // First load
+const PREFETCH_PAGE_SIZE = 25;     // Second automatic load
+const SCROLL_PAGE_SIZE = 50;       // Scroll-triggered loads
+
+// Get items per page based on page number
+function getItemsPerPage(pageNumber: number): number {
+  if (pageNumber === 1) return INITIAL_PAGE_SIZE;
+  if (pageNumber === 2) return PREFETCH_PAGE_SIZE;
+  return SCROLL_PAGE_SIZE;
+}
 
 interface PatientsFilter {
   search?: string;
@@ -16,14 +28,16 @@ interface PatientsResponseV3 {
   TotalCount?: number;
 }
 
-// Fetch all patients without pagination
+// Fetch patients with infinite scroll pagination
 export function usePatients(filter?: PatientsFilter) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [PATIENTS_KEY, filter?.search],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 1 }) => {
+      const currentPageSize = getItemsPerPage(pageParam);
+
       const params: Record<string, string | number> = {
-        itemsPerPage: 1000, // Fetch all at once
-        currentPage: 1,
+        itemsPerPage: currentPageSize,
+        currentPage: pageParam,
         patientSortColumn: 'Lastname',
         patientSortDirection: 'Ascending',
       };
@@ -35,7 +49,30 @@ export function usePatients(filter?: PatientsFilter) {
 
       const response = await axiosInstance.get<PatientsResponseV3>('/api/v3/patients', { params });
       // Support both Items (V3) and Results (legacy) field names
-      return response.data.Items || response.data.Results || [];
+      const patients = response.data.Items || response.data.Results || [];
+      const totalCount = response.data.TotalItemsCount || response.data.TotalCount || patients.length;
+
+      return {
+        Results: patients,
+        TotalCount: totalCount,
+        ItemsPerPage: currentPageSize,
+        pageNumber: pageParam,
+      };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      // Calculate total items loaded across all pages
+      const totalLoaded = allPages.reduce((sum, page) => sum + page.Results.length, 0);
+
+      // No more pages if:
+      // 1. We've loaded all items based on TotalCount
+      // 2. OR the last page returned fewer items than requested (incomplete page = end of data)
+      const lastPageWasIncomplete = lastPage.Results.length < lastPage.ItemsPerPage;
+
+      if (totalLoaded >= lastPage.TotalCount || lastPageWasIncomplete) {
+        return undefined;
+      }
+      return lastPage.pageNumber + 1;
     },
   });
 }

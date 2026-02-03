@@ -861,3 +861,73 @@ body.barcode-scanner-active ion-modal .scanner-content {
   --background: transparent !important;
   background: transparent !important;
 }
+
+/* Login page responsive styles */
+
+/* Mobile: show mobile links, hide desktop links, push button to bottom */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.login-spacer {
+  flex: 1;
+  min-height: 24px;
+}
+
+.login-links-mobile {
+  display: flex;
+}
+
+.login-links-desktop {
+  display: none;
+}
+
+.fingerprint-mobile-only {
+  display: block;
+}
+
+/* Desktop: hide mobile links, show desktop links, centered layout */
+@media (min-width: 768px) {
+  .login-form {
+    flex: 0;
+  }
+
+  .login-spacer {
+    display: none;
+  }
+
+  .login-links-mobile {
+    display: none;
+  }
+
+  .login-links-desktop {
+    display: block;
+  }
+
+  .fingerprint-mobile-only {
+    display: none;
+  }
+}
+
+/* Fix IonItem focus highlight issue */
+ion-item {
+  --highlight-height: 0;
+  --highlight-color-focused: transparent;
+  --highlight-color-valid: transparent;
+  --highlight-color-invalid: transparent;
+}
+
+ion-item.item-has-focus {
+  --background: transparent;
+}
+
+/* Keep underline styling but remove the weird highlight box */
+ion-item::part(native) {
+  --inner-padding-end: 0;
+}
+
+ion-item ion-input {
+  --highlight-color-focused: var(--ion-color-primary);
+}

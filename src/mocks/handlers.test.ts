@@ -68,10 +68,14 @@ describe('MSW Integration', () => {
         Username: 'invalid',
         Password: 'wrong',
       });
-      // Should not reach here
-      expect(true).toBe(false);
+      // Should not reach here - request should fail
+      throw new Error('Expected request to fail with 401');
     } catch (error) {
-      const errorResponse = error as { response: { status: number } };
+      const errorResponse = error as { response: { status: number }; message?: string };
+      // Check if this is the expected API error, not our thrown error
+      if (errorResponse.message?.includes('Expected request to fail')) {
+        throw error;
+      }
       expect(errorResponse.response.status).toBe(401);
     }
   });

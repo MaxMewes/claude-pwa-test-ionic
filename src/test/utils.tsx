@@ -102,4 +102,6 @@ export const waitForNextTick = (): Promise<void> => {
 
 // Re-export everything from React Testing Library
 export * from '@testing-library/react';
-export { renderWithProviders as render };
+
+// Note: renderWithProviders is the recommended way to render components in tests.
+// It's also available as the named export for explicit usage.

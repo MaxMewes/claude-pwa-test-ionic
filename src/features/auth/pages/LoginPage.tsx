@@ -96,7 +96,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+          <form onSubmit={handleSubmit(onSubmit)} className="login-form" aria-label={t('auth.login')}>
             <div>
               <IonList>
                 <IonItem className={errors.username ? 'ion-invalid' : ''}>
@@ -106,9 +106,11 @@ export const LoginPage: React.FC = () => {
                     placeholder={t('auth.usernamePlaceholder')}
                     {...register('username')}
                     onIonInput={(e) => setValue('username', e.detail.value || '')}
+                    aria-invalid={errors.username ? 'true' : 'false'}
+                    aria-describedby={errors.username ? 'username-error' : undefined}
                   />
                   {errors.username && (
-                    <div slot="error" style={{ color: 'var(--ion-color-danger)', fontSize: '12px', padding: '4px 0' }}>
+                    <div id="username-error" slot="error" role="alert" style={{ color: 'var(--ion-color-danger)', fontSize: '12px', padding: '4px 0' }}>
                       {errors.username.message}
                     </div>
                   )}
@@ -144,7 +146,7 @@ export const LoginPage: React.FC = () => {
               {/* Error Message */}
               {loginError && (
                 <IonText color="danger">
-                  <p style={{ textAlign: 'center', marginTop: '16px' }}>
+                  <p role="alert" style={{ textAlign: 'center', marginTop: '16px' }}>
                     {t('auth.invalidCredentials')}
                   </p>
                 </IonText>

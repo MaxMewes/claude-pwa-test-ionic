@@ -3,6 +3,7 @@ import { IonItem, IonIcon } from '@ionic/react';
 import { star, starOutline, male, female } from 'ionicons/icons';
 import { format, differenceInYears } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 import { LabResult } from '../../../api/types';
 
 interface ResultCardProps {
@@ -35,46 +36,65 @@ const calculateAge = (dateOfBirth?: string): number | null => {
   }
 };
 
-// Format date of birth with age (like old app: "DD.MM.YYYY (Age J.)")
-const formatDobWithAge = (dateOfBirth?: string): string => {
-  if (!dateOfBirth) return '';
-  try {
-    const dob = new Date(dateOfBirth);
-    const age = calculateAge(dateOfBirth);
-    const formattedDob = format(dob, 'dd.MM.yyyy', { locale: de });
-    return age !== null ? `${formattedDob} (${age} J.)` : formattedDob;
-  } catch {
-    return '';
-  }
-};
-
-// Format report date (omit time if 00:00)
-const formatReportDate = (dateStr: string): string => {
-  try {
-    const date = new Date(dateStr);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-
-    if (hours === 0 && minutes === 0) {
-      return format(date, 'dd.MM.yyyy', { locale: de });
-    }
-    return format(date, 'dd.MM.yyyy HH:mm', { locale: de });
-  } catch {
-    return dateStr;
-  }
-};
-
-// Get patient gender icon (1 = female, 2 = male)
-const getGenderIcon = (gender?: number): typeof male | typeof female | null => {
-  if (gender === 1) return female;
-  if (gender === 2) return male;
-  return null;
-};
-
+/**
+ * ResultCard component displays a lab result in a list format.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <ResultCard
+ *   result={labResult}
+ *   isFavorite={true}
+ *   onClick={() => navigate('/result/123')}
+ *   onToggleFavorite={() => toggleFavorite(123)}
+ * />
+ * ```
+ */
 export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = false, onClick, onToggleFavorite, selected }) => {
+  const { t, i18n } = useTranslation();
+  
+  // Use appropriate locale for date formatting
+  const locale = i18n.language === 'de' ? de : undefined;
+  
+  // Format date of birth with age (like old app: "DD.MM.YYYY (Age J.)")
+  const formatDobWithAge = (dateOfBirth?: string): string => {
+    if (!dateOfBirth) return '';
+    try {
+      const dob = new Date(dateOfBirth);
+      const age = calculateAge(dateOfBirth);
+      const formattedDob = format(dob, 'dd.MM.yyyy', { locale });
+      return age !== null ? `${formattedDob} (${age} ${t('resultCard.years')})` : formattedDob;
+    } catch {
+      return '';
+    }
+  };
+
+  // Format report date (omit time if 00:00)
+  const formatReportDate = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+
+      if (hours === 0 && minutes === 0) {
+        return format(date, 'dd.MM.yyyy', { locale });
+      }
+      return format(date, 'dd.MM.yyyy HH:mm', { locale });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Get patient gender icon (1 = female, 2 = male)
+  const getGenderIcon = (gender?: number): typeof male | typeof female | null => {
+    if (gender === 1) return female;
+    if (gender === 2) return male;
+    return null;
+  };
+
   const patientName = result.Patient?.Fullname ||
     `${result.Patient?.Lastname || ''}, ${result.Patient?.Firstname || ''}`.trim() ||
-    'Patient';
+    t('resultCard.patient');
 
   const typeLetter = getResultTypeLetter(result.ResultType);
   const dobDisplay = formatDobWithAge(result.Patient?.DateOfBirth);
@@ -90,6 +110,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
       button
       detail={false}
       lines="full"
+      aria-label={`${patientName}, ${result.LabNo}, ${reportDateDisplay}${result.IsRead ? '' : `, ${t('resultCard.unread')}`}`}
       style={{
         '--background': selected ? 'var(--labgate-selected-bg)' : 'var(--ion-background-color)',
         '--padding-start': '0',
@@ -99,6 +120,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
     >
       {/* Left Pathological/Urgent Indicator Bar (like old app - 12px red bar) */}
       <div
+        aria-hidden="true"
         style={{
           width: '12px',
           minWidth: '12px',
@@ -109,6 +131,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
 
       {/* Result Type Letter - like old app */}
       <div
+        aria-hidden="true"
         style={{
           width: '28px',
           minWidth: '28px',
@@ -132,6 +155,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
             {!result.IsRead && (
               <span
+                aria-label={t('resultCard.unread')}
                 style={{
                   width: '8px',
                   height: '8px',
@@ -167,6 +191,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
                   e.preventDefault();
                   onToggleFavorite?.();
                 }}
+                aria-label={`${t('resultCard.toggleFavorite')}: ${patientName}`}
+                aria-pressed={isFavorite}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -180,6 +206,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
               >
                 <IonIcon
                   icon={isFavorite ? star : starOutline}
+                  aria-hidden="true"
                   style={{
                     color: isFavorite ? 'var(--labgate-favorite)' : 'var(--labgate-text-muted)',
                     fontSize: '16px',
@@ -230,6 +257,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
           {genderIcon && (
             <IonIcon
               icon={genderIcon}
+              aria-hidden="true"
               style={{ fontSize: '14px', color: 'var(--labgate-text-light)' }}
             />
           )}

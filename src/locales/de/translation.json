@@ -339,6 +339,43 @@
     "server": "Serverfehler. Bitte versuchen Sie es spaeter erneut.",
     "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
     "unauthorized": "Sie sind nicht berechtigt, diese Aktion auszufuehren.",
-    "generic": "Ein unerwarteter Fehler ist aufgetreten."
+    "generic": "Ein unerwarteter Fehler ist aufgetreten.",
+    "boundary": {
+      "title": "Ein Fehler ist aufgetreten",
+      "message": "Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.",
+      "retry": "Erneut versuchen"
+    }
+  },
+  "resultCard": {
+    "toggleFavorite": "Als Favorit markieren/entfernen",
+    "patient": "Patient",
+    "years": "J.",
+    "unread": "Ungelesen"
+  },
+  "trendChart": {
+    "title": "Laborwert-Verlauf",
+    "loading": "Lade Verlaufsdaten...",
+    "errorLoading": "Fehler beim Laden der Daten",
+    "noData": "Keine Laborwerte mit numerischen Ergebnissen vorhanden",
+    "noTrendData": "Keine Verlaufsdaten für {{testName}} vorhanden",
+    "unit": "Einheit",
+    "reference": "Referenz",
+    "normalRange": "Normalbereich",
+    "low": "niedrig",
+    "high": "hoch",
+    "result": "Befund",
+    "measurementCount": "{{count}} Messwert(e) aus den letzten 20 Befunden",
+    "exportAlt": "Diagramm exportieren"
+  },
+  "cumulativeView": {
+    "normal": "Normal",
+    "low": "Niedrig",
+    "criticalLow": "Kritisch niedrig",
+    "high": "Hoch",
+    "criticalHigh": "Kritisch hoch",
+    "abnormal": "Auffaellig",
+    "abnormalValues": "Auffaellige Werte",
+    "normalValues": "Normale Werte",
+    "reference": "Ref"
   }
 }

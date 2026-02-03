@@ -56,21 +56,26 @@ export const useSettingsStore = create<SettingsState>()(
         return state.favorites.includes(resultId);
       },
 
+      // Fixed race condition: use functional update to get latest state
       toggleFavorite: (resultId) => {
-        const state = get();
-        const isCurrentlyFavorite = state.favorites.includes(resultId);
-
-        if (isCurrentlyFavorite) {
-          set({
-            favorites: state.favorites.filter((id) => id !== resultId),
-          });
-          return false; // Now not favorite
-        } else {
-          set({
-            favorites: [...state.favorites, resultId],
-          });
-          return true; // Now favorite
-        }
+        let newIsFavorite = false;
+        
+        set((state) => {
+          const isCurrentlyFavorite = state.favorites.includes(resultId);
+          newIsFavorite = !isCurrentlyFavorite;
+          
+          if (isCurrentlyFavorite) {
+            return {
+              favorites: state.favorites.filter((id) => id !== resultId),
+            };
+          } else {
+            return {
+              favorites: [...state.favorites, resultId],
+            };
+          }
+        });
+        
+        return newIsFavorite;
       },
 
       getFavorites: () => {

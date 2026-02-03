@@ -1,8 +1,9 @@
 import React, { Component, ReactNode } from 'react';
 import { IonPage, IonContent, IonButton, IonIcon, IonText } from '@ionic/react';
 import { alertCircleOutline, refreshOutline } from 'ionicons/icons';
+import { withTranslation, WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -12,7 +13,18 @@ interface State {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+/**
+ * ErrorBoundary component that catches and displays errors in the application.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <ErrorBoundary>
+ *   <App />
+ * </ErrorBoundary>
+ * ```
+ */
+class ErrorBoundaryComponent extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -31,6 +43,8 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
+    const { t } = this.props;
+    
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -40,6 +54,9 @@ export class ErrorBoundary extends Component<Props, State> {
         <IonPage>
           <IonContent>
             <div
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -52,6 +69,7 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               <IonIcon
                 icon={alertCircleOutline}
+                aria-hidden="true"
                 style={{
                   fontSize: '64px',
                   color: 'var(--ion-color-danger)',
@@ -59,16 +77,16 @@ export class ErrorBoundary extends Component<Props, State> {
                 }}
               />
               <IonText color="dark">
-                <h2 style={{ margin: '0 0 8px 0' }}>Ein Fehler ist aufgetreten</h2>
+                <h2 style={{ margin: '0 0 8px 0' }}>{t('errors.boundary.title')}</h2>
               </IonText>
               <IonText color="medium">
                 <p style={{ margin: '0 0 24px 0' }}>
-                  Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.
+                  {t('errors.boundary.message')}
                 </p>
               </IonText>
-              <IonButton onClick={this.handleRetry}>
-                <IonIcon slot="start" icon={refreshOutline} />
-                Erneut versuchen
+              <IonButton onClick={this.handleRetry} aria-label={t('errors.boundary.retry')}>
+                <IonIcon slot="start" icon={refreshOutline} aria-hidden="true" />
+                {t('errors.boundary.retry')}
               </IonButton>
             </div>
           </IonContent>
@@ -79,3 +97,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryComponent);

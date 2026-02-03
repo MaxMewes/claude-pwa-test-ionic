@@ -1,3 +1,8 @@
+/**
+ * Authentication Store using Zustand
+ * Manages user authentication state with optimized localStorage updates.
+ */
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
@@ -41,9 +46,13 @@ interface AuthState {
 
 const STORAGE_KEY = 'labgate-auth';
 
+// Debounce helper for lastActivity updates
+let lastActivityDebounceTimer: NodeJS.Timeout | null = null;
+const LAST_ACTIVITY_DEBOUNCE_MS = 60000; // Only update lastActivity once per minute
+
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       tempToken: null,
@@ -93,7 +102,26 @@ export const useAuthStore = create<AuthState>()(
 
       setBiometricEnabled: (enabled) => set({ biometricEnabled: enabled }),
 
-      updateLastActivity: () => set({ lastActivity: Date.now() }),
+      // Debounced update to reduce localStorage writes
+      updateLastActivity: () => {
+        const now = Date.now();
+        const current = get().lastActivity;
+        
+        // Only update if more than 1 minute has passed
+        if (now - current < LAST_ACTIVITY_DEBOUNCE_MS) {
+          return;
+        }
+        
+        // Clear existing timer
+        if (lastActivityDebounceTimer) {
+          clearTimeout(lastActivityDebounceTimer);
+        }
+        
+        // Debounce the actual state update
+        lastActivityDebounceTimer = setTimeout(() => {
+          set({ lastActivity: Date.now() });
+        }, 1000); // 1 second debounce for the state update itself
+      },
 
       logout: () =>
         set({
@@ -124,6 +152,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         pin: state.pin,
         biometricEnabled: state.biometricEnabled,
+        // Exclude lastActivity from persistence to reduce writes
       }),
     }
   )

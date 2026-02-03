@@ -721,7 +721,6 @@ FodyWeavers.xsd
 /.nx/cache
 /.vscode/*
 !/.vscode/extensions.json
-!/.vscode/sessions.json
 .idea
 
 # claude

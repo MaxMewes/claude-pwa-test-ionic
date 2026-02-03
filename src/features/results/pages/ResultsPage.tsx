@@ -145,35 +145,38 @@ export const ResultsPage: React.FC = () => {
   }, []);
 
   // Handle infinite scroll via IonContent scroll event
-  // Only trigger scroll-based loading after auto-prefetch is done (pages > 1)
   const handleScroll = useCallback((event: CustomEvent) => {
-    // Skip scroll-based loading during initial load or auto-prefetch
+    // Skip during initial load (no pages yet)
     const pagesLoaded = data?.pages?.length ?? 0;
-    if (pagesLoaded < 2) return;
+    if (pagesLoaded === 0) return;
 
-    // Debounce: prevent fetching more than once per second
+    // Debounce: prevent fetching more than once per 500ms
     const now = Date.now();
-    if (now - lastFetchTimeRef.current < 1000) return;
+    if (now - lastFetchTimeRef.current < 500) return;
 
-    // Prevent race condition: skip if already fetching
-    if (isFetchingRef.current) return;
+    // Prevent concurrent fetches
+    if (isFetchingRef.current || isFetchingNextPage) return;
 
     const target = event.target as HTMLIonContentElement;
     target.getScrollElement().then((scrollElement) => {
       // Check if component is still mounted
       if (!mountedRef.current) return;
+      // Re-check fetch state after async operation
+      if (isFetchingRef.current || isFetchingNextPage) return;
 
       const scrollTop = scrollElement.scrollTop;
       const scrollHeight = scrollElement.scrollHeight;
       const clientHeight = scrollElement.clientHeight;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
-      // Load more when within 800px of bottom (start loading earlier)
-      if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching && !isFetchingRef.current) {
+      // Load more when within 800px of bottom
+      if (distanceFromBottom < 800 && hasNextPage && !isLoading && !isFetching) {
         lastFetchTimeRef.current = now;
         isFetchingRef.current = true;
         fetchNextPage().finally(() => {
-          isFetchingRef.current = false;
+          if (mountedRef.current) {
+            isFetchingRef.current = false;
+          }
         });
       }
     });

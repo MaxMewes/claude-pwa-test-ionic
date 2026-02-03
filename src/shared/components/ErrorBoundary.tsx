@@ -40,6 +40,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <IonPage>
           <IonContent>
             <div
+              role="alert"
+              aria-live="assertive"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -52,6 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               <IonIcon
                 icon={alertCircleOutline}
+                aria-hidden="true"
                 style={{
                   fontSize: '64px',
                   color: 'var(--ion-color-danger)',

@@ -162,6 +162,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
               {/* Favorite Star - clickable (orange #E18B05 like old app) */}
               <button
                 type="button"
+                aria-label={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
+                aria-pressed={isFavorite}
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
@@ -180,6 +182,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
               >
                 <IonIcon
                   icon={isFavorite ? star : starOutline}
+                  aria-hidden="true"
                   style={{
                     color: isFavorite ? 'var(--labgate-favorite)' : 'var(--labgate-text-muted)',
                     fontSize: '16px',

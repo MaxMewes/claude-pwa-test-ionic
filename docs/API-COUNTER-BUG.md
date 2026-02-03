@@ -178,4 +178,6 @@ Die 50 fehlenden Ergebnisse gehören zu Einsendern, auf die der Benutzer keinen 
 
 ## Status
 
-**Confirmed** - Bug reproduziert in labGate PWA und via Postman. API fix required in labGate backend.
+**Fixed (Workaround)** - Frontend verwendet jetzt V2 Counter Endpoint (`/Api/V2/Result/GetResultCounter`) statt V3. V2 filtert korrekt nach Sender-Berechtigungen.
+
+API Bug in V3 bleibt bestehen - sollte im labGate Backend gefixt werden.

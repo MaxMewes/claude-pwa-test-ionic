@@ -72,7 +72,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           className="ion-hide"
           style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px' }}
         >
-          {resultCount} {resultCount === 1 ? 'result' : 'results'} found
+          {t('common.resultsFound', { count: resultCount })}
         </div>
       )}
     </>

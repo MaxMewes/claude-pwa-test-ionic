@@ -46,8 +46,6 @@ interface AuthState {
 
 const STORAGE_KEY = 'labgate-auth';
 
-// Debounce helper for lastActivity updates
-let lastActivityDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 const LAST_ACTIVITY_DEBOUNCE_MS = 60000; // Only update lastActivity once per minute
 
 export const useAuthStore = create<AuthState>()(
@@ -112,15 +110,8 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
         
-        // Clear existing timer
-        if (lastActivityDebounceTimer) {
-          clearTimeout(lastActivityDebounceTimer);
-        }
-        
-        // Debounce the actual state update
-        lastActivityDebounceTimer = setTimeout(() => {
-          set({ lastActivity: Date.now() });
-        }, 1000); // 1 second debounce for the state update itself
+        // Update immediately (no additional debounce timer needed)
+        set({ lastActivity: now });
       },
 
       logout: () =>

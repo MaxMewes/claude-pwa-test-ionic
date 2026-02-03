@@ -18,7 +18,9 @@
     "offline": "You are offline",
     "pullToRefresh": "Pull to refresh",
     "all": "All",
-    "general": "General"
+    "general": "General",
+    "resultsFound_one": "{{count}} result found",
+    "resultsFound_other": "{{count}} results found"
   },
   "auth": {
     "login": "Login",

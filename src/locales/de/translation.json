@@ -18,7 +18,9 @@
     "offline": "Sie sind offline",
     "pullToRefresh": "Zum Aktualisieren ziehen",
     "all": "Alle",
-    "general": "Allgemein"
+    "general": "Allgemein",
+    "resultsFound_one": "{{count}} Ergebnis gefunden",
+    "resultsFound_other": "{{count}} Ergebnisse gefunden"
   },
   "auth": {
     "login": "Anmelden",

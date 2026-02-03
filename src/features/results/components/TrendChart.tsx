@@ -62,12 +62,16 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
   }, []);
 
   // Debounced test selection handler
-  const handleTestChange = useCallback((value: string) => {
+  const handleTestChange = useCallback((newValue: string) => {
+    // Capture the value immediately to avoid stale closures
+    const valueToSet = newValue;
+    
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
+    
     debounceTimerRef.current = setTimeout(() => {
-      setSelectedTest(value);
+      setSelectedTest(valueToSet);
     }, 150); // 150ms debounce
   }, []);
 

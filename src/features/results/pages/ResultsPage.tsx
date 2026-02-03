@@ -241,7 +241,7 @@ export const ResultsPage: React.FC = () => {
     }
 
     return results;
-  }, [allResults, searchQuery, filter.resultTypes, filter.isPinned, filter.labCategories, isFavorite]);
+  }, [allResults, searchQuery, filter, isFavorite]);
 
   // Use API counter for total counts, fall back to loaded results if counter not available
   const counts = useMemo(() => {

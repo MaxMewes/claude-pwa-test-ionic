@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { LabResult } from '../../../api/types';
+import { PATIENTS_ENDPOINTS, RESULTS_ENDPOINTS } from '../../../api/endpoints';
+import { patientsKeys } from '../../../api/queryKeys';
 
 export interface TrendDataPoint {
   date: string;
@@ -54,11 +56,11 @@ interface PatientLabTrendsData {
 
 export function usePatientLabTrends(patientId: number | undefined) {
   return useQuery({
-    queryKey: ['patient-lab-trends', patientId],
+    queryKey: patientsKeys.labTrends(patientId),
     queryFn: async (): Promise<PatientLabTrendsData> => {
       // labGate API v3 endpoint
       const listResponse = await axiosInstance.get<PatientResultsResponse>(
-        `/api/v3/patients/${patientId}/results`
+        PATIENTS_ENDPOINTS.RESULTS(patientId as number)
       );
 
       const resultIds = (listResponse.data.Results || []).map((r) => r.Id);
@@ -71,7 +73,7 @@ export function usePatientLabTrends(patientId: number | undefined) {
       await Promise.all(
         recentIds.map(async (resultId) => {
           try {
-            const detailResponse = await axiosInstance.get<ResultDetailResponse>(`/api/v3/results/${resultId}`);
+            const detailResponse = await axiosInstance.get<ResultDetailResponse>(RESULTS_ENDPOINTS.DETAIL(resultId));
             const result = detailResponse.data.Result;
 
             // Process all tests from ResultData

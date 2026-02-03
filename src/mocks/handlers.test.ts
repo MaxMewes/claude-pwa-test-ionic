@@ -1,25 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { axiosInstance } from '../api/client/axiosInstance';
-import React from 'react';
 
 // This test validates that MSW is properly intercepting API calls
 describe('MSW Integration', () => {
-  const createWrapper = () => {
-    const queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-          gcTime: 0,
-        },
-      },
-    });
-
-    return ({ children }: { children: React.ReactNode }) =>
-      React.createElement(QueryClientProvider, { client: queryClient }, children);
-  };
-
   it('should intercept authentication API calls', async () => {
     const response = await axiosInstance.post('/Api/V2/Authentication/Authorize', {
       Username: 'test@example.com',
@@ -87,8 +70,9 @@ describe('MSW Integration', () => {
       });
       // Should not reach here
       expect(true).toBe(false);
-    } catch (error: any) {
-      expect(error.response.status).toBe(401);
+    } catch (error) {
+      const errorResponse = error as { response: { status: number } };
+      expect(errorResponse.response.status).toBe(401);
     }
   });
 });

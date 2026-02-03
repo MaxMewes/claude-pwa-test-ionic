@@ -107,10 +107,75 @@ hasMore = !lastPageWasIncomplete;
 
 This allows pagination to work even though the counter is incorrect.
 
+## Reproduktion mit Postman
+
+### 1. Authentifizierung
+
+```http
+POST https://demo.labgate.net/Api/V2/Authentication/Authorize
+Content-Type: application/json
+
+{
+  "Username": "<username>",
+  "Password": "<password>",
+  "DeviceKey": "Postman-Test",
+  "OperatingSystem": "Windows",
+  "OperatingSystemVersion": "11",
+  "DeviceModel": "Postman",
+  "DeviceName": "Postman-Test",
+  "AdditionalInformation": ""
+}
+```
+
+Response enthält `Token` - diesen für die folgenden Requests verwenden.
+
+### 2. Counter Endpoint aufrufen
+
+```http
+GET https://demo.labgate.net/api/v3/results/counter?area=NotArchived
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "TotalCount": 191,
+  "NonReadCount": 45,
+  "PathologicalCount": 23
+}
+```
+
+### 3. Results Endpoint aufrufen (alle Ergebnisse)
+
+```http
+GET https://demo.labgate.net/api/v3/results?currentPage=0&itemsPerPage=1000&area=NotArchived
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "Results": [],
+  "TotalCount": 141
+}
+```
+
+### 4. Vergleich
+
+| Endpoint                    | TotalCount |
+| --------------------------- | ---------- |
+| `/api/v3/results/counter`   | 191        |
+| `/api/v3/results`           | 141        |
+| **Differenz**               | **50**     |
+
+Die 50 fehlenden Ergebnisse gehören zu Einsendern, auf die der Benutzer keinen Zugriff hat.
+
 ## Date Discovered
 
 2026-02-03
 
 ## Status
 
-**Open** - API fix required in labGate backend
+**Confirmed** - Bug reproduziert in labGate PWA und via Postman. API fix required in labGate backend.

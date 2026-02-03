@@ -244,8 +244,24 @@ export const ResultsPage: React.FC = () => {
     return results;
   }, [allResults, searchQuery, filter, isFavorite]);
 
-  // Use API counter for total counts, fall back to loaded results if counter not available
+  // Use loaded results for "all" count when pagination is complete (fixes API counter bug)
+  // API counter may return incorrect totals for non-MySQL databases (doesn't filter by sender permissions)
   const counts = useMemo(() => {
+    // Calculate actual counts from loaded results
+    const loadedCounts = {
+      all: allResults.length,
+      unread: allResults.filter((r) => !r.IsRead).length,
+      pathological: allResults.filter((r) => r.IsPatho && !r.IsEmergency).length,
+      highPatho: allResults.filter((r) => r.IsHighPatho).length,
+      urgent: allResults.filter((r) => r.IsEmergency).length,
+    };
+
+    // When all pages are loaded, use actual loaded counts (more accurate than API counter)
+    if (!hasNextPage && allResults.length > 0) {
+      return loadedCounts;
+    }
+
+    // While loading, use API counter if available (shows expected totals)
     if (counter) {
       return {
         all: counter.Total,
@@ -255,15 +271,10 @@ export const ResultsPage: React.FC = () => {
         urgent: counter.Urgent,
       };
     }
-    // Fallback to loaded results count (using correct API field names)
-    return {
-      all: allResults.length,
-      unread: allResults.filter((r) => !r.IsRead).length,
-      pathological: allResults.filter((r) => r.IsPatho && !r.IsEmergency).length,
-      highPatho: allResults.filter((r) => r.IsHighPatho).length,
-      urgent: allResults.filter((r) => r.IsEmergency).length,
-    };
-  }, [counter, allResults]);
+
+    // Fallback to loaded counts
+    return loadedCounts;
+  }, [counter, allResults, hasNextPage]);
 
   const tabs: { key: ResultCategory; label: string; count: number; color: string }[] = [
     { key: 'all', label: t('results.tabs.all'), count: counts.all, color: '#000000' },

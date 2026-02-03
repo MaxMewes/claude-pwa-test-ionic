@@ -150,19 +150,25 @@ export const ResultsPage: React.FC = () => {
     const pagesLoaded = data?.pages?.length ?? 0;
     if (pagesLoaded === 0) return;
 
+    // Skip if no more pages to load
+    if (!hasNextPage) return;
+
+    // Skip if already loading
+    if (isFetchingNextPage || isLoading || isFetching) return;
+
     // Debounce: prevent fetching more than once per 500ms
     const now = Date.now();
     if (now - lastFetchTimeRef.current < 500) return;
 
-    // Prevent concurrent fetches
-    if (isFetchingRef.current || isFetchingNextPage) return;
+    // Use ref to prevent concurrent fetches (survives async operations)
+    if (isFetchingRef.current) return;
 
     const target = event.target as HTMLIonContentElement;
     target.getScrollElement().then((scrollElement) => {
       // Check if component is still mounted
       if (!mountedRef.current) return;
-      // Re-check fetch state after async operation
-      if (isFetchingRef.current || isFetchingNextPage) return;
+      // Re-check ref-based fetch state after async operation
+      if (isFetchingRef.current) return;
 
       const scrollTop = scrollElement.scrollTop;
       const scrollHeight = scrollElement.scrollHeight;
@@ -170,7 +176,7 @@ export const ResultsPage: React.FC = () => {
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
       // Load more when within 800px of bottom
-      if (distanceFromBottom < 800 && hasNextPage && !isLoading && !isFetching) {
+      if (distanceFromBottom < 800) {
         lastFetchTimeRef.current = now;
         isFetchingRef.current = true;
         fetchNextPage().finally(() => {

@@ -77,12 +77,22 @@ export const authService = {
       AdditionalInformation: '',
     };
 
-    console.log('[AUTH] Login Request:', { ...request, Password: '***' });
+    // Security: Only log non-sensitive request info in development mode
+    if (import.meta.env.DEV) {
+      console.log('[AUTH] Login attempt for user:', credentials.username.slice(0, 3) + '***');
+    }
 
     const response = await axiosInstance.post<LoginResponseV2>('/Api/V2/Authentication/Authorize', request);
     const data = response.data;
 
-    console.log('[AUTH] Login Response:', data);
+    // Security: Never log tokens or sensitive response data
+    if (import.meta.env.DEV) {
+      console.log('[AUTH] Login response:', {
+        tokenReceived: !!data.Token,
+        requiresTwoFactor: data.RequiresSecondFactor,
+        passwordExpired: data.PasswordExpired,
+      });
+    }
 
     if (data.RequiresSecondFactor) {
       return {
@@ -156,9 +166,8 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       await axiosInstance.post('/authentication/logout');
-    } catch (error) {
-      // Ignore logout errors
-      console.log('[AUTH] Logout error (ignored):', error);
+    } catch {
+      // Ignore logout errors - this is expected when token is already invalid
     }
   },
 

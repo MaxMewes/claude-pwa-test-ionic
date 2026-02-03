@@ -32,6 +32,14 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const mountedRef = useRef(false);
 
+  // Store callbacks in refs to avoid triggering effect re-runs
+  const onScanRef = useRef(onScan);
+  const onCloseRef = useRef(onClose);
+
+  // Keep refs updated with latest callbacks
+  onScanRef.current = onScan;
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!isOpen) {
       setIsScanning(false);
@@ -91,17 +99,19 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
           (decodedText, decodedResult) => {
             if (!mountedRef.current) return;
 
-            console.log('Barcode detected:', decodedText, 'Format:', decodedResult.result.format);
+            if (import.meta.env.DEV) {
+              console.log('Barcode detected:', decodedText, 'Format:', decodedResult.result.format);
+            }
 
             // Vibrate on success
             if (navigator.vibrate) {
               navigator.vibrate(100);
             }
 
-            // Stop and return result
+            // Stop and return result using refs for stable callback references
             stopScanner().then(() => {
-              onScan(decodedText);
-              onClose();
+              onScanRef.current(decodedText);
+              onCloseRef.current();
             });
           },
           (errorMessage) => {
@@ -137,7 +147,9 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       mountedRef.current = false;
       stopScanner();
     };
-  }, [isOpen, retryCount, onScan, onClose]);
+    // Only re-run effect when modal opens/closes or retry is triggered
+    // onScan and onClose are accessed via refs to avoid unnecessary re-runs
+  }, [isOpen, retryCount]);
 
   const stopScanner = async () => {
     if (scannerRef.current) {

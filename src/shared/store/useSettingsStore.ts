@@ -57,20 +57,20 @@ export const useSettingsStore = create<SettingsState>()(
       },
 
       toggleFavorite: (resultId) => {
-        const state = get();
-        const isCurrentlyFavorite = state.favorites.includes(resultId);
-
-        if (isCurrentlyFavorite) {
-          set({
-            favorites: state.favorites.filter((id) => id !== resultId),
-          });
-          return false; // Now not favorite
-        } else {
-          set({
-            favorites: [...state.favorites, resultId],
-          });
-          return true; // Now favorite
-        }
+        // Use atomic update to prevent race conditions
+        let isNowFavorite = false;
+        set((state) => {
+          const isCurrentlyFavorite = state.favorites.includes(resultId);
+          if (isCurrentlyFavorite) {
+            isNowFavorite = false;
+            return { favorites: state.favorites.filter((id) => id !== resultId) };
+          } else {
+            isNowFavorite = true;
+            // Use Set to prevent duplicates in case of race condition
+            return { favorites: [...new Set([...state.favorites, resultId])] };
+          }
+        });
+        return isNowFavorite;
       },
 
       getFavorites: () => {

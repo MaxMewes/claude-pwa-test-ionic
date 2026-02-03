@@ -40,8 +40,17 @@ export const ResultsPage: React.FC = () => {
   const [filter, setFilter] = useState<ResultFilter>({});
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
   const lastFetchTimeRef = useRef<number>(0);
+  const isFetchingRef = useRef<boolean>(false);
+  const mountedRef = useRef<boolean>(true);
 
-  const { isFavorite, toggleFavorite, resultsPeriod: storedPeriod, setResultsPeriod } = useSettingsStore();
+  // Store selectors - use stable references
+  const favorites = useSettingsStore((state) => state.favorites);
+  const toggleFavorite = useSettingsStore((state) => state.toggleFavorite);
+  const storedPeriod = useSettingsStore((state) => state.resultsPeriod);
+  const setResultsPeriod = useSettingsStore((state) => state.setResultsPeriod);
+
+  // Stable isFavorite function using favorites array
+  const isFavorite = useCallback((resultId: number) => favorites.includes(resultId), [favorites]);
 
   // Read period and search from URL, fall back to store
   const urlParams = new URLSearchParams(location.search);
@@ -127,6 +136,14 @@ export const ResultsPage: React.FC = () => {
     }
   }, [data?.pages, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   // Handle infinite scroll via IonContent scroll event
   // Only trigger scroll-based loading after auto-prefetch is done (pages > 1)
   const handleScroll = useCallback((event: CustomEvent) => {
@@ -138,17 +155,26 @@ export const ResultsPage: React.FC = () => {
     const now = Date.now();
     if (now - lastFetchTimeRef.current < 1000) return;
 
+    // Prevent race condition: skip if already fetching
+    if (isFetchingRef.current) return;
+
     const target = event.target as HTMLIonContentElement;
     target.getScrollElement().then((scrollElement) => {
+      // Check if component is still mounted
+      if (!mountedRef.current) return;
+
       const scrollTop = scrollElement.scrollTop;
       const scrollHeight = scrollElement.scrollHeight;
       const clientHeight = scrollElement.clientHeight;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
       // Load more when within 800px of bottom (start loading earlier)
-      if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching) {
+      if (distanceFromBottom < 800 && hasNextPage && !isFetchingNextPage && !isLoading && !isFetching && !isFetchingRef.current) {
         lastFetchTimeRef.current = now;
-        fetchNextPage();
+        isFetchingRef.current = true;
+        fetchNextPage().finally(() => {
+          isFetchingRef.current = false;
+        });
       }
     });
   }, [data?.pages?.length, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);

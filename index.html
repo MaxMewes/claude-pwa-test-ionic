@@ -18,9 +18,14 @@
 
     <!-- Security Headers -->
     <!-- Note: frame-ancestors must be set via HTTP headers, not meta tags -->
+    <!-- CSP Notes:
+         - 'unsafe-inline' for styles is required by Ionic Framework (inline styles)
+         - 'unsafe-eval' has been removed to prevent eval-based XSS attacks
+         - Future improvement: migrate to nonce-based CSP for scripts
+    -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      script-src 'self' 'unsafe-inline';
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: https: blob:;
@@ -28,6 +33,7 @@
       media-src 'self' blob:;
       base-uri 'self';
       form-action 'self';
+      upgrade-insecure-requests;
     " />
 
     <!-- App Publisher Information -->

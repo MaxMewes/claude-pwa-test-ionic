@@ -117,12 +117,15 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      // Security: Use sessionStorage instead of localStorage to reduce XSS exposure.
+      // Token is stored in memory only (not persisted) to prevent theft via XSS.
+      // PIN is never persisted for security reasons.
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        // Note: token is intentionally NOT persisted - kept in memory only
         isAuthenticated: state.isAuthenticated,
-        pin: state.pin,
+        // Note: pin is intentionally NOT persisted for security
         biometricEnabled: state.biometricEnabled,
       }),
     }

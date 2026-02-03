@@ -54,7 +54,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
   const padding = (maxValue - minValue) * 0.1 || 1;
   const yDomain: [number, number] = [Math.floor(minValue - padding), Math.ceil(maxValue + padding)];
 
-  // Export chart as image
+  // Export chart as image with proper resource cleanup
   const handleExport = () => {
     if (!chartRef.current) return;
 
@@ -66,6 +66,10 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
     const ctx = canvas.getContext('2d');
     const img = new Image();
 
+    // Create blob URL for the SVG data
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+
     img.onload = () => {
       canvas.width = img.width * 2;
       canvas.height = img.height * 2;
@@ -73,13 +77,28 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
       ctx!.fillRect(0, 0, canvas.width, canvas.height);
       ctx!.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+      // Create download link
+      const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = `laborwert-${testInfo?.testName || selectedTest}-verlauf.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       link.click();
+
+      // Cleanup: revoke blob URL and clear references
+      URL.revokeObjectURL(svgUrl);
+      img.onload = null;
+      img.onerror = null;
+      img.src = '';
     };
 
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    img.onerror = () => {
+      // Cleanup on error
+      URL.revokeObjectURL(svgUrl);
+      img.onload = null;
+      img.onerror = null;
+    };
+
+    img.src = svgUrl;
   };
 
   if (isLoading) {

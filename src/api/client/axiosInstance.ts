@@ -11,27 +11,23 @@ const getBaseUrl = (): string => {
   const isNative = Capacitor.isNativePlatform();
   const isDev = import.meta.env.DEV;
 
-  console.log('[API] Platform detection:', {
-    isNative,
-    isDev,
-    platform: Capacitor.getPlatform(),
-    fullApiUrl,
-  });
+  if (isDev) {
+    console.log('[API] Platform:', isNative ? Capacitor.getPlatform() : 'web');
+  }
 
   // Native platforms don't have CORS - always use full URL
   if (isNative) {
-    console.log('[API] Using full URL for native platform:', fullApiUrl);
     return fullApiUrl;
   }
 
   // Web: use proxy in dev, full URL in prod
-  const url = isDev ? '' : fullApiUrl;
-  console.log('[API] Using URL for web:', url || '(proxy)');
-  return url;
+  return isDev ? '' : fullApiUrl;
 };
 
 const API_BASE_URL = getBaseUrl();
-console.log('[API] Final baseURL:', API_BASE_URL);
+
+// Token refresh deduplication: prevents multiple simultaneous refresh requests
+let refreshPromise: Promise<string> | null = null;
 
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -41,7 +37,7 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor - add auth token and log requests
+// Request interceptor - add auth token
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // labGate API v3 uses single Token
@@ -50,9 +46,10 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Log the full URL being requested
-    const fullUrl = config.baseURL ? `${config.baseURL}${config.url}` : config.url;
-    console.log('[API] Request:', config.method?.toUpperCase(), fullUrl);
+    // Only log in development mode
+    if (import.meta.env.DEV) {
+      console.log('[API] Request:', config.method?.toUpperCase(), config.url);
+    }
 
     return config;
   },
@@ -60,6 +57,23 @@ axiosInstance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// Deduplicated token refresh function
+const refreshToken = async (): Promise<string> => {
+  const currentToken = useAuthStore.getState().token;
+  if (!currentToken) {
+    throw new Error('No token available for refresh');
+  }
+
+  // labGate API v3 refresh endpoint
+  const response = await axios.post(`${API_BASE_URL}/api/v3/authentication/refresh`, {
+    Token: currentToken,
+  });
+
+  const { Token: newToken } = response.data;
+  useAuthStore.getState().setToken(newToken);
+  return newToken;
+};
 
 // Response interceptor - handle token refresh and errors
 axiosInstance.interceptors.response.use(
@@ -74,14 +88,14 @@ axiosInstance.interceptors.response.use(
       const currentToken = useAuthStore.getState().token;
       if (currentToken) {
         try {
-          // labGate API v3 refresh endpoint
-          const response = await axios.post(`${API_BASE_URL}/api/v3/authentication/refresh`, {
-            Token: currentToken,
-          });
+          // Use deduplication: if a refresh is already in progress, wait for it
+          if (!refreshPromise) {
+            refreshPromise = refreshToken().finally(() => {
+              refreshPromise = null;
+            });
+          }
 
-          const { Token: newToken } = response.data;
-          useAuthStore.getState().setToken(newToken);
-
+          const newToken = await refreshPromise;
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {

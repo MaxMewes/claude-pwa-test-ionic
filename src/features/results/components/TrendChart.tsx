@@ -38,7 +38,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
   const { data, isLoading, error, refetch } = usePatientLabTrends(patientId);
   const [selectedTest, setSelectedTest] = useState<string>(initialTestIdent || '');
   const chartRef = useRef<HTMLDivElement>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Auto-select first test or initial test when data loads
   useEffect(() => {

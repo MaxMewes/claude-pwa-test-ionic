@@ -47,7 +47,7 @@ interface AuthState {
 const STORAGE_KEY = 'labgate-auth';
 
 // Debounce helper for lastActivity updates
-let lastActivityDebounceTimer: NodeJS.Timeout | null = null;
+let lastActivityDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 const LAST_ACTIVITY_DEBOUNCE_MS = 60000; // Only update lastActivity once per minute
 
 export const useAuthStore = create<AuthState>()(

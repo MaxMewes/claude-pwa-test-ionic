@@ -319,40 +319,80 @@ export function useResult(id: string | number | undefined) {
   });
 }
 
-// Counter response from V3 API
-interface CounterResponseV3 {
-  TotalCount?: number;
-  NonReadCount?: number;
-  PathologicalCount?: number;
-  HighPathologicalCount?: number;
-  UrgentCount?: number;
-  FavoriteCount?: number;
+// Counter response from V2 API (uses correct sender filtering for all database types)
+interface CounterResponseV2 {
+  CounterAllResults?: number;
+  CounterUnreadResults?: number;
+  CounterPathologicalResults?: number;
+  CounterHighPathologicalResults?: number;
+  CounterUrgentResults?: number;
+  CounterFavoriteResults?: number;
+  CounterArchiveResults?: number;
 }
+
+// V2 Counter request
+interface CounterRequestV2 {
+  Token: string;
+  ResultCounterMask: number;
+  Area: 'Normal' | 'Archiv';
+  StartDate?: string;
+  EndDate?: string;
+}
+
+// ResultCounterMask flags
+const COUNTER_MASK = {
+  AllResults: 1,
+  UnreadResults: 2,
+  PathologicalResults: 4,
+  UrgentResults: 8,
+  FavoriteResults: 16,
+  ArchiveResults: 32,
+};
 
 export function useResultCounter(period?: ResultPeriodFilter) {
   return useQuery({
     queryKey: [RESULTS_KEY, 'counter', period],
     queryFn: async () => {
-      // Build params with period filter to match the results query
-      // Counter endpoint uses startDateTime/endDateTime (not startDate/endDate)
-      const params: Record<string, string> = {};
-      if (period) {
-        const periodParams = mapPeriodToDateParams(period);
-        if (periodParams.startDate) params.startDateTime = periodParams.startDate;
-        if (periodParams.endDate) params.endDateTime = periodParams.endDate;
-        if (periodParams.area) params.area = periodParams.area;
+      // Get token from auth store
+      const { useAuthStore } = await import('../../../features/auth/store/authStore');
+      const token = useAuthStore.getState().token;
+
+      if (!token) {
+        throw new Error('No auth token available');
       }
 
-      const response = await axiosInstance.get<CounterResponseV3>('/api/v3/results/counter', { params });
+      // Build V2 request body
+      const periodParams = period ? mapPeriodToDateParams(period) : {};
+      const isArchive = periodParams.area === 'Archived';
+
+      const request: CounterRequestV2 = {
+        Token: token,
+        // Request all counter types (1+2+4+8+16+32 = 63)
+        ResultCounterMask: COUNTER_MASK.AllResults | COUNTER_MASK.UnreadResults |
+                          COUNTER_MASK.PathologicalResults | COUNTER_MASK.UrgentResults |
+                          COUNTER_MASK.FavoriteResults | COUNTER_MASK.ArchiveResults,
+        Area: isArchive ? 'Archiv' : 'Normal',
+      };
+
+      // Add date filters if present
+      if (periodParams.startDate) {
+        request.StartDate = periodParams.startDate;
+      }
+      if (periodParams.endDate) {
+        request.EndDate = periodParams.endDate;
+      }
+
+      // Use V2 endpoint - correctly filters by sender permissions for all database types
+      const response = await axiosInstance.post<CounterResponseV2>('/Api/V2/Result/GetResultCounter', request);
       const data = response.data;
 
-      // Map to local format
+      // Map V2 response to local format
       return {
-        Total: data.TotalCount || 0,
-        New: data.NonReadCount || 0,
-        Pathological: data.PathologicalCount || 0,
-        HighPathological: data.HighPathologicalCount || 0,
-        Urgent: data.UrgentCount || 0,
+        Total: data.CounterAllResults || 0,
+        New: data.CounterUnreadResults || 0,
+        Pathological: data.CounterPathologicalResults || 0,
+        HighPathological: data.CounterHighPathologicalResults || 0,
+        Urgent: data.CounterUrgentResults || 0,
       } as ResultCounter;
     },
     // Don't fail silently - allow fallback in component

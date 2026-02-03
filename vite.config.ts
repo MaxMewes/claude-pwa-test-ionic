@@ -149,10 +149,17 @@ export default defineConfig(({ mode }) => {
           '**/*.test.{ts,tsx}',
           '**/types/**',
           '**/mocks/**',
+          '**/test/**',
           'src/main.tsx',
           'src/vite-env.d.ts',
           '**/index.ts',
         ],
+        thresholds: {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
+        },
       },
     },
   }

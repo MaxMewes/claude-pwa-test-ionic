@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+// vitest globals are available via config (globals: true)
 import { parseColorMarkup } from './colorMarkupParser';
 
 describe('parseColorMarkup', () => {

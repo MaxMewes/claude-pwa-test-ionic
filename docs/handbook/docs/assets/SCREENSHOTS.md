@@ -9,39 +9,39 @@ Diese Datei listet alle benötigten Screenshots für die Dokumentation auf.
 ## Benötigte Screenshots
 
 ### Anmeldung & Start
-- [ ] `login-screen.png` - Anmeldebildschirm
+- [x] `login-screen.png` - Anmeldebildschirm
 - [ ] `login-sender-select.png` - Einsenderauswahl
 - [ ] `login-lab-select.png` - Laborauswahl
 
 ### Befunde
-- [ ] `results-overview.png` - Befundübersicht mit Tabs
-- [ ] `results-filter-modal.png` - Filter-Modal
-- [ ] `results-detail.png` - Befunddetails
-- [ ] `results-detail-values.png` - Messwerte in Befunddetails
+- [x] `results-overview.png` - Befundübersicht mit Tabs
+- [x] `results-filter-modal.png` - Filter-Modal
+- [x] `results-detail.png` - Befunddetails
+- [x] `results-detail-values.png` - Messwerte in Befunddetails
 - [ ] `results-pathological.png` - Pathologische Markierungen
-- [ ] `results-search.png` - Suchfunktion
+- [x] `results-search.png` - Suchfunktion
 
 ### Patienten
-- [ ] `patients-list.png` - Patientenliste mit Gruppierung
-- [ ] `patients-search.png` - Patientensuche
-- [ ] `patients-detail.png` - Patientendetails
+- [x] `patients-list.png` - Patientenliste mit Gruppierung
+- [x] `patients-search.png` - Patientensuche
+- [x] `patients-detail.png` - Patientendetails
 
 ### Labore
-- [ ] `laboratories-list.png` - Laborliste
-- [ ] `laboratory-info.png` - Labor Info-Tab
-- [ ] `laboratory-services.png` - Leistungskatalog
-- [ ] `laboratory-contacts.png` - Ansprechpartner
+- [x] `laboratories-list.png` - Laborliste
+- [x] `laboratory-info.png` - Labor Info-Tab
+- [x] `laboratory-services.png` - Leistungskatalog
+- [x] `laboratory-contacts.png` - Ansprechpartner
 
 ### Neuigkeiten
-- [ ] `news-list.png` - Neuigkeitenliste
-- [ ] `news-detail.png` - Nachrichtendetail
+- [x] `news-list.png` - Neuigkeitenliste
+- [x] `news-detail.png` - Nachrichtendetail
 
 ### Einstellungen
-- [ ] `settings-general.png` - Allgemeine Einstellungen
+- [x] `settings-general.png` - Allgemeine Einstellungen
 - [ ] `settings-notifications.png` - Benachrichtigungseinstellungen
 
 ### Navigation
-- [ ] `menu-open.png` - Geöffnetes Seitenmenü
+- [x] `menu-open.png` - Geöffnetes Seitenmenü
 - [ ] `tab-bar.png` - Tab-Leiste am unteren Rand
 
 ## Screenshot-Anforderungen

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+// vitest globals available via config
 import { act, renderHook } from '@testing-library/react';
 import { useAuthStore } from './authStore';
 

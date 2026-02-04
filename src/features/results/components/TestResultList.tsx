@@ -66,7 +66,7 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
   const pathologicalTests = tests.filter((t) => t.IsPathological);
   const normalTests = tests.filter((t) => !t.IsPathological);
 
-  const renderTestRow = (test: TestResult, index: number, isPathoSection: boolean) => {
+  const renderTestRow = (test: TestResult, index: number) => {
     const pathoInfo = getPathoInfo(test);
     const refRange = formatReferenceRange(test);
     const bgColor = index % 2 === 0 ? COLORS.rowEven : COLORS.rowOdd;
@@ -219,7 +219,7 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
       {pathologicalTests.length > 0 && (
         <>
           {renderSectionHeader('Auffällige Werte', pathologicalTests.length, COLORS.pathologicalVeryLowHigh)}
-          {pathologicalTests.map((test, index) => renderTestRow(test, index, true))}
+          {pathologicalTests.map((test, index) => renderTestRow(test, index))}
         </>
       )}
 
@@ -227,7 +227,7 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
       {normalTests.length > 0 && (
         <>
           {renderSectionHeader('Normale Werte', normalTests.length, COLORS.normal)}
-          {normalTests.map((test, index) => renderTestRow(test, index, false))}
+          {normalTests.map((test, index) => renderTestRow(test, index))}
         </>
       )}
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+// vitest globals available via config
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ResultCard } from './ResultCard';

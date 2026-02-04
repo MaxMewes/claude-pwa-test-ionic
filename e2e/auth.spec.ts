@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, logout, waitForStable, TEST_CREDENTIALS } from './helpers/auth';
+import { login, logout, waitForStable } from './helpers/auth';
 
 test.describe('Authentication', () => {
   test.describe('Login Page', () => {

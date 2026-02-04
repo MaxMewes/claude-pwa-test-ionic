@@ -13,6 +13,7 @@ import { closeOutline, cameraOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { TestTubeLoader } from '../../../shared/components';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { scannerLogger } from '../../../shared/utils/logger';
 
 interface BarcodeScannerProps {
   isOpen: boolean;
@@ -89,7 +90,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
             }
             scanner.clear();
           } catch (err) {
-            console.error('Error cleaning up scanner:', err);
+            scannerLogger.error('Error cleaning up scanner:', err);
           }
         };
 
@@ -104,7 +105,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
           (decodedText, decodedResult) => {
             if (!mountedRef.current) return;
 
-            console.log('Barcode detected:', decodedText, 'Format:', decodedResult.result.format);
+            scannerLogger.info('Barcode detected:', decodedText, 'Format:', decodedResult.result.format);
 
             // Vibrate on success
             if (navigator.vibrate) {
@@ -128,7 +129,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       } catch (err) {
         if (!mountedRef.current) return;
 
-        console.error('Scanner start error:', err);
+        scannerLogger.error('Scanner start error:', err);
 
         let errorMsg = t('scanner.cameraNotStarted');
         if (err && typeof err === 'object' && 'message' in err) {
@@ -154,9 +155,9 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       mountedRef.current = false;
       // Use the stored cleanup function if available, otherwise use stopScanner
       if (scannerCleanup) {
-        scannerCleanup().catch(err => console.error('Cleanup error:', err));
+        scannerCleanup().catch(err => scannerLogger.error('Cleanup error:', err));
       } else {
-        stopScanner().catch(err => console.error('Cleanup error:', err));
+        stopScanner().catch(err => scannerLogger.error('Cleanup error:', err));
       }
       scannerRef.current = null;
     };
@@ -173,7 +174,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         scanner.clear();
         scannerRef.current = null;
       } catch (err) {
-        console.error('Error stopping scanner:', err);
+        scannerLogger.error('Error stopping scanner:', err);
       }
     }
     setIsScanning(false);

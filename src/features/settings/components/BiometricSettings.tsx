@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   IonPage,
   IonHeader,
@@ -14,7 +14,7 @@ import {
   IonIcon,
   IonText,
 } from '@ionic/react';
-import { fingerPrintOutline, scanOutline } from 'ionicons/icons';
+import { fingerPrintOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '../../../config/routes';
 import { useAuthStore } from '../../auth/store/authStore';

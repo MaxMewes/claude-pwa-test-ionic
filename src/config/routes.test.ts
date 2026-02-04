@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+// vitest globals available via config
 import { ROUTES } from './routes';
 
 describe('ROUTES', () => {

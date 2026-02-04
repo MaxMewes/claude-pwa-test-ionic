@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+// vitest globals available via config
 import { axiosInstance } from '../api/client/axiosInstance';
 
 // This test validates that MSW is properly intercepting API calls

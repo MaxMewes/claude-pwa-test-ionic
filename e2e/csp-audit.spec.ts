@@ -208,12 +208,10 @@ test.describe('Content Security Policy Audit', () => {
 
     console.log('\n========================================\n');
 
-    // Store results for assertion
-    const hasCriticalHeaders = criticalMissing.length === 0;
-
     // This test documents the current state - adjust expectation based on requirements
-    // For now, we just log the findings
+    // For now, we just log the findings and verify page loaded
     expect(response.status()).toBe(200);
+    // Future: expect(criticalMissing.length).toBe(0) when all headers are implemented
   });
 
   test('should check CSP directives in detail', async ({ page }) => {

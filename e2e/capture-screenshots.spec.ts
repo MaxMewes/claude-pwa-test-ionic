@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -333,11 +333,11 @@ test.describe('PSR-Style Handbook Screenshots', () => {
 
     // If navigation didn't work, try direct navigation to a known lab
     if (!page.url().match(/\/laboratories\/\d+/)) {
-      // Get lab IDs from the page
-      const labIds = await page.evaluate(() => {
+      // Get lab IDs from the page (used for debugging)
+      await page.evaluate(() => {
         const items = document.querySelectorAll('ion-list ion-item');
         // Try to find lab ID from data attributes or onclick
-        return Array.from(items).map((item, i) => i);
+        return Array.from(items).map((_, i) => i);
       });
       console.log('Trying direct navigation');
       // Try common IDs
@@ -467,7 +467,7 @@ test.describe('PSR-Style Handbook Screenshots', () => {
     // Close any open modals first
     await page.evaluate(() => {
       const modals = document.querySelectorAll('ion-modal');
-      modals.forEach((modal: any) => modal.dismiss?.());
+      modals.forEach((modal) => (modal as HTMLElement & { dismiss?: () => void }).dismiss?.());
     });
     await waitForStable(page, 500);
 

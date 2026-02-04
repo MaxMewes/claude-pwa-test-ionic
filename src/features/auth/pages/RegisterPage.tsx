@@ -76,7 +76,7 @@ export const RegisterPage: React.FC = () => {
       });
       router.push(ROUTES.LOGIN, 'back', 'replace');
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       presentToast({
         message: error.response?.data?.message || t('errors.generic'),
         duration: 3000,

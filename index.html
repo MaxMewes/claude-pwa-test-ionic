@@ -17,23 +17,9 @@
     <meta name="description" content="labGate - Ihre medizinischen Laborbefunde sicher und schnell abrufen" />
 
     <!-- Security Headers -->
+    <!-- CSP is set via HTTP headers by the server (vite.config.ts for dev, server config for prod) -->
+    <!-- Note: Ionic Framework requires 'unsafe-inline' for style-src due to Web Components -->
     <!-- Note: frame-ancestors must be set via HTTP headers, not meta tags -->
-    <!-- CSP configured for production builds - strict security without unsafe-inline/unsafe-eval -->
-    <!-- Development CSP is configured in vite.config.ts server headers -->
-    <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self';
-      script-src 'self';
-      style-src 'self' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: https: blob:;
-      connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss: ws:;
-      media-src 'self' blob:;
-      base-uri 'self';
-      form-action 'self';
-      frame-ancestors 'none';
-      object-src 'none';
-      upgrade-insecure-requests;
-    " />
 
     <!-- App Publisher Information -->
     <meta name="author" content="vireq software solutions GmbH" />

@@ -31,15 +31,14 @@ export default defineConfig(({ mode }) => {
       port: parseInt(env.VITE_PORT) || 3000,
       headers: {
         // Security headers for development server
-        // Development needs relaxed CSP for HMR, but production uses strict CSP from index.html
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
         'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(self), payment=()',
-        // Development CSP - allows inline scripts for HMR
-        // Production uses strict CSP from index.html meta tag (no unsafe-inline/unsafe-eval)
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://demo.labgate.net https://*.labgate.net wss: ws: http://localhost:*; media-src 'self' blob:; frame-ancestors 'none'; object-src 'none'",
+        // Development CSP - allows unsafe-inline/unsafe-eval for Vite HMR
+        // Note: Ionic Web Components require 'unsafe-inline' for style-src even in production
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss: ws: http://localhost:*; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
       },
       proxy: {
         // Proxy API requests to avoid CORS issues during development
@@ -54,6 +53,20 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: true,
         },
+      },
+    },
+    preview: {
+      port: parseInt(env.VITE_PORT) || 3000,
+      headers: {
+        // Production-grade security headers for vite preview
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(self), payment=()',
+        // Production CSP - no unsafe-eval for scripts
+        // Note: Ionic Web Components require 'unsafe-inline' for style-src (framework limitation)
+        'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
       },
     },
     plugins: [

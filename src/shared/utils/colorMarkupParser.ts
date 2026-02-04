@@ -27,10 +27,5 @@ export function parseColorMarkup(content: string): string {
   return DOMPurify.sanitize(htmlOutput, {
     ALLOWED_TAGS: ['span'],
     ALLOWED_ATTR: ['style'],
-    ALLOWED_STYLES: {
-      '*': {
-        color: [/^#[0-9A-Fa-f]{3,6}$/], // Only allow valid hex colors
-      }
-    }
   });
 }

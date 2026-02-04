@@ -24,6 +24,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // In production, you would send this to an error reporting service
+    // Example: Sentry, LogRocket, etc.
+    if (import.meta.env.PROD) {
+      // TODO: Send error to external error tracking service
+      // errorReportingService.captureException(error, { extra: errorInfo });
+    }
   }
 
   handleRetry = () => {
@@ -40,6 +47,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <IonPage>
           <IonContent>
             <div
+              role="alert"
+              aria-live="assertive"
               style={{
                 display: 'flex',
                 flexDirection: 'column',

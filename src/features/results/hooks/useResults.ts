@@ -39,15 +39,15 @@ export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
       // Fetch results - use TotalCount from results endpoint (reflects filtered count)
       const resultsResponse = await axiosInstance.get<ResultsResponseV3>(RESULTS_ENDPOINTS.LIST, { params });
       const results = resultsResponse.data.Results || [];
-      // Use TotalCount from results endpoint - this reflects the filtered category count
-      const totalCount = resultsResponse.data.TotalCount || results.length;
+      // API may not return TotalCount - use undefined to signal we don't know the total
+      const totalCount = resultsResponse.data.TotalCount;
 
       return {
         Results: results,
-        TotalCount: totalCount,
+        TotalCount: totalCount, // May be undefined if API doesn't provide it
         CurrentPage: pageParam - 1, // API uses 0-based
         ItemsPerPage: currentPageSize,
-        TotalPages: Math.ceil(totalCount / SCROLL_PAGE_SIZE), // Use scroll size for estimation
+        TotalPages: totalCount ? Math.ceil(totalCount / SCROLL_PAGE_SIZE) : undefined,
         pageNumber: pageParam,
       };
     },
@@ -56,12 +56,22 @@ export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
       // Calculate total items loaded across all pages
       const totalLoaded = allPages.reduce((sum, page) => sum + page.Results.length, 0);
 
-      // No more pages if:
-      // 1. We've loaded all items based on TotalCount
-      // 2. OR the last page returned fewer items than requested (incomplete page = end of data)
+      // Last page is incomplete if it returned fewer items than requested
       const lastPageWasIncomplete = lastPage.Results.length < lastPage.ItemsPerPage;
 
-      if (totalLoaded >= lastPage.TotalCount || lastPageWasIncomplete) {
+      // Determine if there are more pages:
+      // - If API provides TotalCount: use it to check if we've loaded everything
+      // - If API doesn't provide TotalCount: assume more pages exist unless last page was incomplete
+      let hasMore: boolean;
+      if (lastPage.TotalCount !== undefined) {
+        // API provided total count - use it
+        hasMore = totalLoaded < lastPage.TotalCount && !lastPageWasIncomplete;
+      } else {
+        // API didn't provide total count - assume more pages if last page was full
+        hasMore = !lastPageWasIncomplete;
+      }
+
+      if (!hasMore) {
         return undefined;
       }
       return lastPage.pageNumber + 1;

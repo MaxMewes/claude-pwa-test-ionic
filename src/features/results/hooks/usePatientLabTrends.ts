@@ -70,55 +70,69 @@ export function usePatientLabTrends(patientId: number | undefined) {
       const testsMap = new Map<string, TestInfo>();
       const trendData = new Map<string, TrendDataPoint[]>();
 
-      await Promise.all(
-        recentIds.map(async (resultId) => {
-          try {
-            const detailResponse = await axiosInstance.get<ResultDetailResponse>(RESULTS_ENDPOINTS.DETAIL(resultId));
-            const result = detailResponse.data.Result;
+      // Request batching: Process in batches of 5 to avoid overwhelming the server
+      const BATCH_SIZE = 5;
+      const BATCH_DELAY = 100; // 100ms delay between batches to rate limit
 
-            // Process all tests from ResultData
-            if (result.ResultData) {
-              for (const sectionTests of Object.values(result.ResultData)) {
-                for (const test of sectionTests) {
-                  if (!test.ValueText) continue;
+      for (let i = 0; i < recentIds.length; i += BATCH_SIZE) {
+        const batch = recentIds.slice(i, i + BATCH_SIZE);
 
-                  // Try to parse numeric value
-                  const numericMatch = test.ValueText.match(/^[\d.,]+/);
-                  if (!numericMatch) continue;
+        // Add delay between batches for rate limiting (except first batch)
+        if (i > 0) {
+          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+        }
 
-                  const value = parseFloat(numericMatch[0].replace(',', '.'));
-                  if (isNaN(value)) continue;
+        // Process batch in parallel
+        await Promise.all(
+          batch.map(async (resultId) => {
+            try {
+              const detailResponse = await axiosInstance.get<ResultDetailResponse>(RESULTS_ENDPOINTS.DETAIL(resultId));
+              const result = detailResponse.data.Result;
 
-                  // Store test info
-                  if (!testsMap.has(test.TestIdent)) {
-                    testsMap.set(test.TestIdent, {
-                      testIdent: test.TestIdent,
-                      testName: test.TestName,
-                      unit: test.Unit,
-                      normalLow: test.NormalLow,
-                      normalHigh: test.NormalHigh,
-                      normalText: test.NormalText,
+              // Process all tests from ResultData
+              if (result.ResultData) {
+                for (const sectionTests of Object.values(result.ResultData)) {
+                  for (const test of sectionTests) {
+                    if (!test.ValueText) continue;
+
+                    // Try to parse numeric value
+                    const numericMatch = test.ValueText.match(/^[\d.,]+/);
+                    if (!numericMatch) continue;
+
+                    const value = parseFloat(numericMatch[0].replace(',', '.'));
+                    if (isNaN(value)) continue;
+
+                    // Store test info
+                    if (!testsMap.has(test.TestIdent)) {
+                      testsMap.set(test.TestIdent, {
+                        testIdent: test.TestIdent,
+                        testName: test.TestName,
+                        unit: test.Unit,
+                        normalLow: test.NormalLow,
+                        normalHigh: test.NormalHigh,
+                        normalText: test.NormalText,
+                      });
+                    }
+
+                    // Add to trend data
+                    const existing = trendData.get(test.TestIdent) || [];
+                    existing.push({
+                      date: new Date(result.ReportDate).toLocaleDateString('de-DE'),
+                      dateRaw: result.ReportDate,
+                      value,
+                      resultId: result.Id,
+                      labNo: result.LabNo,
                     });
+                    trendData.set(test.TestIdent, existing);
                   }
-
-                  // Add to trend data
-                  const existing = trendData.get(test.TestIdent) || [];
-                  existing.push({
-                    date: new Date(result.ReportDate).toLocaleDateString('de-DE'),
-                    dateRaw: result.ReportDate,
-                    value,
-                    resultId: result.Id,
-                    labNo: result.LabNo,
-                  });
-                  trendData.set(test.TestIdent, existing);
                 }
               }
+            } catch (err) {
+              console.error('Error fetching result details:', err);
             }
-          } catch (err) {
-            console.error('Error fetching result details:', err);
-          }
-        })
-      );
+          })
+        );
+      }
 
       // Sort trend data by date
       trendData.forEach((data, key) => {

@@ -40,6 +40,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     }
 
     mountedRef.current = true;
+    let scannerCleanup: (() => Promise<void>) | null = null;
 
     const startScanner = async () => {
       try {
@@ -80,6 +81,18 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
         scannerRef.current = scanner;
 
+        // Store cleanup function for this specific scanner instance
+        scannerCleanup = async () => {
+          try {
+            if (scanner.getState() === 2) { // SCANNING state
+              await scanner.stop();
+            }
+            scanner.clear();
+          } catch (err) {
+            console.error('Error cleaning up scanner:', err);
+          }
+        };
+
         // Start scanning with back camera
         await scanner.start(
           { facingMode: 'environment' },
@@ -104,7 +117,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
               onClose();
             });
           },
-          (errorMessage) => {
+          () => {
             // Scanning errors are normal and continuous, ignore them
           }
         );
@@ -112,18 +125,21 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         if (mountedRef.current) {
           setIsScanning(true);
         }
-      } catch (err: any) {
+      } catch (err) {
         if (!mountedRef.current) return;
 
         console.error('Scanner start error:', err);
 
         let errorMsg = t('scanner.cameraNotStarted');
-        if (err?.message?.includes('NotAllowedError') || err?.message?.includes('Permission')) {
-          errorMsg = t('scanner.permissionDenied');
-        } else if (err?.message?.includes('NotFoundError')) {
-          errorMsg = t('scanner.noCamera');
-        } else if (err?.message) {
-          errorMsg = err.message;
+        if (err && typeof err === 'object' && 'message' in err) {
+          const errorMessage = (err as { message?: string }).message || '';
+          if (errorMessage.includes('NotAllowedError') || errorMessage.includes('Permission')) {
+            errorMsg = t('scanner.permissionDenied');
+          } else if (errorMessage.includes('NotFoundError')) {
+            errorMsg = t('scanner.noCamera');
+          } else if (errorMessage) {
+            errorMsg = errorMessage;
+          }
         }
 
         setError(errorMsg);
@@ -133,10 +149,18 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
     startScanner();
 
+    // Cleanup function - properly stops scanner and prevents memory leaks
     return () => {
       mountedRef.current = false;
-      stopScanner();
+      // Use the stored cleanup function if available, otherwise use stopScanner
+      if (scannerCleanup) {
+        scannerCleanup().catch(err => console.error('Cleanup error:', err));
+      } else {
+        stopScanner().catch(err => console.error('Cleanup error:', err));
+      }
+      scannerRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, retryCount, onScan, onClose]);
 
   const stopScanner = async () => {

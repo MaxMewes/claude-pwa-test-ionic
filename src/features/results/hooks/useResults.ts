@@ -1,10 +1,11 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, startOfDay, subDays } from 'date-fns';
 import { axiosInstance } from '../../../api/client/axiosInstance';
 import { LabResult, ResultCounter, ResultFilter } from '../../../api/types';
 import { ResultPeriodFilter } from '../../../shared/store/useSettingsStore';
+import { RESULTS_ENDPOINTS } from '../../../api/endpoints';
+import { resultsKeys } from '../../../api/queryKeys';
+import { mapFiltersToV3 } from '../../../api/mappers/results';
 
-const RESULTS_KEY = 'results';
 // Different page sizes for different loading scenarios
 const INITIAL_PAGE_SIZE = 25;      // First load
 const PREFETCH_PAGE_SIZE = 25;     // Second automatic load
@@ -17,22 +18,6 @@ function getItemsPerPage(pageNumber: number): number {
   return SCROLL_PAGE_SIZE;
 }
 
-// V3 API query parameters (camelCase as expected by API)
-interface ApiQueryParams {
-  startDate?: string;
-  endDate?: string;
-  query?: string;
-  resultCategory?: 'None' | 'Favorites' | 'New' | 'Pathological' | 'Urgent' | 'HighPathological';
-  resultTypes?: string;
-  patientIds?: number[];
-  senderIds?: number[];
-  area?: 'NotArchived' | 'Archived' | 'All';
-  currentPage?: number;
-  itemsPerPage?: number;
-  sortColumn?: 'None' | 'ReportDate' | 'LabNo' | 'Patient' | 'KisVisitNumber';
-  sortDirection?: 'None' | 'Descending' | 'Ascending';
-}
-
 // V3 API response format
 interface ResultsResponseV3 {
   Results: LabResult[];
@@ -42,152 +27,27 @@ interface ResultsResponseV3 {
   TotalPages: number;
 }
 
-// Map period filter to API date parameters (camelCase)
-function mapPeriodToDateParams(period: ResultPeriodFilter): { startDate?: string; endDate?: string; area?: ApiQueryParams['area'] } {
-  const now = new Date();
-  const todayStart = startOfDay(now);
-  const formatDate = (date: Date) => format(date, 'yyyy-MM-dd');
-
-  switch (period) {
-    case 'today':
-      return {
-        startDate: formatDate(todayStart),
-        endDate: formatDate(now),
-        area: 'NotArchived',
-      };
-    case '7days':
-      return {
-        startDate: formatDate(subDays(todayStart, 7)),
-        endDate: formatDate(now),
-        area: 'NotArchived',
-      };
-    case '30days':
-      return {
-        startDate: formatDate(subDays(todayStart, 30)),
-        endDate: formatDate(now),
-        area: 'NotArchived',
-      };
-    case 'archive':
-      return {
-        area: 'Archived',
-      };
-    case 'all':
-    default:
-      return {
-        area: 'NotArchived',
-      };
-  }
-}
-
-// Map local filters to V3 API format (camelCase)
-function mapFiltersToV3(filters?: ResultFilter, page = 1, itemsPerPage?: number, period?: ResultPeriodFilter): ApiQueryParams {
-  const v3Filters: ApiQueryParams = {
-    itemsPerPage: itemsPerPage ?? getItemsPerPage(page),
-    sortColumn: 'ReportDate',
-    sortDirection: 'Descending',
-    // API uses 0-based pagination
-    currentPage: page - 1,
-  };
-
-  // Apply period filter first (sets startDate, endDate, area)
-  if (period) {
-    const periodParams = mapPeriodToDateParams(period);
-    Object.assign(v3Filters, periodParams);
-  }
-
-  if (!filters) return v3Filters;
-
-  // Status/area filter - only override if not already set by period
-  if (filters.isArchived) {
-    v3Filters.area = 'Archived';
-  } else if (!v3Filters.area) {
-    v3Filters.area = 'NotArchived';
-  }
-
-  // Favorites filter (from filter modal)
-  if (filters.isPinned || filters.isFavorite) {
-    v3Filters.resultCategory = 'Favorites';
-  }
-  // Category filter (maps UI category to API resultCategory)
-  else if (filters.area === 'new') {
-    v3Filters.resultCategory = 'New';
-  } else if (filters.area === 'pathological') {
-    v3Filters.resultCategory = 'Pathological';
-  } else if (filters.area === 'highPathological') {
-    v3Filters.resultCategory = 'HighPathological';
-  } else if (filters.area === 'urgent') {
-    v3Filters.resultCategory = 'Urgent';
-  }
-
-  // Result type filter (E=Endbefund, T=Teilbefund, V=Vorläufig, N=Nachforderung, A=Archiv)
-  if (filters.resultTypes?.length) {
-    const typeMap: Record<string, string> = {
-      final: 'E',
-      partial: 'T',
-      preliminary: 'V',
-      followUp: 'N',
-      archive: 'A',
-    };
-    const mappedTypes = filters.resultTypes.map(t => typeMap[t]).filter(Boolean);
-    if (mappedTypes.length) {
-      v3Filters.resultTypes = mappedTypes.join(',');
-    }
-  }
-
-  // Date filter - only override if not set by period filter
-  if (filters.dateFrom && !v3Filters.startDate) {
-    v3Filters.startDate = filters.dateFrom;
-  }
-  if (filters.dateTo && !v3Filters.endDate) {
-    v3Filters.endDate = filters.dateTo;
-  }
-
-  // Search query
-  if (filters.search) {
-    v3Filters.query = filters.search;
-  }
-
-  // Patient filter
-  if (filters.patientIds?.length) {
-    v3Filters.patientIds = filters.patientIds.map(id => Number(id));
-  }
-
-  // Sender filter
-  if (filters.senderIds?.length) {
-    v3Filters.senderIds = filters.senderIds.map(id => Number(id));
-  }
-
-  // Sort
-  if (filters.sortColumn) {
-    v3Filters.sortColumn = filters.sortColumn as ApiQueryParams['sortColumn'];
-  }
-  if (filters.sortDirection) {
-    v3Filters.sortDirection = filters.sortDirection === 'asc' ? 'Ascending' : 'Descending';
-  }
-
-  return v3Filters;
-}
 
 export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
   return useInfiniteQuery({
-    queryKey: [RESULTS_KEY, filter, period],
+    queryKey: resultsKeys.list(filter, period),
     queryFn: async ({ pageParam = 1 }) => {
       // Build query params with dynamic page size
       const currentPageSize = getItemsPerPage(pageParam);
       const params = mapFiltersToV3(filter, pageParam, currentPageSize, period);
 
       // Fetch results - use TotalCount from results endpoint (reflects filtered count)
-      const resultsResponse = await axiosInstance.get<ResultsResponseV3>('/api/v3/results', { params });
+      const resultsResponse = await axiosInstance.get<ResultsResponseV3>(RESULTS_ENDPOINTS.LIST, { params });
       const results = resultsResponse.data.Results || [];
-      // Use TotalCount from results endpoint - this reflects the filtered category count
-      const totalCount = resultsResponse.data.TotalCount || results.length;
+      // API may not return TotalCount - use undefined to signal we don't know the total
+      const totalCount = resultsResponse.data.TotalCount;
 
       return {
         Results: results,
-        TotalCount: totalCount,
+        TotalCount: totalCount, // May be undefined if API doesn't provide it
         CurrentPage: pageParam - 1, // API uses 0-based
         ItemsPerPage: currentPageSize,
-        TotalPages: Math.ceil(totalCount / SCROLL_PAGE_SIZE), // Use scroll size for estimation
+        TotalPages: totalCount ? Math.ceil(totalCount / SCROLL_PAGE_SIZE) : undefined,
         pageNumber: pageParam,
       };
     },
@@ -196,12 +56,22 @@ export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
       // Calculate total items loaded across all pages
       const totalLoaded = allPages.reduce((sum, page) => sum + page.Results.length, 0);
 
-      // No more pages if:
-      // 1. We've loaded all items based on TotalCount
-      // 2. OR the last page returned fewer items than requested (incomplete page = end of data)
+      // Last page is incomplete if it returned fewer items than requested
       const lastPageWasIncomplete = lastPage.Results.length < lastPage.ItemsPerPage;
 
-      if (totalLoaded >= lastPage.TotalCount || lastPageWasIncomplete) {
+      // Determine if there are more pages:
+      // - If API provides TotalCount: use it to check if we've loaded everything
+      // - If API doesn't provide TotalCount: assume more pages exist unless last page was incomplete
+      let hasMore: boolean;
+      if (lastPage.TotalCount !== undefined) {
+        // API provided total count - use it
+        hasMore = totalLoaded < lastPage.TotalCount && !lastPageWasIncomplete;
+      } else {
+        // API didn't provide total count - assume more pages if last page was full
+        hasMore = !lastPageWasIncomplete;
+      }
+
+      if (!hasMore) {
         return undefined;
       }
       return lastPage.pageNumber + 1;
@@ -252,10 +122,10 @@ interface ResultDetailResponse {
 
 export function useResult(id: string | number | undefined) {
   return useQuery({
-    queryKey: [RESULTS_KEY, id],
+    queryKey: resultsKeys.detail(id as number),
     queryFn: async () => {
       // labGate API v3 endpoint returns nested structure
-      const response = await axiosInstance.get<ResultDetailResponse>(`/api/v3/results/${id}`);
+      const response = await axiosInstance.get<ResultDetailResponse>(RESULTS_ENDPOINTS.DETAIL(id as number));
       const data = response.data;
       const apiResult = data.Result;
 
@@ -321,19 +191,20 @@ interface CounterResponseV3 {
 
 export function useResultCounter(period?: ResultPeriodFilter) {
   return useQuery({
-    queryKey: [RESULTS_KEY, 'counter', period],
+    queryKey: resultsKeys.counters(period),
     queryFn: async () => {
       // Build params with period filter to match the results query
       // Counter endpoint uses startDateTime/endDateTime (not startDate/endDate)
       const params: Record<string, string> = {};
       if (period) {
+        const { mapPeriodToDateParams } = await import('../../../api/mappers/dates');
         const periodParams = mapPeriodToDateParams(period);
         if (periodParams.startDate) params.startDateTime = periodParams.startDate;
         if (periodParams.endDate) params.endDateTime = periodParams.endDate;
         if (periodParams.area) params.area = periodParams.area;
       }
 
-      const response = await axiosInstance.get<CounterResponseV3>('/api/v3/results/counter', { params });
+      const response = await axiosInstance.get<CounterResponseV3>(RESULTS_ENDPOINTS.COUNTERS, { params });
       const data = response.data;
 
       // Map to local format
@@ -360,11 +231,11 @@ export function useMarkResultAsRead() {
   return useMutation({
     mutationFn: async (resultIds: number[]) => {
       // labGate API v3 endpoint
-      const response = await axiosInstance.patch('/api/v3/results/mark-as-read', resultIds);
+      const response = await axiosInstance.patch(`${RESULTS_ENDPOINTS.LIST}/mark-as-read`, resultIds);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }
@@ -375,11 +246,11 @@ export function useMarkResultAsUnread() {
   return useMutation({
     mutationFn: async (resultIds: number[]) => {
       // labGate API v3 endpoint
-      const response = await axiosInstance.patch('/api/v3/results/mark-as-unread', resultIds);
+      const response = await axiosInstance.patch(`${RESULTS_ENDPOINTS.LIST}/mark-as-unread`, resultIds);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }
@@ -390,11 +261,11 @@ export function useMarkResultAsFavorite() {
   return useMutation({
     mutationFn: async (resultIds: number[]) => {
       // labGate API v3 endpoint
-      const response = await axiosInstance.patch('/api/v3/results/mark-as-favorite', resultIds);
+      const response = await axiosInstance.patch(`${RESULTS_ENDPOINTS.LIST}/mark-as-favorite`, resultIds);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }
@@ -405,11 +276,11 @@ export function useMarkResultAsNotFavorite() {
   return useMutation({
     mutationFn: async (resultIds: number[]) => {
       // labGate API v3 endpoint
-      const response = await axiosInstance.patch('/api/v3/results/mark-as-not-favorite', resultIds);
+      const response = await axiosInstance.patch(`${RESULTS_ENDPOINTS.LIST}/mark-as-not-favorite`, resultIds);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }
@@ -420,11 +291,11 @@ export function useMarkResultAsArchived() {
   return useMutation({
     mutationFn: async (resultIds: number[]) => {
       // labGate API v3 endpoint
-      const response = await axiosInstance.patch('/api/v3/results/mark-as-archived', resultIds);
+      const response = await axiosInstance.patch(`${RESULTS_ENDPOINTS.LIST}/mark-as-archived`, resultIds);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }
@@ -435,11 +306,11 @@ export function useMarkResultAsNotArchived() {
   return useMutation({
     mutationFn: async (resultIds: number[]) => {
       // labGate API v3 endpoint
-      const response = await axiosInstance.patch('/api/v3/results/mark-as-not-archived', resultIds);
+      const response = await axiosInstance.patch(`${RESULTS_ENDPOINTS.LIST}/mark-as-not-archived`, resultIds);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }
@@ -454,7 +325,7 @@ export function useToggleResultPin() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [RESULTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
 }

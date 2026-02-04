@@ -198,6 +198,15 @@ npx cap open android
 VITE_API_URL=https://api.labgate.de
 ```
 
+## Sicherheit
+
+Siehe [SECURITY.md](./SECURITY.md) fuer:
+
+- Content Security Policy (CSP) Konfiguration
+- Ionic Framework CSP Limitationen
+- Session Storage Sicherheit
+- Sicherheits-Header
+
 ## Weiterentwicklung
 
 ### Neue Features hinzufuegen

@@ -82,7 +82,10 @@ export const authService = {
     const response = await axiosInstance.post<LoginResponseV2>('/Api/V2/Authentication/Authorize', request);
     const data = response.data;
 
-    console.log('[AUTH] Login Response:', data);
+    // Only log in development, never log tokens in production
+    if (import.meta.env.DEV) {
+      console.log('[AUTH] Login Response (dev only):', { ...data, Token: data.Token ? '***' : undefined, TempToken: data.TempToken ? '***' : undefined });
+    }
 
     if (data.RequiresSecondFactor) {
       return {

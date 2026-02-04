@@ -14,7 +14,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { downloadOutline } from 'ionicons/icons';
-import { usePatientLabTrends, TestInfo, TrendDataPoint } from '../hooks/usePatientLabTrends';
+import { usePatientLabTrends, TrendDataPoint } from '../hooks/usePatientLabTrends';
 
 interface TrendChartProps {
   patientId: number;
@@ -38,7 +38,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
   const { data, isLoading, error, refetch } = usePatientLabTrends(patientId);
   const [selectedTest, setSelectedTest] = useState<string>(initialTestIdent || '');
   const chartRef = useRef<HTMLDivElement>(null);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-select first test or initial test when data loads
   useEffect(() => {
@@ -115,6 +115,18 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
       link.download = `laborwert-${testInfo?.testName || selectedTest}-verlauf.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
+
+      // Clean up resources to prevent memory leak
+      link.remove();
+      canvas.remove();
+      img.src = ''; // Clear image source
+    };
+
+    img.onerror = () => {
+      console.error('Error loading image for export');
+      // Clean up on error
+      canvas.remove();
+      img.src = '';
     };
 
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));

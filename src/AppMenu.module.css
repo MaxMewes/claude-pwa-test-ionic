@@ -1,0 +1,25 @@
+/* Menu colors use CSS variables for dark mode support */
+.menuList {
+  padding-top: 16px;
+}
+
+.menuIcon {
+  color: var(--labgate-brand);
+}
+
+.menuLabel {
+  color: var(--labgate-brand);
+  font-weight: 500;
+}
+
+.subMenuItem {
+  --padding-start: 48px;
+}
+
+.selectedItem {
+  --background: var(--labgate-selected-bg);
+}
+
+.selectedLabel {
+  font-weight: 600;
+}

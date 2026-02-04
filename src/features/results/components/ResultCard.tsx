@@ -5,6 +5,7 @@ import { format, differenceInYears } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { LabResult } from '../../../api/types';
+import styles from './ResultCard.module.css';
 
 interface ResultCardProps {
   result: LabResult;
@@ -36,9 +37,16 @@ const calculateAge = (dateOfBirth?: string): number | null => {
   }
 };
 
+// Get patient gender icon (1 = female, 2 = male)
+const getGenderIcon = (gender?: number): typeof male | typeof female | null => {
+  if (gender === 1) return female;
+  if (gender === 2) return male;
+  return null;
+};
+
 /**
  * ResultCard component displays a lab result in a list format.
- * 
+ *
  * @component
  * @example
  * ```tsx
@@ -50,12 +58,12 @@ const calculateAge = (dateOfBirth?: string): number | null => {
  * />
  * ```
  */
-export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = false, onClick, onToggleFavorite, selected }) => {
+export const ResultCard = React.memo<ResultCardProps>(({ result, isFavorite = false, onClick, onToggleFavorite, selected }) => {
   const { t, i18n } = useTranslation();
-  
+
   // Use appropriate locale for date formatting
   const locale = i18n.language === 'de' ? de : undefined;
-  
+
   // Format date of birth with age (like old app: "DD.MM.YYYY (Age J.)")
   const formatDobWithAge = (dateOfBirth?: string): string => {
     if (!dateOfBirth) return '';
@@ -85,13 +93,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
     }
   };
 
-  // Get patient gender icon (1 = female, 2 = male)
-  const getGenderIcon = (gender?: number): typeof male | typeof female | null => {
-    if (gender === 1) return female;
-    if (gender === 2) return male;
-    return null;
-  };
-
   const patientName = result.Patient?.Fullname ||
     `${result.Patient?.Lastname || ''}, ${result.Patient?.Firstname || ''}`.trim() ||
     t('resultCard.patient');
@@ -111,78 +112,40 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
       detail={false}
       lines="full"
       aria-label={`${patientName}, ${result.LabNo}, ${reportDateDisplay}${result.IsRead ? '' : `, ${t('resultCard.unread')}`}`}
-      style={{
-        '--background': selected ? 'var(--labgate-selected-bg)' : 'var(--ion-background-color)',
-        '--padding-start': '0',
-        '--inner-padding-end': '12px',
-        cursor: 'pointer',
-      }}
+      className={`${styles.resultItem} ${selected ? styles.selected : ''}`}
     >
       {/* Left Pathological/Urgent Indicator Bar (like old app - 12px red bar) */}
       <div
         aria-hidden="true"
-        style={{
-          width: '12px',
-          minWidth: '12px',
-          alignSelf: 'stretch',
-          backgroundColor: showPathoBar ? 'var(--result-indicator-patho)' : 'transparent',
-        }}
+        className={`${styles.pathoBar} ${showPathoBar ? styles.active : ''}`}
       />
 
       {/* Result Type Letter - like old app */}
-      <div
-        aria-hidden="true"
-        style={{
-          width: '28px',
-          minWidth: '28px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 700,
-          fontSize: '14px',
-          color: 'var(--labgate-text)',
-          marginLeft: '4px',
-        }}
-      >
+      <div aria-hidden="true" className={styles.typeLetter}>
         {typeLetter}
       </div>
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: '10px 0', paddingLeft: '8px' }}>
+      <div className={styles.mainContent}>
         {/* Row 1: Patient Name + Right side (star, ident, date) */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className={styles.topRow}>
           {/* Patient Name with unread indicator (green dot like old app) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
+          <div className={styles.patientNameContainer}>
             {!result.IsRead && (
               <span
                 aria-label={t('resultCard.unread')}
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--labgate-brand)',
-                  flexShrink: 0,
-                }}
+                className={styles.unreadDot}
               />
             )}
-            <span
-              style={{
-                fontWeight: result.IsRead ? 400 : 700, // Bold if unread like old app
-                fontSize: '15px',
-                color: 'var(--labgate-text)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <span className={`${styles.patientName} ${!result.IsRead ? styles.unread : ''}`}>
               {patientName}
             </span>
           </div>
 
           {/* Right side: Star + Ident + Date (stacked like old app) */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, marginLeft: '8px' }}>
+          <div className={styles.rightSection}>
             {/* Top: Star icon + Lab Number */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className={styles.topRightRow}>
               {/* Favorite Star - clickable (orange #E18B05 like old app) */}
               <button
                 type="button"
@@ -193,64 +156,32 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
                 }}
                 aria-label={`${t('resultCard.toggleFavorite')}: ${patientName}`}
                 aria-pressed={isFavorite}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: '2px',
-                  margin: '-2px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className={styles.favoriteButton}
               >
                 <IonIcon
                   icon={isFavorite ? star : starOutline}
                   aria-hidden="true"
-                  style={{
-                    color: isFavorite ? 'var(--labgate-favorite)' : 'var(--labgate-text-muted)',
-                    fontSize: '16px',
-                  }}
+                  className={`${styles.favoriteIcon} ${isFavorite ? styles.active : ''}`}
                 />
               </button>
 
               {/* Lab Number / Ident */}
-              <span
-                style={{
-                  fontSize: '12px',
-                  color: 'var(--labgate-text-light)', // Light text color from old app
-                  fontWeight: result.IsRead ? 400 : 600,
-                }}
-              >
+              <span className={`${styles.labNumber} ${!result.IsRead ? styles.unread : ''}`}>
                 {result.LabNo}
               </span>
             </div>
 
             {/* Bottom: Report Date */}
-            <span
-              style={{
-                fontSize: '11px',
-                color: 'var(--labgate-text-light)',
-                marginTop: '2px',
-              }}
-            >
+            <span className={styles.reportDate}>
               {reportDateDisplay}
             </span>
           </div>
         </div>
 
         {/* Row 2: DOB, Age, Gender (like old app) */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            marginTop: '4px',
-            paddingLeft: result.IsRead ? '0' : '14px', // Align with name when unread dot is present
-          }}
-        >
+        <div className={`${styles.bottomRow} ${!result.IsRead ? styles.withUnreadDot : ''}`}>
           {dobDisplay && (
-            <span style={{ fontSize: '12px', color: 'var(--labgate-text-light)' }}>
+            <span className={styles.dateOfBirth}>
               {dobDisplay}
             </span>
           )}
@@ -258,12 +189,12 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
             <IonIcon
               icon={genderIcon}
               aria-hidden="true"
-              style={{ fontSize: '14px', color: 'var(--labgate-text-light)' }}
+              className={styles.genderIcon}
             />
           )}
           {/* Laboratory name on the right */}
           {result.Laboratory?.Name && (
-            <span style={{ fontSize: '11px', color: 'var(--labgate-text-muted)', marginLeft: 'auto' }}>
+            <span className={styles.labName}>
               {result.Laboratory.Name}
             </span>
           )}
@@ -271,4 +202,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, isFavorite = fal
       </div>
     </IonItem>
   );
-};
+});
+
+ResultCard.displayName = 'ResultCard';

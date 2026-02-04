@@ -864,6 +864,23 @@ body.barcode-scanner-active ion-modal .scanner-content {
 
 /* Login page responsive styles */
 
+/* Login container - mobile: push down, desktop: vertically centered */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding-top: 10vh; /* Mobile: push content down */
+}
+
+@media (min-width: 768px) {
+  .login-container {
+    justify-content: center;
+    padding-top: 0; /* Desktop: vertically centered */
+  }
+}
+
 /* Mobile: show mobile links, hide desktop links, push button to bottom */
 .login-form {
   display: flex;

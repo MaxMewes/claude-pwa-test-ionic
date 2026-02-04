@@ -64,15 +64,7 @@ export const LoginPage: React.FC = () => {
   return (
     <IonPage>
       <IonContent className="ion-padding">
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '100%',
-            maxWidth: '400px',
-            margin: '0 auto',
-          }}
-        >
+        <div className="login-container">
           {/* Logo and Subtitle */}
           <div style={{ textAlign: 'center', marginBottom: '48px', paddingTop: '24px' }}>
             <img

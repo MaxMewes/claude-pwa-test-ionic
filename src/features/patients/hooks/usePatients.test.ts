@@ -3,17 +3,21 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
+// Use vi.hoisted to define mock functions that are hoisted with vi.mock
+const { mockGet } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+}));
+
 // Mock axios
 vi.mock('../../../api/client/axiosInstance', () => ({
   axiosInstance: {
-    get: vi.fn(),
+    get: mockGet,
   },
 }));
 
 import { usePatients, usePatient, usePatientResults } from './usePatients';
-import { axiosInstance } from '../../../api/client/axiosInstance';
 
-const mockAxios = vi.mocked(axiosInstance);
+const mockAxios = { get: mockGet };
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -49,10 +53,11 @@ describe('usePatients', () => {
       expect(result.current.data).toBeDefined();
     });
 
-    expect(result.current.data).toEqual(mockPatients);
+    // useInfiniteQuery returns paginated data structure
+    expect(result.current.data?.pages[0].Results).toEqual(mockPatients);
     expect(mockAxios.get).toHaveBeenCalledWith('/api/v3/patients', {
       params: expect.objectContaining({
-        itemsPerPage: 1000,
+        itemsPerPage: 25,
         currentPage: 1,
         patientSortColumn: 'Lastname',
         patientSortDirection: 'Ascending',
@@ -88,7 +93,8 @@ describe('usePatients', () => {
       expect(result.current.data).toBeDefined();
     });
 
-    expect(result.current.data).toEqual(mockPatients);
+    // useInfiniteQuery returns paginated data structure
+    expect(result.current.data?.pages[0].Results).toEqual(mockPatients);
   });
 
   it('should return empty array when no data', async () => {
@@ -101,7 +107,8 @@ describe('usePatients', () => {
       expect(result.current.data).toBeDefined();
     });
 
-    expect(result.current.data).toEqual([]);
+    // useInfiniteQuery returns paginated data structure
+    expect(result.current.data?.pages[0].Results).toEqual([]);
   });
 });
 

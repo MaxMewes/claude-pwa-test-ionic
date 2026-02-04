@@ -3,11 +3,17 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
+// Use vi.hoisted to define mock functions that are hoisted with vi.mock
+const { mockGet, mockPatch } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPatch: vi.fn(),
+}));
+
 // Mock axios
 vi.mock('../../../api/client/axiosInstance', () => ({
   axiosInstance: {
-    get: vi.fn(),
-    patch: vi.fn(),
+    get: mockGet,
+    patch: mockPatch,
   },
 }));
 
@@ -19,10 +25,9 @@ vi.mock('../../auth/store/authStore', () => ({
 }));
 
 import { useNews, useNewsArticle, useMarkNewsAsRead } from './useNews';
-import { axiosInstance } from '../../../api/client/axiosInstance';
 import { useAuthStore } from '../../auth/store/authStore';
 
-const mockAxios = vi.mocked(axiosInstance);
+const mockAxios = { get: mockGet, patch: mockPatch };
 const mockUseAuthStore = vi.mocked(useAuthStore);
 
 const createWrapper = () => {

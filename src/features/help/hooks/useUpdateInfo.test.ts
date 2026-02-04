@@ -3,17 +3,21 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
+// Use vi.hoisted to define mock functions that are hoisted with vi.mock
+const { mockGet } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+}));
+
 // Mock axios
 vi.mock('../../../api/client/axiosInstance', () => ({
   axiosInstance: {
-    get: vi.fn(),
+    get: mockGet,
   },
 }));
 
 import { useUpdateInfo } from './useUpdateInfo';
-import { axiosInstance } from '../../../api/client/axiosInstance';
 
-const mockAxios = vi.mocked(axiosInstance);
+const mockAxios = { get: mockGet };
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -33,11 +37,9 @@ describe('useUpdateInfo', () => {
 
   it('should fetch update info with version parameter', async () => {
     const mockUpdateInfo = {
-      Version: '1.0.0',
-      MandatoryUpdate: false,
-      UpdateAvailable: true,
-      Message: 'A new version is available',
-      DownloadUrl: 'https://example.com/download',
+      CurrentVersion: '1.0.0',
+      MinimumVersion: '0.5.0',
+      UpdateType: 'Optional' as const,
     };
     mockAxios.get.mockResolvedValueOnce({ data: mockUpdateInfo });
 
@@ -61,11 +63,9 @@ describe('useUpdateInfo', () => {
 
   it('should handle no update available', async () => {
     const mockUpdateInfo = {
-      Version: '0.0.1',
-      MandatoryUpdate: false,
-      UpdateAvailable: false,
-      Message: null,
-      DownloadUrl: null,
+      CurrentVersion: '0.0.1',
+      MinimumVersion: '0.0.1',
+      UpdateType: 'None' as const,
     };
     mockAxios.get.mockResolvedValueOnce({ data: mockUpdateInfo });
 
@@ -76,16 +76,14 @@ describe('useUpdateInfo', () => {
       expect(result.current.data).toBeDefined();
     });
 
-    expect(result.current.data?.UpdateAvailable).toBe(false);
+    expect(result.current.data?.UpdateType).toBe('None');
   });
 
   it('should handle mandatory update', async () => {
     const mockUpdateInfo = {
-      Version: '2.0.0',
-      MandatoryUpdate: true,
-      UpdateAvailable: true,
-      Message: 'Critical security update required',
-      DownloadUrl: 'https://example.com/critical-download',
+      CurrentVersion: '2.0.0',
+      MinimumVersion: '2.0.0',
+      UpdateType: 'Required' as const,
     };
     mockAxios.get.mockResolvedValueOnce({ data: mockUpdateInfo });
 
@@ -96,7 +94,7 @@ describe('useUpdateInfo', () => {
       expect(result.current.data).toBeDefined();
     });
 
-    expect(result.current.data?.MandatoryUpdate).toBe(true);
+    expect(result.current.data?.UpdateType).toBe('Required');
   });
 
   it('should handle API error', async () => {

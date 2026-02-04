@@ -126,7 +126,7 @@ export const LoginPage: React.FC = () => {
               </IonList>
 
               {/* Mobile only: Links right below password field */}
-              <div className="login-links-mobile" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+              <div className="login-links-mobile">
                 <IonButton
                   fill="clear"
                   size="small"

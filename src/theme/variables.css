@@ -878,6 +878,8 @@ body.barcode-scanner-active ion-modal .scanner-content {
 
 .login-links-mobile {
   display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
 }
 
 .login-links-desktop {

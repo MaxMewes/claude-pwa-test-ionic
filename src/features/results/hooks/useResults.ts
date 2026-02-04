@@ -204,7 +204,7 @@ export function useResultCounter(period?: ResultPeriodFilter) {
         if (periodParams.area) params.area = periodParams.area;
       }
 
-      const response = await axiosInstance.get<CounterResponseV3>(RESULTS_ENDPOINTS.COUNTERS, { params });
+      const response = await axiosInstance.get<CounterResponseV3>(RESULTS_ENDPOINTS.COUNTER, { params });
       const data = response.data;
 
       // Map to local format

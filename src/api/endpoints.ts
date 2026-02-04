@@ -25,7 +25,7 @@ export const AUTH_ENDPOINTS = {
 export const RESULTS_ENDPOINTS = {
   LIST: `${API_V3}/results`,
   DETAIL: (id: number | string) => `${API_V3}/results/${id}`,
-  COUNTERS: `${API_V3}/results/counters`,
+  COUNTER: `${API_V3}/results/counter`,
   MARK_READ: (id: number | string) => `${API_V3}/results/${id}/read`,
   MARK_FAVORITE: (id: number | string) => `${API_V3}/results/${id}/favorite`,
   ARCHIVE: (id: number | string) => `${API_V3}/results/${id}/archive`,

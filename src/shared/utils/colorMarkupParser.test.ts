@@ -97,7 +97,8 @@ After`;
 
     it('should handle special characters within colored text', () => {
       const input = '{color:#ff0000}<>&"\'special chars{color}';
-      const expected = '<span style="color:#ff0000"><>&"\'special chars</span>';
+      // DOMPurify escapes HTML special characters for security
+      const expected = '<span style="color:#ff0000">&lt;&gt;&amp;"\'special chars</span>';
       expect(parseColorMarkup(input)).toBe(expected);
     });
 
@@ -112,6 +113,38 @@ After`;
       const input = '{color:#ff0000}red{color}{color:#00ff00}green{color}';
       const expected = '<span style="color:#ff0000">red</span><span style="color:#00ff00">green</span>';
       expect(parseColorMarkup(input)).toBe(expected);
+    });
+  });
+
+  describe('security', () => {
+    it('should prevent XSS attacks by sanitizing script tags', () => {
+      const input = '{color:#ff0000}<script>alert("XSS")</script>{color}';
+      const result = parseColorMarkup(input);
+      // DOMPurify should remove script tags completely
+      expect(result).not.toContain('<script>');
+      expect(result).not.toContain('alert');
+    });
+
+    it('should prevent XSS attacks via event handlers', () => {
+      const input = '{color:#ff0000}<img src=x onerror=alert("XSS")>{color}';
+      const result = parseColorMarkup(input);
+      // DOMPurify should remove img tags and event handlers
+      expect(result).not.toContain('onerror');
+      expect(result).not.toContain('<img');
+    });
+
+    it('should only allow safe color styles', () => {
+      const input = '{color:#ff0000}text{color}';
+      const result = parseColorMarkup(input);
+      // Should allow valid hex color
+      expect(result).toBe('<span style="color:#ff0000">text</span>');
+    });
+
+    it('should escape HTML in text content', () => {
+      const input = '{color:#ff0000}<b>bold text</b>{color}';
+      const result = parseColorMarkup(input);
+      // DOMPurify with ALLOWED_TAGS: [] removes tags completely, leaving just text
+      expect(result).toBe('<span style="color:#ff0000">bold text</span>');
     });
   });
 

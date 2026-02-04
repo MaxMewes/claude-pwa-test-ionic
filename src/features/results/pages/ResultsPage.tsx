@@ -128,7 +128,6 @@ export const ResultsPage: React.FC = () => {
   }, [data?.pages, hasNextPage, isFetchingNextPage, isLoading, isFetching, fetchNextPage]);
 
   // Handle infinite scroll via IonContent scroll event
-  // Only trigger scroll-based loading after auto-prefetch is done (pages > 1)
   const handleScroll = useCallback((event: CustomEvent) => {
     // Skip scroll-based loading during initial load or auto-prefetch
     const pagesLoaded = data?.pages?.length ?? 0;

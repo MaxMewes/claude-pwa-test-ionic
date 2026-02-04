@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { IonText, IonSelect, IonSelectOption, IonButton, IonIcon } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 import { TestTubeLoader } from '../../../shared/components';
 import {
   LineChart,
@@ -20,10 +21,24 @@ interface TrendChartProps {
   initialTestIdent?: string;
 }
 
+/**
+ * TrendChart component displays lab value trends over time with interactive chart.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <TrendChart
+ *   patientId={123}
+ *   initialTestIdent="HGB"
+ * />
+ * ```
+ */
 export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestIdent }) => {
+  const { t } = useTranslation();
   const { data, isLoading, error, refetch } = usePatientLabTrends(patientId);
   const [selectedTest, setSelectedTest] = useState<string>(initialTestIdent || '');
   const chartRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-select first test or initial test when data loads
   useEffect(() => {
@@ -36,6 +51,29 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
       }
     }
   }, [data, initialTestIdent, selectedTest]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced test selection handler
+  const handleTestChange = useCallback((newValue: string) => {
+    // Capture the value immediately to avoid stale closures
+    const valueToSet = newValue;
+    
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    debounceTimerRef.current = setTimeout(() => {
+      setSelectedTest(valueToSet);
+    }, 150); // 150ms debounce
+  }, []);
 
   const availableTests = data ? Array.from(data.testsMap.values()) : [];
   const trendData = data && selectedTest ? data.trendData.get(selectedTest) || [] : [];
@@ -98,12 +136,12 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
     return (
       <div style={{ padding: '16px' }}>
         <IonText color="dark">
-          <h3 style={{ margin: '0 0 16px 0' }}>Laborwert-Verlauf</h3>
+          <h3 style={{ margin: '0 0 16px 0' }}>{t('trendChart.title')}</h3>
         </IonText>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
           <TestTubeLoader size={60} />
           <IonText color="medium" style={{ marginTop: '16px' }}>
-            Lade Verlaufsdaten...
+            {t('trendChart.loading')}
           </IonText>
         </div>
       </div>
@@ -114,13 +152,13 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
     return (
       <div style={{ padding: '16px' }}>
         <IonText color="dark">
-          <h3 style={{ margin: '0 0 16px 0' }}>Laborwert-Verlauf</h3>
+          <h3 style={{ margin: '0 0 16px 0' }}>{t('trendChart.title')}</h3>
         </IonText>
         <div style={{ textAlign: 'center', padding: '32px' }}>
-          <IonText color="danger">Fehler beim Laden der Daten</IonText>
+          <IonText color="danger">{t('trendChart.errorLoading')}</IonText>
           <div style={{ marginTop: '16px' }}>
             <IonButton size="small" fill="outline" onClick={() => refetch()}>
-              Erneut versuchen
+              {t('common.retry')}
             </IonButton>
           </div>
         </div>
@@ -132,10 +170,10 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
     return (
       <div style={{ padding: '16px' }}>
         <IonText color="dark">
-          <h3 style={{ margin: '0 0 16px 0' }}>Laborwert-Verlauf</h3>
+          <h3 style={{ margin: '0 0 16px 0' }}>{t('trendChart.title')}</h3>
         </IonText>
         <div style={{ textAlign: 'center', padding: '32px' }}>
-          <IonText color="medium">Keine Laborwerte mit numerischen Ergebnissen vorhanden</IonText>
+          <IonText color="medium">{t('trendChart.noData')}</IonText>
         </div>
       </div>
     );
@@ -145,14 +183,15 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
     <div style={{ padding: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <IonText color="dark">
-          <h3 style={{ margin: 0 }}>Laborwert-Verlauf</h3>
+          <h3 style={{ margin: 0 }}>{t('trendChart.title')}</h3>
         </IonText>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <IonSelect
             value={selectedTest}
-            onIonChange={(e) => setSelectedTest(e.detail.value)}
+            onIonChange={(e) => handleTestChange(e.detail.value)}
             interface="popover"
             style={{ maxWidth: '200px' }}
+            aria-label={t('trendChart.title')}
           >
             {availableTests.map((test) => (
               <IonSelectOption key={test.testIdent} value={test.testIdent}>
@@ -161,8 +200,13 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
             ))}
           </IonSelect>
           {trendData.length > 0 && (
-            <IonButton size="small" fill="clear" onClick={handleExport}>
-              <IonIcon icon={downloadOutline} />
+            <IonButton 
+              size="small" 
+              fill="clear" 
+              onClick={handleExport}
+              aria-label={t('trendChart.exportAlt')}
+            >
+              <IonIcon icon={downloadOutline} aria-hidden="true" />
             </IonButton>
           )}
         </div>
@@ -181,17 +225,18 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
         >
           {testInfo.unit && (
             <span>
-              <strong>Einheit:</strong> {testInfo.unit}
+              <strong>{t('trendChart.unit')}:</strong> {testInfo.unit}
             </span>
           )}
           {testInfo.normalText && (
             <span>
-              <strong>Referenz:</strong> {testInfo.normalText}
+              <strong>{t('trendChart.reference')}:</strong> {testInfo.normalText}
             </span>
           )}
           {referenceRange && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span
+                aria-hidden="true"
                 style={{
                   display: 'inline-block',
                   width: '12px',
@@ -201,7 +246,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
                   borderRadius: '4px',
                 }}
               ></span>
-              Normalbereich
+              {t('trendChart.normalRange')}
             </span>
           )}
         </div>
@@ -256,12 +301,12 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
                           {pointData.value.toFixed(2)} {testInfo?.unit || ''}
                           {isOutOfRange && (
                             <span style={{ marginLeft: '4px', fontSize: '12px' }}>
-                              {pointData.value < referenceRange!.min ? '(niedrig)' : '(hoch)'}
+                              ({pointData.value < referenceRange!.min ? t('trendChart.low') : t('trendChart.high')})
                             </span>
                           )}
                         </p>
                         <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>
-                          Befund: {pointData.labNo}
+                          {t('trendChart.result')}: {pointData.labNo}
                         </p>
                       </div>
                     );
@@ -311,7 +356,9 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
         </div>
       ) : (
         <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <IonText color="medium">Keine Verlaufsdaten für {testInfo?.testName || 'diesen Test'} vorhanden</IonText>
+          <IonText color="medium">
+            {t('trendChart.noTrendData', { testName: testInfo?.testName || '' })}
+          </IonText>
         </div>
       )}
 
@@ -325,7 +372,9 @@ export const TrendChart: React.FC<TrendChartProps> = ({ patientId, initialTestId
             color: 'var(--ion-color-medium)',
           }}
         >
-          <p style={{ margin: 0 }}>{trendData.length} Messwert(e) aus den letzten 20 Befunden</p>
+          <p style={{ margin: 0 }}>
+            {t('trendChart.measurementCount', { count: trendData.length })}
+          </p>
         </div>
       )}
     </div>

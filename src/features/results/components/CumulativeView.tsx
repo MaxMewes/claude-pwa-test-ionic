@@ -1,6 +1,7 @@
 import React from 'react';
 import { IonList, IonItem, IonLabel, IonText, IonIcon, IonBadge } from '@ionic/react';
 import { alertCircleOutline, arrowUp, arrowDown } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
 import { TestResult } from '../../../api/types';
 
 interface CumulativeViewProps {
@@ -8,36 +9,89 @@ interface CumulativeViewProps {
   onTestClick?: (test: TestResult) => void;
 }
 
-// labGate API v3 uses IsPathological and PathologyIndicator
-// Colors use CSS variables for dark mode support
-const getPathologyInfo = (test: TestResult): {
-  color: string;
-  cssColor: string;
-  bgColor: string;
-  label: string;
-  icon?: typeof arrowUp;
-} => {
-  if (!test.IsPathological) {
-    return { color: 'success', cssColor: 'var(--result-normal)', bgColor: 'var(--ion-color-success-tint)', label: 'Normal' };
-  }
-
-  switch (test.PathologyIndicator) {
-    case 'L':
-      return { color: 'warning', cssColor: 'var(--result-low)', bgColor: 'var(--ion-color-warning-tint)', label: 'Niedrig', icon: arrowDown };
-    case 'LL':
-      return { color: 'danger', cssColor: 'var(--result-critical)', bgColor: 'var(--ion-color-danger-tint)', label: 'Kritisch niedrig', icon: arrowDown };
-    case 'H':
-      return { color: 'warning', cssColor: 'var(--result-high)', bgColor: 'var(--ion-color-warning-tint)', label: 'Hoch', icon: arrowUp };
-    case 'HH':
-      return { color: 'danger', cssColor: 'var(--result-critical)', bgColor: 'var(--ion-color-danger-tint)', label: 'Kritisch hoch', icon: arrowUp };
-    case 'A':
-      return { color: 'warning', cssColor: 'var(--result-abnormal)', bgColor: 'var(--ion-color-warning-tint)', label: 'Auffaellig' };
-    default:
-      return { color: 'warning', cssColor: 'var(--result-abnormal)', bgColor: 'var(--ion-color-warning-tint)', label: 'Auffaellig' };
-  }
-};
-
+/**
+ * CumulativeView component displays lab test results grouped by pathology status.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <CumulativeView
+ *   tests={testResults}
+ *   onTestClick={(test) => viewTestDetails(test)}
+ * />
+ * ```
+ */
 export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestClick }) => {
+  const { t } = useTranslation();
+  
+  // labGate API v3 uses IsPathological and PathologyIndicator
+  // Colors use CSS variables for dark mode support
+  const getPathologyInfo = (test: TestResult): {
+    color: string;
+    cssColor: string;
+    bgColor: string;
+    label: string;
+    icon?: typeof arrowUp;
+  } => {
+    if (!test.IsPathological) {
+      return { 
+        color: 'success', 
+        cssColor: 'var(--result-normal)', 
+        bgColor: 'var(--ion-color-success-tint)', 
+        label: t('cumulativeView.normal') 
+      };
+    }
+
+    switch (test.PathologyIndicator) {
+      case 'L':
+        return { 
+          color: 'warning', 
+          cssColor: 'var(--result-low)', 
+          bgColor: 'var(--ion-color-warning-tint)', 
+          label: t('cumulativeView.low'), 
+          icon: arrowDown 
+        };
+      case 'LL':
+        return { 
+          color: 'danger', 
+          cssColor: 'var(--result-critical)', 
+          bgColor: 'var(--ion-color-danger-tint)', 
+          label: t('cumulativeView.criticalLow'), 
+          icon: arrowDown 
+        };
+      case 'H':
+        return { 
+          color: 'warning', 
+          cssColor: 'var(--result-high)', 
+          bgColor: 'var(--ion-color-warning-tint)', 
+          label: t('cumulativeView.high'), 
+          icon: arrowUp 
+        };
+      case 'HH':
+        return { 
+          color: 'danger', 
+          cssColor: 'var(--result-critical)', 
+          bgColor: 'var(--ion-color-danger-tint)', 
+          label: t('cumulativeView.criticalHigh'), 
+          icon: arrowUp 
+        };
+      case 'A':
+        return { 
+          color: 'warning', 
+          cssColor: 'var(--result-abnormal)', 
+          bgColor: 'var(--ion-color-warning-tint)', 
+          label: t('cumulativeView.abnormal') 
+        };
+      default:
+        return { 
+          color: 'warning', 
+          cssColor: 'var(--result-abnormal)', 
+          bgColor: 'var(--ion-color-warning-tint)', 
+          label: t('cumulativeView.abnormal') 
+        };
+    }
+  };
+
   // labGate API v3 uses IsPathological
   const normalTests = tests.filter((t) => !t.IsPathological);
   const abnormalTests = tests.filter((t) => t.IsPathological);
@@ -59,6 +113,7 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
         {test.IsPathological && (
           <div
             slot="start"
+            aria-hidden="true"
             style={{
               width: '4px',
               alignSelf: 'stretch',
@@ -80,7 +135,7 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
           </h2>
           {/* labGate API v3 uses ReferenceRange and Unit */}
           <p style={{ color: 'var(--labgate-text-light)', fontSize: '12px' }}>
-            Ref: {test.ReferenceRange} {test.Unit || ''}
+            {t('cumulativeView.reference')}: {test.ReferenceRange} {test.Unit || ''}
           </p>
         </IonLabel>
 
@@ -89,12 +144,14 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
             {pathologyInfo.icon && (
               <IonIcon
                 icon={pathologyInfo.icon}
+                aria-hidden="true"
                 style={{ color: pathologyInfo.cssColor, fontSize: '16px' }}
               />
             )}
             {test.IsPathological && !pathologyInfo.icon && (
               <IonIcon
                 icon={alertCircleOutline}
+                aria-hidden="true"
                 style={{ color: pathologyInfo.cssColor, fontSize: '16px' }}
               />
             )}
@@ -152,8 +209,8 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
               gap: '8px'
             }}
           >
-            <IonIcon icon={alertCircleOutline} />
-            Auffaellige Werte ({abnormalTests.length})
+            <IonIcon icon={alertCircleOutline} aria-hidden="true" />
+            {t('cumulativeView.abnormalValues')} ({abnormalTests.length})
           </div>
           <IonList lines="full">{abnormalTests.map(renderTest)}</IonList>
         </>
@@ -171,7 +228,7 @@ export const CumulativeView: React.FC<CumulativeViewProps> = ({ tests, onTestCli
               gap: '8px'
             }}
           >
-            Normale Werte ({normalTests.length})
+            {t('cumulativeView.normalValues')} ({normalTests.length})
           </div>
           <IonList lines="full">{normalTests.map(renderTest)}</IonList>
         </>

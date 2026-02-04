@@ -18,7 +18,9 @@
     "offline": "You are offline",
     "pullToRefresh": "Pull to refresh",
     "all": "All",
-    "general": "General"
+    "general": "General",
+    "resultsFound_one": "{{count}} result found",
+    "resultsFound_other": "{{count}} results found"
   },
   "auth": {
     "login": "Login",
@@ -339,6 +341,43 @@
     "server": "Server error. Please try again later.",
     "notFound": "The requested resource was not found.",
     "unauthorized": "You are not authorized to perform this action.",
-    "generic": "An unexpected error occurred."
+    "generic": "An unexpected error occurred.",
+    "boundary": {
+      "title": "An error occurred",
+      "message": "Please try again or contact support.",
+      "retry": "Try again"
+    }
+  },
+  "resultCard": {
+    "toggleFavorite": "Toggle favorite",
+    "patient": "Patient",
+    "years": "y.",
+    "unread": "Unread"
+  },
+  "trendChart": {
+    "title": "Lab Value Trend",
+    "loading": "Loading trend data...",
+    "errorLoading": "Error loading data",
+    "noData": "No lab values with numerical results available",
+    "noTrendData": "No trend data available for {{testName}}",
+    "unit": "Unit",
+    "reference": "Reference",
+    "normalRange": "Normal range",
+    "low": "low",
+    "high": "high",
+    "result": "Result",
+    "measurementCount": "{{count}} measurement(s) from the last 20 results",
+    "exportAlt": "Export chart"
+  },
+  "cumulativeView": {
+    "normal": "Normal",
+    "low": "Low",
+    "criticalLow": "Critical low",
+    "high": "High",
+    "criticalHigh": "Critical high",
+    "abnormal": "Abnormal",
+    "abnormalValues": "Abnormal Values",
+    "normalValues": "Normal Values",
+    "reference": "Ref"
   }
 }

@@ -1,0 +1,4615 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v2",
+    "title": "labGate API v2",
+    "description": "labGate V2 API - Authentifizierung erfolgt über einen Token, der nach erfolgreichem Login zurückgegeben wird."
+  },
+  "host": "localhost:3333",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "ApiToken": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Der Token wird nach dem Login über /api/v2/Authentication/Authorize zurückgegeben. Format: Bearer {token}"
+    }
+  },
+  "security": [
+    {
+      "ApiToken": []
+    }
+  ],
+  "paths": {
+    "/api/v2/Authentication/Authorize": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Authentifiziert einen Benutzer und gibt einen Token zurück.",
+        "operationId": "Authentication_Authorize",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Login-Anfrage mit Benutzername und Passwort.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authentifizierung erfolgreich.",
+            "schema": {
+              "$ref": "#/definitions/LoginResponse"
+            }
+          },
+          "401": {
+            "description": "Authentifizierung fehlgeschlagen."
+          }
+        }
+      }
+    },
+    "/api/v2/Authentication/Authorize2F": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Validiert den zweiten Faktor bei aktivierter Zwei-Faktor-Authentifizierung.",
+        "operationId": "Authentication_Authorize2F",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Zwei-Faktor-Authentifizierungs-Anfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TwoFactorAuthorizationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Zwei-Faktor-Authentifizierung erfolgreich."
+          },
+          "403": {
+            "description": "Ungültiger Code."
+          },
+          "409": {
+            "description": "Zwei-Faktor-Registrierung nicht abgeschlossen."
+          }
+        }
+      }
+    },
+    "/api/v2/Authentication/Ping": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Prüft ob ein Token noch gültig ist.",
+        "operationId": "Authentication_Ping",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Ping-Anfrage mit Token.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PingRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token ist gültig.",
+            "schema": {
+              "$ref": "#/definitions/PingResponse"
+            }
+          },
+          "401": {
+            "description": "Token ist ungültig."
+          }
+        }
+      }
+    },
+    "/api/v2/Authentication/SendAccessRequest": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Sendet eine Zugriffsanfrage zur Registrierung.",
+        "operationId": "Authentication_SendAccessRequest",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Registrierungsanfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registrierungsanfrage wurde gesendet.",
+            "schema": {
+              "$ref": "#/definitions/RegisterResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Authentication/Logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Meldet einen Benutzer ab.",
+        "operationId": "Authentication_Logout",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Logout-Anfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LogoutRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout erfolgreich.",
+            "schema": {
+              "$ref": "#/definitions/LogoutResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Authentication/ChangePassword": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Ändert das Passwort eines Benutzers.",
+        "operationId": "Authentication_ChangePassword",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Passwort-Änderungs-Anfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Passwort wurde geändert.",
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Authentication/ResetPassword": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Setzt das Passwort eines Benutzers zurück.",
+        "operationId": "Authentication_ResetPassword",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Passwort-Reset-Anfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Passwort wurde zurückgesetzt.",
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Authentication/GetPasswordRules": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Ruft die Passwort-Komplexitätsregeln ab.",
+        "operationId": "Authentication_GetPasswordRules",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Passwort-Regeln wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/PasswordComplexityRulesResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/GetValueTrend": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Ruft den Wertverlauf für einen bestimmten Laborwert ab.",
+        "operationId": "Result_GetValueTrend",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für den Wertverlauf.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetValueTrendRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Wertverlauf wurde abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TrendGraphItem"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/GetNewest": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Ruft die neuesten Befunde ab.",
+        "operationId": "Result_GetNewest",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für die neuesten Befunde.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetNewestResultRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Befunde wurden abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetNewestResultResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/Search": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Durchsucht die Befunde nach bestimmten Kriterien.",
+        "operationId": "Result_Search",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Suchanfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchResultsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Suchergebnisse wurden abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetNewestResultResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/GetNotificationInfo": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Ruft Benachrichtigungsinformationen ab.",
+        "operationId": "Result_GetNotificationInfo",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Benachrichtigungsinformationen.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetNotificationInfoRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Benachrichtigungsinformationen wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetNotificationInfoResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/GetDetails": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Ruft die Details eines Befundes ab.",
+        "operationId": "Result_GetDetails",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Befunddetails.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetResultDetailRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Befunddetails wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetResultDetailResponse"
+            }
+          },
+          "404": {
+            "description": "Befund nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Result/SetConfirmed": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Markiert einen Befund als bestätigt.",
+        "operationId": "Result_SetConfirmed",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zur Bestätigung eines Befundes.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SetResultConfirmedRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Befund wurde bestätigt.",
+            "schema": {
+              "$ref": "#/definitions/BaseResponse"
+            }
+          },
+          "403": {
+            "description": "Keine Berechtigung zur Bestätigung."
+          },
+          "404": {
+            "description": "Befund nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Result/SetReadStateById": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Setzt den Gelesen-Status eines Befundes.",
+        "operationId": "Result_SetReadStateById",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zum Setzen des Gelesen-Status.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SetReadStateByIdRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Gelesen-Status wurde gesetzt.",
+            "schema": {
+              "$ref": "#/definitions/SetReadStateByIdResponse"
+            }
+          },
+          "403": {
+            "description": "Keine Berechtigung."
+          },
+          "404": {
+            "description": "Befund nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Result/SetArchivedStateById": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Setzt den Archivierungs-Status eines Befundes.",
+        "operationId": "Result_SetArchivedStateById",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zum Setzen des Archivierungs-Status.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SetArchivedStateByIdRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Archivierungs-Status wurde gesetzt.",
+            "schema": {
+              "$ref": "#/definitions/SetArchivedStateByIdResponse"
+            }
+          },
+          "403": {
+            "description": "Keine Berechtigung."
+          },
+          "404": {
+            "description": "Befund nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Result/SetFavoriteStateById": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Setzt den Favoriten-Status eines Befundes.",
+        "operationId": "Result_SetFavoriteStateById",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zum Setzen des Favoriten-Status.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SetFavoriteStateByIdRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Favoriten-Status wurde gesetzt.",
+            "schema": {
+              "$ref": "#/definitions/SetFavoriteStateByIdResponse"
+            }
+          },
+          "403": {
+            "description": "Keine Berechtigung."
+          },
+          "404": {
+            "description": "Befund nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Result/GetDocument": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Ruft ein Befunddokument ab.",
+        "operationId": "Result_GetDocument",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für ein Befunddokument.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetResultDocumentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Das Dokument wurde abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetResultDetailResponseDocument"
+            }
+          },
+          "403": {
+            "description": "Kein Zugriff auf das Dokument."
+          },
+          "404": {
+            "description": "Dokument nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Result/MoveToArchive": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Verschiebt einen Befund ins Archiv.",
+        "operationId": "Result_MoveToArchive",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zum Verschieben ins Archiv.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MoveResultToArchiveRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Befund wurde archiviert.",
+            "schema": {
+              "$ref": "#/definitions/MoveResultToArchiveResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/GetResultCounter": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Ruft Zähler für verschiedene Befundkategorien ab.",
+        "operationId": "Result_GetResultCounter",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Befundzähler.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetResultCounterRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Zähler wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetResultCounterResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/Cleanup": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Bereinigt alte archivierte Befunddokumente.",
+        "operationId": "Result_Cleanup",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Cleanup-Anfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CleanupRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cleanup wurde durchgeführt.",
+            "schema": {
+              "$ref": "#/definitions/CleanupResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/ExportThisMonth": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Exportiert Statistikdaten des aktuellen Monats.",
+        "operationId": "Result_ExportThisMonth",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für den Statistik-Export.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetStatisticRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Statistikdaten wurden exportiert.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExportStatisticResultData"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/ExportResultConfirmations": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Exportiert Befundbestätigungen.",
+        "operationId": "Result_ExportResultConfirmations",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für den Export von Befundbestätigungen.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ExportResultConfirmationsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Befundbestätigungen wurden exportiert.",
+            "schema": {
+              "$ref": "#/definitions/ExportResultConfirmationsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/SetResultConfirmationExported": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Markiert Befundbestätigungen als exportiert.",
+        "operationId": "Result_SetResultConfirmationExported",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zum Markieren der exportierten Bestätigungen.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SetResultConfirmationExportedRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Bestätigungen wurden als exportiert markiert.",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/GetByCode": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Gibt einen Befund anhand eines Abrufcodes zurück.",
+        "operationId": "Result_GetByCode",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage mit Abrufcode und Patientendaten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetByCodeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Befund wurde abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/ImportResultRequestResult"
+            }
+          },
+          "400": {
+            "description": "Ungültige Anfrage."
+          }
+        }
+      }
+    },
+    "/api/v2/Result/Import": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Importiert Befunde ins System.",
+        "operationId": "Result_Import",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Import-Anfrage mit Befunddaten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ImportResultRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Befunde wurden importiert.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ImportResultResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Result/ImportResultDocument": {
+      "post": {
+        "tags": ["Befunde"],
+        "summary": "Importiert ein Befunddokument.",
+        "operationId": "Result_ImportResultDocument",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Import-Anfrage mit Dokumentdaten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ImportResultDocumentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Das Dokument wurde importiert.",
+            "schema": {
+              "$ref": "#/definitions/ResultDocumentImportResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Order/Prepare": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Bereitet einen Auftrag vor und korrigiert dessen Daten.",
+        "operationId": "Order_Prepare",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zur Auftragsvorbereitung.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/OrderPrepareRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Auftrag wurde vorbereitet.",
+            "schema": {
+              "$ref": "#/definitions/OrderPrepareResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Order/MarkSamplesAsScanned": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Markiert Proben als im Labor gescannt.",
+        "operationId": "Order_MarkSamplesAsScanned",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zur Markierung der Proben.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MarkSamplesAsScannedRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Proben wurden markiert.",
+            "schema": {
+              "$ref": "#/definitions/MarkSamplesAsScannedResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Order/GetLaboratories": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Gibt eine Auflistung aller Labore des authentifizierten Benutzers zurück.",
+        "operationId": "Order_GetLaboratories",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anmeldedaten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Labore wurden abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LaboratoryInfoResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Order/Export": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Liefert angeforderte Aufträge für den Export zurück.",
+        "operationId": "Order_Export",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zum Export der Aufträge.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ExportOrdersRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Aufträge wurden exportiert.",
+            "schema": {
+              "$ref": "#/definitions/ExportOrdersResponse"
+            }
+          },
+          "403": {
+            "description": "Keine Berechtigung für den Export."
+          }
+        }
+      }
+    },
+    "/api/v2/Order/SendExportFeedback": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Sendet Feedback zum Export eines Auftrags.",
+        "operationId": "Order_SendExportFeedback",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Feedback-Anfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ExportFeedbackRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Das Feedback wurde verarbeitet.",
+            "schema": {
+              "$ref": "#/definitions/ExportFeedbackResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Order/FetchDocument": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Gibt ein Auftragsdokument anhand seiner ID zurück.",
+        "operationId": "Order_FetchDocument",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage mit der Dokumenten-ID.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/FetchDocumentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Das Dokument wurde abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/FetchDocumentResponse"
+            }
+          },
+          "404": {
+            "description": "Dokument nicht gefunden."
+          },
+          "410": {
+            "description": "Datei nicht mehr verfügbar."
+          }
+        }
+      }
+    },
+    "/api/v2/Order/GetUnsignedDimusDocumentList": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Gibt eine Liste der zu signierenden DiMus-Dokumente zurück.",
+        "operationId": "Order_GetUnsignedDimusDocumentList",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage mit den Einsender-IDs.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetUnsignedDimusDocumentListRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Dokumentenliste wurde abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetUnsignedDimusDocumentListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Order/DimusDocumentSigningFeedback": {
+      "post": {
+        "tags": ["Aufträge"],
+        "summary": "Setzt den Signaturstatus für DiMus-Dokumente.",
+        "operationId": "Order_DimusDocumentSigningFeedback",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage mit Signatur-Feedback.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DimusDocumentSigningFeedbackRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Signaturstatus wurde aktualisiert.",
+            "schema": {
+              "$ref": "#/definitions/DimusDocumentSigningFeedbackResponse"
+            }
+          },
+          "304": {
+            "description": "Dokumentstatus kann nicht verändert werden."
+          },
+          "404": {
+            "description": "Dokument nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/GetContacts": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Ruft die Kontakte eines Labors ab.",
+        "operationId": "Laboratory_GetContacts",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Laborkontakte.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetLaboratoryContactRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Kontakte wurden abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetLaboratoryContactResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/SendInquiry": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Sendet eine Laboranfrage.",
+        "operationId": "Laboratory_SendInquiry",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Laboranfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendInquiryRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Anfrage wurde gesendet.",
+            "schema": {
+              "$ref": "#/definitions/SendInquiryResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/Get": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Ruft die Liste der verfügbaren Labore ab.",
+        "operationId": "Laboratory_Get",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für die Laborliste.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetLaboratoriesRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Labore wurden abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetLaboratoriesResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/ExportRequestDirectory": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Exportiert das Leistungsverzeichnis eines Labors.",
+        "operationId": "Laboratory_ExportRequestDirectory",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für den Export des Leistungsverzeichnisses.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetRequestDirectoryRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Das Leistungsverzeichnis wurde exportiert.",
+            "schema": {
+              "$ref": "#/definitions/GetRequestDirectoryResponse"
+            }
+          },
+          "401": {
+            "description": "Kein Zugriff auf das Labor."
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/GetRequestDirectoryRequestDetails": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Ruft Details zu einer Anforderung aus dem Leistungsverzeichnis ab.",
+        "operationId": "Laboratory_GetRequestDirectoryRequestDetails",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Anforderungsdetails.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetRequestDirectoryRequestDetailsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Details wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetRequestDirectoryRequestDetailsResponse"
+            }
+          },
+          "403": {
+            "description": "Kein Zugriff auf die Anforderung."
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/GetRequestDirectoryRequestDetailsByIdent": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Ruft Details zu einer Anforderung anhand des Idents ab.",
+        "operationId": "Laboratory_GetRequestDirectoryRequestDetailsByIdent",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Anforderungsdetails nach Ident.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetRequestDirectoryRequestDetailsRequestByIdent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Details wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetRequestDirectoryRequestDetailsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/GetMessages": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Ruft Nachrichten zu einem Befund ab.",
+        "operationId": "Laboratory_GetMessages",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Nachrichten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetLaboratoryMessagesRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Nachrichten wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetLaboratoryMessageResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/ImportRequests": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Importiert Anforderungen in das Leistungsverzeichnis.",
+        "operationId": "Laboratory_ImportRequests",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Import-Anfrage mit Anforderungsdaten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ImportRequestsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Anforderungen wurden importiert.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ImportRequestsResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Laboratory/ImportRequestsMibi": {
+      "post": {
+        "tags": ["Labore"],
+        "summary": "Importiert mikrobiologische Anforderungen in das Leistungsverzeichnis.",
+        "operationId": "Laboratory_ImportRequestsMibi",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Import-Anfrage mit mikrobiologischen Anforderungsdaten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ImportRequestsMibiRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Anforderungen wurden importiert.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ImportRequestsResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/News/Get": {
+      "post": {
+        "tags": ["News"],
+        "summary": "Ruft die Neuigkeiten ab.",
+        "operationId": "News_Get",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Neuigkeiten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetNewsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Neuigkeiten wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetNewsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/DataBox/RunDataboxMessageProcesses": {
+      "get": {
+        "tags": ["Datenboxen"],
+        "summary": "Verarbeitet offene Datenboxnachrichtenprozesse.",
+        "operationId": "DataBox_RunDataboxMessageProcesses",
+        "produces": ["application/json"],
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Die Abarbeitung wurde gestartet."
+          },
+          "202": {
+            "description": "Die Abarbeitung läuft bereits."
+          },
+          "400": {
+            "description": "Keine Mirth-Anbindung konfiguriert."
+          }
+        }
+      }
+    },
+    "/api/v2/DataBox/GetMessagesForExport": {
+      "post": {
+        "tags": ["Datenboxen"],
+        "summary": "Ruft Nachrichten für den Export aus Datenboxen ab.",
+        "operationId": "DataBox_GetMessagesForExport",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Export-Nachrichten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetMessagesForExportRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Nachrichten wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetMessagesForExportResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/DataBox/GetAvailableDataBoxes": {
+      "post": {
+        "tags": ["Datenboxen"],
+        "summary": "Ruft die verfügbaren Datenboxen ab.",
+        "operationId": "DataBox_GetAvailableDataBoxes",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für verfügbare Datenboxen.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetAvailableDataBoxesRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Datenboxen wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetAvailableDataBoxesResponse"
+            }
+          },
+          "501": {
+            "description": "Datenboxen-Komponente nicht lizenziert."
+          }
+        }
+      }
+    },
+    "/api/v2/DataBox/GetDocument": {
+      "get": {
+        "tags": ["Datenboxen"],
+        "summary": "Ruft ein Dokument aus einer Datenbox ab.",
+        "operationId": "DataBox_GetDocument",
+        "produces": ["application/octet-stream"],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "Der Authentifizierungs-Token.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "documentId",
+            "in": "query",
+            "description": "Die Dokument-ID.",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Das Dokument wurde abgerufen.",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "404": {
+            "description": "Dokument nicht gefunden."
+          },
+          "500": {
+            "description": "Interner Serverfehler."
+          }
+        }
+      }
+    },
+    "/api/v2/InsuranceCoreData/Import": {
+      "post": {
+        "tags": ["Versicherungsstammdaten"],
+        "summary": "Importiert Versicherungsstammdaten.",
+        "operationId": "InsuranceCoreData_Import",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Import-Anfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ImportInsuranceCoreDataRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Import wurde durchgeführt.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ImportInsuranceCoreDataResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/InsuranceCoreData/GetCoreData": {
+      "post": {
+        "tags": ["Versicherungsstammdaten"],
+        "summary": "Ruft Versicherungsstammdaten ab.",
+        "operationId": "InsuranceCoreData_GetCoreData",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Stammdaten.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InsuranceCoreDataRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Stammdaten wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/InsuranceCoreDataResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/InsuranceCoreData/SearchCoreData": {
+      "post": {
+        "tags": ["Versicherungsstammdaten"],
+        "summary": "Durchsucht die Versicherungsstammdaten.",
+        "operationId": "InsuranceCoreData_SearchCoreData",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Suchanfrage.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InsuranceCoreDataSearchRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Suchergebnisse wurden abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/InsuranceCoreDataResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/InsuranceCoreData/GetInsurancePrintName": {
+      "post": {
+        "tags": ["Versicherungsstammdaten"],
+        "summary": "Ruft den Drucknamen einer Versicherung ab.",
+        "operationId": "InsuranceCoreData_GetInsurancePrintName",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für den Drucknamen.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InsuranceCoreDataRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Druckname wurde abgerufen.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/BarcodeManagement/GetBarcodeForSender": {
+      "post": {
+        "tags": ["Barcode-Management"],
+        "summary": "Ruft den Einsender für einen Barcode ab.",
+        "operationId": "BarcodeManagement_GetBarcodeForSender",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage mit Barcode.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetBarcodeForSenderRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Der Einsender wurde abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetBarcodeForSenderResponse"
+            }
+          },
+          "404": {
+            "description": "Barcode oder Einsender nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Push/GetPushProperties": {
+      "post": {
+        "tags": ["Push"],
+        "summary": "Ruft die Push-Einstellungen ab.",
+        "operationId": "Push_GetPushProperties",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für Push-Einstellungen.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetPushSettingsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Push-Einstellungen wurden abgerufen.",
+            "schema": {
+              "$ref": "#/definitions/GetPushSettingsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/Push/SetPushProperties": {
+      "post": {
+        "tags": ["Push"],
+        "summary": "Setzt die Push-Einstellungen.",
+        "operationId": "Push_SetPushProperties",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage zum Setzen der Push-Einstellungen.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SetPushSettingsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die Push-Einstellungen wurden gesetzt.",
+            "schema": {
+              "$ref": "#/definitions/SetPushSettingsResponse"
+            }
+          },
+          "404": {
+            "description": "Gerät nicht gefunden."
+          }
+        }
+      }
+    },
+    "/api/v2/Faq/Get": {
+      "post": {
+        "tags": ["FAQ"],
+        "summary": "Ruft die FAQs ab.",
+        "operationId": "Faq_Get",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "description": "Die Anfrage für FAQs.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetFaqsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Die FAQs wurden abgerufen.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetFaqsResponse"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "LoginRequest": {
+      "type": "object",
+      "properties": {
+        "Username": {
+          "type": "string",
+          "description": "Der Benutzername."
+        },
+        "Password": {
+          "type": "string",
+          "description": "Das Passwort."
+        },
+        "DeviceKey": {
+          "type": "string",
+          "description": "Der eindeutige Geräteschlüssel."
+        },
+        "DeviceName": {
+          "type": "string",
+          "description": "Der Gerätename."
+        },
+        "DeviceModel": {
+          "type": "string",
+          "description": "Das Gerätemodell."
+        },
+        "OperatingSystem": {
+          "type": "string",
+          "description": "Das Betriebssystem."
+        },
+        "OperatingSystemVersion": {
+          "type": "string",
+          "description": "Die Betriebssystemversion."
+        },
+        "LayoutEngine": {
+          "type": "string",
+          "description": "Die Layout-Engine."
+        },
+        "DocumentFormat": {
+          "type": "string",
+          "description": "Das gewünschte Dokumentformat."
+        },
+        "PushConnectionId": {
+          "type": "string",
+          "description": "Die Push-Verbindungs-ID."
+        },
+        "AdditionalInformation": {
+          "type": "string",
+          "description": "Zusätzliche Informationen."
+        },
+        "UserAgent": {
+          "type": "string",
+          "description": "Der User-Agent."
+        }
+      },
+      "required": ["Username", "Password"]
+    },
+    "LoginResponse": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "PasswordExpired": {
+          "type": "boolean",
+          "description": "Gibt an, ob das Passwort abgelaufen ist."
+        },
+        "RequiresSecondFactor": {
+          "type": "boolean",
+          "description": "Gibt an, ob ein zweiter Faktor erforderlich ist."
+        },
+        "TwoFactorRegistrationIncomplete": {
+          "type": "boolean",
+          "description": "Gibt an, ob die 2FA-Registrierung unvollständig ist."
+        }
+      }
+    },
+    "TwoFactorAuthorizationRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "Code": {
+          "type": "string",
+          "description": "Der 2FA-Code."
+        },
+        "MarkDeviceAsTrusted": {
+          "type": "boolean",
+          "description": "Gerät als vertrauenswürdig markieren."
+        }
+      },
+      "required": ["Token", "Code"]
+    },
+    "PingRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "SkipSecondFactor": {
+          "type": "boolean",
+          "description": "Zweiten Faktor überspringen."
+        }
+      },
+      "required": ["Token"]
+    },
+    "PingResponse": {
+      "type": "object",
+      "properties": {}
+    },
+    "RegisterRequest": {
+      "type": "object",
+      "properties": {
+        "Firstname": {
+          "type": "string",
+          "description": "Vorname."
+        },
+        "Lastname": {
+          "type": "string",
+          "description": "Nachname."
+        },
+        "MedicalOffice": {
+          "type": "string",
+          "description": "Praxisname."
+        },
+        "Phone": {
+          "type": "string",
+          "description": "Telefonnummer."
+        },
+        "Email": {
+          "type": "string",
+          "description": "E-Mail-Adresse."
+        },
+        "Language": {
+          "type": "string",
+          "description": "Sprache."
+        }
+      }
+    },
+    "RegisterResponse": {
+      "type": "object",
+      "properties": {}
+    },
+    "LogoutRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        }
+      },
+      "required": ["Token"]
+    },
+    "LogoutResponse": {
+      "type": "object",
+      "properties": {}
+    },
+    "ChangePasswordRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token (optional)."
+        },
+        "Username": {
+          "type": "string",
+          "description": "Der Benutzername (falls kein Token)."
+        },
+        "OldPassword": {
+          "type": "string",
+          "description": "Das alte Passwort."
+        },
+        "NewPassword": {
+          "type": "string",
+          "description": "Das neue Passwort."
+        }
+      },
+      "required": ["OldPassword", "NewPassword"]
+    },
+    "ChangePasswordResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "enum": ["Successful", "AccountInvalid", "OldPasswordInvalid", "PasswordReused", "PasswordNotMeetingPolicy"],
+          "description": "Der Status der Passwortänderung."
+        },
+        "ErrorMessage": {
+          "type": "string",
+          "description": "Die Fehlermeldung bei Fehlern."
+        }
+      }
+    },
+    "ResetPasswordRequest": {
+      "type": "object",
+      "properties": {
+        "Username": {
+          "type": "string",
+          "description": "Der Benutzername."
+        },
+        "EmailAddress": {
+          "type": "string",
+          "description": "Die E-Mail-Adresse."
+        }
+      },
+      "required": ["Username", "EmailAddress"]
+    },
+    "ResetPasswordResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "enum": ["Successful", "UserEmailConfigurationNotFound", "AccountInvalid", "EmailAddressInvalid"],
+          "description": "Der Status der Passwortzurücksetzung."
+        }
+      }
+    },
+    "PasswordComplexityRulesResponse": {
+      "type": "object",
+      "properties": {
+        "MinimumPasswordLength": {
+          "type": "integer",
+          "description": "Die Mindestlänge des Passworts."
+        },
+        "MustContainLowerCaseLetter": {
+          "type": "boolean",
+          "description": "Passwort muss Kleinbuchstaben enthalten."
+        },
+        "MustContainUpperCaseLetter": {
+          "type": "boolean",
+          "description": "Passwort muss Großbuchstaben enthalten."
+        },
+        "MustContainSpecialCharacter": {
+          "type": "boolean",
+          "description": "Passwort muss Sonderzeichen enthalten."
+        },
+        "PasswordMustContainDigit": {
+          "type": "boolean",
+          "description": "Passwort muss Ziffern enthalten."
+        }
+      }
+    },
+    "BaseResponse": {
+      "type": "object",
+      "properties": {}
+    },
+    "TokenRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetValueTrendRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "PatientId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Identifier": {
+          "type": "string"
+        },
+        "StartDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "EndDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["Token", "PatientId", "Identifier"]
+    },
+    "TrendGraphItem": {
+      "type": "object",
+      "properties": {
+        "Date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Value": {
+          "type": "number"
+        },
+        "Unit": {
+          "type": "string"
+        },
+        "NormalLow": {
+          "type": "number"
+        },
+        "NormalHigh": {
+          "type": "number"
+        }
+      }
+    },
+    "GetNewestResultRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "DaysInPast": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Query": {
+          "type": "string"
+        },
+        "StartIndex": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ResultCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "DaysInPast"]
+    },
+    "GetNewestResultResponse": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Ident": {
+          "type": "string"
+        },
+        "LaboratoryNumber": {
+          "type": "string"
+        },
+        "Urgent": {
+          "type": "boolean"
+        },
+        "IsPatho": {
+          "type": "boolean"
+        },
+        "Viewed": {
+          "type": "boolean"
+        },
+        "PatientId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Firstname": {
+          "type": "string"
+        },
+        "Lastname": {
+          "type": "string"
+        },
+        "Gender": {
+          "type": "string"
+        },
+        "CreationDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "LaboratoryDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ReportDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "TypeRaw": {
+          "type": "string"
+        },
+        "DateOfBirth": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "IsFavorite": {
+          "type": "boolean"
+        },
+        "Diagnosis": {
+          "type": "string"
+        },
+        "Notes": {
+          "type": "string"
+        },
+        "TypeOfResult": {
+          "type": "string"
+        },
+        "ValidatedByName": {
+          "type": "string"
+        },
+        "ValidatedByShortcut": {
+          "type": "string"
+        }
+      }
+    },
+    "SearchResultsRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "SearchType": {
+          "type": "string"
+        },
+        "StartDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "EndDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Query": {
+          "type": "string"
+        },
+        "Filter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Order": {
+          "type": "string"
+        },
+        "StartIndex": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ResultCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetNotificationInfoRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "NotificationInfo": {
+          "type": "integer",
+          "description": "Bitmask für gewünschte Informationen."
+        }
+      },
+      "required": ["Token", "NotificationInfo"]
+    },
+    "GetNotificationInfoResponse": {
+      "type": "object",
+      "properties": {
+        "NotificationInfo": {
+          "type": "integer"
+        },
+        "CountOfUnreadNormalResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CountOfUnreadPathologicalResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CountOfUnreadUrgentResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CountOfUnreadTotal": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "GetResultDetailRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "MarkAsViewed": {
+          "type": "boolean"
+        },
+        "PreviousResultsCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "ResultId"]
+    },
+    "GetResultDetailResponse": {
+      "type": "object",
+      "properties": {
+        "Laboratory": {
+          "$ref": "#/definitions/LaboratoryInfo"
+        },
+        "Documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GetResultDetailResponseDocument"
+          }
+        },
+        "ResultSections": {
+          "type": "object"
+        },
+        "UsedMaterials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MaterialInfo"
+          }
+        },
+        "Sender": {
+          "$ref": "#/definitions/SenderInfo"
+        }
+      }
+    },
+    "LaboratoryInfo": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Street": {
+          "type": "string"
+        },
+        "Zip": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "Fax": {
+          "type": "string"
+        },
+        "Website": {
+          "type": "string"
+        }
+      }
+    },
+    "GetResultDetailResponseDocument": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "FileAvailable": {
+          "type": "boolean"
+        },
+        "Extenstion": {
+          "type": "string"
+        },
+        "Content": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "MaterialInfo": {
+      "type": "object",
+      "properties": {
+        "Ident": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        }
+      }
+    },
+    "SenderInfo": {
+      "type": "object",
+      "properties": {
+        "Firstname": {
+          "type": "string"
+        },
+        "Lastname": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "EMail": {
+          "type": "string"
+        },
+        "Street": {
+          "type": "string"
+        },
+        "Zip": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "CustomerNo": {
+          "type": "string"
+        },
+        "SiteName": {
+          "type": "string"
+        }
+      }
+    },
+    "SetResultConfirmedRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "ResultId"]
+    },
+    "SetReadStateByIdRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "IsRead": {
+          "type": "boolean"
+        }
+      },
+      "required": ["Token", "ResultId", "IsRead"]
+    },
+    "SetReadStateByIdResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string"
+        },
+        "StatusDescription": {
+          "type": "string"
+        }
+      }
+    },
+    "SetArchivedStateByIdRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "IsArchived": {
+          "type": "boolean"
+        }
+      },
+      "required": ["Token", "ResultId", "IsArchived"]
+    },
+    "SetArchivedStateByIdResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string"
+        },
+        "StatusDescription": {
+          "type": "string"
+        }
+      }
+    },
+    "SetFavoriteStateByIdRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "IsFavorite": {
+          "type": "boolean"
+        }
+      },
+      "required": ["Token", "ResultId", "IsFavorite"]
+    },
+    "SetFavoriteStateByIdResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string"
+        },
+        "StatusDescription": {
+          "type": "string"
+        }
+      }
+    },
+    "GetResultDocumentRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "DocumentId": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "DocumentId"]
+    },
+    "MoveResultToArchiveRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "ResultId"]
+    },
+    "MoveResultToArchiveResponse": {
+      "type": "object",
+      "properties": {}
+    },
+    "GetResultCounterRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultCounterMask": {
+          "type": "integer"
+        },
+        "Area": {
+          "type": "string"
+        },
+        "StartDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "EndDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Query": {
+          "type": "string"
+        },
+        "Filter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "PatientId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PatientIds": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "required": ["Token", "ResultCounterMask"]
+    },
+    "GetResultCounterResponse": {
+      "type": "object",
+      "properties": {
+        "CounterAllResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CounterUnreadResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CounterPathologicalResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CounterUrgentResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CounterFavoriteResults": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CounterArchiveResults": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "CleanupRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        }
+      },
+      "required": ["Token"]
+    },
+    "CleanupResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string"
+        }
+      }
+    },
+    "OrderPrepareRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/OrderPrepareAuthentication"
+        },
+        "SenderIdentifier": {
+          "type": "string"
+        },
+        "DoctorIdentifier": {
+          "type": "string"
+        },
+        "InitStep": {
+          "type": "string"
+        },
+        "Order": {
+          "$ref": "#/definitions/OrderPrepareOrder"
+        },
+        "Orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrderPrepareOrder"
+          }
+        }
+      }
+    },
+    "OrderPrepareAuthentication": {
+      "type": "object",
+      "properties": {
+        "Username": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        },
+        "DeviceKey": {
+          "type": "string"
+        },
+        "DeviceName": {
+          "type": "string"
+        },
+        "DeviceModel": {
+          "type": "string"
+        },
+        "OperatingSystem": {
+          "type": "string"
+        },
+        "OperatingSystemVersion": {
+          "type": "string"
+        },
+        "LayoutEngine": {
+          "type": "string"
+        },
+        "DocumentFormat": {
+          "type": "string"
+        },
+        "LabelFormat": {
+          "type": "string"
+        },
+        "LabelDpi": {
+          "type": "integer"
+        },
+        "PushConnectionId": {
+          "type": "string"
+        },
+        "AdditionalInformation": {
+          "type": "string"
+        },
+        "CreatorIdent": {
+          "type": "string"
+        },
+        "CreatorFriendlyName": {
+          "type": "string"
+        }
+      },
+      "required": ["Username", "Password"]
+    },
+    "OrderPrepareOrder": {
+      "type": "object",
+      "properties": {
+        "Patient": {
+          "$ref": "#/definitions/OrderPreparePatient"
+        },
+        "Order": {
+          "$ref": "#/definitions/OrderPrepareOrderDetails"
+        },
+        "Attachments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrderPrepareAttachment"
+          }
+        }
+      }
+    },
+    "OrderPreparePatient": {
+      "type": "object",
+      "properties": {
+        "Firstname": {
+          "type": "string"
+        },
+        "Lastname": {
+          "type": "string"
+        },
+        "Gender": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "AdditionalName": {
+          "type": "string"
+        },
+        "PreWord": {
+          "type": "string"
+        },
+        "DateOfBirth": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ExternalPatientId": {
+          "type": "string"
+        },
+        "IsHzvPatient": {
+          "type": "boolean"
+        },
+        "Address": {
+          "$ref": "#/definitions/OrderPrepareAddress"
+        },
+        "PostBox": {
+          "$ref": "#/definitions/OrderPreparePostBox"
+        }
+      }
+    },
+    "OrderPrepareAddress": {
+      "type": "object",
+      "properties": {
+        "Street": {
+          "type": "string"
+        },
+        "Number": {
+          "type": "string"
+        },
+        "Zip": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "CountryCode": {
+          "type": "string"
+        }
+      }
+    },
+    "OrderPreparePostBox": {
+      "type": "object",
+      "properties": {
+        "PostBox": {
+          "type": "string"
+        },
+        "Zip": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "CountryCode": {
+          "type": "string"
+        }
+      }
+    },
+    "OrderPrepareOrderDetails": {
+      "type": "object",
+      "properties": {
+        "State": {
+          "type": "string"
+        },
+        "Hurried": {
+          "type": "boolean"
+        },
+        "Accident": {
+          "type": "boolean"
+        },
+        "Infection": {
+          "type": "boolean"
+        },
+        "Sgb116b": {
+          "type": "boolean"
+        },
+        "SER": {
+          "type": "boolean"
+        },
+        "Diagnosis": {
+          "type": "string"
+        },
+        "Bsnr": {
+          "type": "string"
+        },
+        "Lanr": {
+          "type": "string"
+        },
+        "Insurance": {
+          "$ref": "#/definitions/OrderPrepareInsurance"
+        },
+        "Pregnancy": {
+          "$ref": "#/definitions/OrderPreparePregnancy"
+        },
+        "OrderRequests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrderPrepareOrderRequest"
+          }
+        },
+        "AdditionalFields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrderPrepareAdditionalField"
+          }
+        },
+        "TakingDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "PhoneNumber": {
+          "type": "string"
+        },
+        "FaxNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "OrderPrepareInsurance": {
+      "type": "object",
+      "properties": {
+        "InsuranceType": {
+          "type": "string"
+        },
+        "AccountType": {
+          "type": "string"
+        },
+        "PrivateTariff": {
+          "type": "string"
+        },
+        "InsurantId": {
+          "type": "string"
+        },
+        "InsurantNumber": {
+          "type": "string"
+        },
+        "HealthInsuranceName": {
+          "type": "string"
+        },
+        "HealthInsuranceNumber": {
+          "type": "string"
+        },
+        "Wop": {
+          "type": "string"
+        },
+        "InsuranceCoverageBeginning": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "InsuranceCoverageEnding": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CostCarrierBillingSection": {
+          "type": "string"
+        },
+        "BillingVKNR": {
+          "type": "string"
+        },
+        "LastReadTimeOfInsuranceCard": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "OrderPreparePregnancy": {
+      "type": "object",
+      "properties": {
+        "IsPregnant": {
+          "type": "boolean"
+        },
+        "DurationInWeeks": {
+          "type": "integer"
+        },
+        "DurationInDays": {
+          "type": "integer"
+        }
+      }
+    },
+    "OrderPrepareOrderRequest": {
+      "type": "object",
+      "properties": {
+        "Form": {
+          "type": "string"
+        },
+        "Requests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "OrderPrepareAdditionalField": {
+      "type": "object",
+      "properties": {
+        "AdditionalFieldKey": {
+          "type": "string"
+        },
+        "ValueList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "OrderPrepareAttachment": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "OrderPrepareResponse": {
+      "type": "object",
+      "properties": {
+        "Url": {
+          "type": "string"
+        },
+        "ExpirationDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Senders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SenderSelectionItem"
+          }
+        }
+      }
+    },
+    "SenderSelectionItem": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Identifier": {
+          "type": "string"
+        }
+      }
+    },
+    "MarkSamplesAsScannedRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/OrderPrepareAuthentication"
+        },
+        "LaboratoryIdent": {
+          "type": "string"
+        },
+        "Orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MarkSamplesAsScannedOrderInfo"
+          }
+        }
+      }
+    },
+    "MarkSamplesAsScannedOrderInfo": {
+      "type": "object",
+      "properties": {
+        "OrderIdent": {
+          "type": "string"
+        },
+        "Samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MarkSamplesAsScannedSampleInfo"
+          }
+        }
+      }
+    },
+    "MarkSamplesAsScannedSampleInfo": {
+      "type": "object",
+      "properties": {
+        "Barcode": {
+          "type": "string"
+        },
+        "ScannedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "MarkSamplesAsScannedResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string"
+        },
+        "StatusDescription": {
+          "type": "string"
+        }
+      }
+    },
+    "GetLaboratoryContactRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "LaboratoryId"]
+    },
+    "GetLaboratoryContactResponse": {
+      "type": "object",
+      "properties": {
+        "Position": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Firstname": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Picture": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "Fax": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "ShouldBeExported": {
+          "type": "boolean"
+        },
+        "Status": {
+          "type": "string"
+        }
+      }
+    },
+    "SendInquiryRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "SenderId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Message": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "EMail": {
+          "type": "string"
+        }
+      },
+      "required": ["Token", "Message"]
+    },
+    "SendInquiryResponse": {
+      "type": "object",
+      "properties": {
+        "Successful": {
+          "type": "boolean"
+        }
+      }
+    },
+    "GetLaboratoriesRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetLaboratoriesResponse": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Street": {
+          "type": "string"
+        },
+        "Zip": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "Fax": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Website": {
+          "type": "string"
+        }
+      }
+    },
+    "GetRequestDirectoryRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Query": {
+          "type": "string"
+        },
+        "SkipRequests": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "RequestCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "LaboratoryId"]
+    },
+    "GetRequestDirectoryResponse": {
+      "type": "object",
+      "properties": {
+        "DataCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RequestDirectoryEntry"
+          }
+        }
+      }
+    },
+    "RequestDirectoryEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Ident": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "LaboratorySection": {
+          "type": "string"
+        },
+        "Aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "GetRequestDirectoryRequestDetailsRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "RequestId": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "RequestId"]
+    },
+    "GetRequestDirectoryRequestDetailsRequestByIdent": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Ident": {
+          "type": "string"
+        }
+      },
+      "required": ["Token", "LaboratoryId", "Ident"]
+    },
+    "GetRequestDirectoryRequestDetailsResponse": {
+      "type": "object",
+      "properties": {
+        "Ident": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Unit": {
+          "type": "string"
+        },
+        "GoaParameter": {
+          "type": "boolean"
+        },
+        "LaboratorySection": {
+          "type": "string"
+        },
+        "ServiceLocation": {
+          "$ref": "#/definitions/RequestDirectoryAddress"
+        },
+        "Assessment": {
+          "type": "string"
+        },
+        "ClinicalIndication": {
+          "type": "string"
+        },
+        "InitialDays": {
+          "type": "integer"
+        },
+        "Methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RequestDirectoryMethod"
+          }
+        },
+        "Tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RequestDirectoryTest"
+          }
+        },
+        "Materials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RequestDirectoryMaterial"
+          }
+        },
+        "NormalRanges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RequestDirectoryNormalRange"
+          }
+        },
+        "Preanalytics": {
+          "type": "string"
+        },
+        "AdditionalInformationUrl": {
+          "type": "string"
+        },
+        "TakingHint": {
+          "type": "string"
+        },
+        "RequestInformationFields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RequestDirectoryInformationField"
+          }
+        },
+        "Aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RequestDirectoryAddress": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Street": {
+          "type": "string"
+        },
+        "Number": {
+          "type": "string"
+        },
+        "Zip": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "CountryCode": {
+          "type": "string"
+        }
+      }
+    },
+    "RequestDirectoryMethod": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    },
+    "RequestDirectoryTest": {
+      "type": "object",
+      "properties": {
+        "Ident": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "LaboratorySection": {
+          "type": "string"
+        }
+      }
+    },
+    "RequestDirectoryMaterial": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "RequiredQunatity": {
+          "type": "string"
+        },
+        "Unit": {
+          "type": "string"
+        },
+        "Transport": {
+          "type": "string"
+        }
+      }
+    },
+    "RequestDirectoryNormalRange": {
+      "type": "object",
+      "properties": {
+        "Gender": {
+          "type": "string"
+        },
+        "GenderIndependent": {
+          "type": "boolean"
+        },
+        "AgeMinValue": {
+          "type": "number"
+        },
+        "AgeMinType": {
+          "type": "string"
+        },
+        "AgeMaxValue": {
+          "type": "number"
+        },
+        "AgeMaxType": {
+          "type": "string"
+        },
+        "MinValue": {
+          "type": "number"
+        },
+        "MaxValue": {
+          "type": "number"
+        },
+        "NormalText": {
+          "type": "string"
+        },
+        "Unit": {
+          "type": "string"
+        }
+      }
+    },
+    "RequestDirectoryInformationField": {
+      "type": "object",
+      "properties": {
+        "Description": {
+          "type": "string"
+        },
+        "Value": {
+          "type": "string"
+        }
+      }
+    },
+    "GetLaboratoryMessagesRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "ResultId": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token", "ResultId"]
+    },
+    "GetLaboratoryMessageResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string"
+        },
+        "StatusDescription": {
+          "type": "string"
+        },
+        "MessageInformation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MessageInformation"
+          }
+        }
+      }
+    },
+    "MessageInformation": {
+      "type": "object",
+      "properties": {
+        "User": {
+          "$ref": "#/definitions/MessageUser"
+        },
+        "Device": {
+          "$ref": "#/definitions/MessageDevice"
+        },
+        "Message": {
+          "$ref": "#/definitions/MessageContent"
+        }
+      }
+    },
+    "MessageUser": {
+      "type": "object",
+      "properties": {
+        "Username": {
+          "type": "string"
+        },
+        "Fullname": {
+          "type": "string"
+        }
+      }
+    },
+    "MessageDevice": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Model": {
+          "type": "string"
+        },
+        "OperatingSystem": {
+          "type": "string"
+        },
+        "OperatingSystemVersion": {
+          "type": "string"
+        }
+      }
+    },
+    "MessageContent": {
+      "type": "object",
+      "properties": {
+        "Text": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Created": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "GetNewsRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "AdditionalInformation": {
+          "type": "integer"
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetNewsResponse": {
+      "type": "object",
+      "properties": {
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "LaboratoryName": {
+          "type": "string"
+        },
+        "AdditionalInformation": {
+          "type": "integer"
+        },
+        "News": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NewsEntry"
+          }
+        }
+      }
+    },
+    "NewsEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Teaser": {
+          "type": "string"
+        },
+        "Content": {
+          "type": "string"
+        },
+        "Importance": {
+          "type": "string"
+        },
+        "IsContentFormatted": {
+          "type": "boolean"
+        },
+        "Created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CreatedBy": {
+          "$ref": "#/definitions/NewsUser"
+        },
+        "Modified": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedBy": {
+          "$ref": "#/definitions/NewsUser"
+        }
+      }
+    },
+    "NewsUser": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Fullname": {
+          "type": "string"
+        }
+      }
+    },
+    "GetMessagesForExportRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "DataBoxIds": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "RetrievalLimit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Offset": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetMessagesForExportResponse": {
+      "type": "object",
+      "properties": {
+        "DataBoxEntries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataBoxEntry"
+          }
+        },
+        "Entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataBoxMessageEntry"
+          }
+        }
+      }
+    },
+    "DataBoxEntry": {
+      "type": "object",
+      "properties": {
+        "DataBoxId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "NumberOfRemainingDataboxMessages": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "DataBoxMessageEntry": {
+      "type": "object",
+      "properties": {
+        "DataBoxId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Content": {
+          "type": "string",
+          "format": "byte"
+        },
+        "Filename": {
+          "type": "string"
+        },
+        "FilenamePattern": {
+          "type": "string"
+        }
+      }
+    },
+    "GetAvailableDataBoxesRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetAvailableDataBoxesResponse": {
+      "type": "object",
+      "properties": {
+        "Entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AvailableDataBoxEntry"
+          }
+        }
+      }
+    },
+    "AvailableDataBoxEntry": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Filename": {
+          "type": "string"
+        },
+        "MarkAsReadTimeShift": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "ImportInsuranceCoreDataRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/LoginRequest"
+        },
+        "InsuranceCoreData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InsuranceCoreDataEntry"
+          }
+        }
+      }
+    },
+    "InsuranceCoreDataEntry": {
+      "type": "object",
+      "properties": {
+        "BillingVknr": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "ShortName": {
+          "type": "string"
+        },
+        "ValidUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "FollowerInsuranceBillingVknr": {
+          "type": "string"
+        },
+        "FeeRegulations": {
+          "type": "integer"
+        },
+        "ContractKv": {
+          "type": "string"
+        },
+        "Group": {
+          "type": "string"
+        },
+        "InsuranceIdents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InsuranceIdentEntry"
+          }
+        },
+        "BillingAreas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BillingAreaEntry"
+          }
+        }
+      }
+    },
+    "InsuranceIdentEntry": {
+      "type": "object",
+      "properties": {
+        "InsuranceIdent": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "ValidFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ValidUntil": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "BillingAreaEntry": {
+      "type": "object",
+      "properties": {
+        "BillingArea": {
+          "type": "string"
+        },
+        "PrintName": {
+          "type": "string"
+        }
+      }
+    },
+    "ImportInsuranceCoreDataResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "enum": ["Success", "MissingData", "Error"]
+        }
+      }
+    },
+    "InsuranceCoreDataRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "InsuranceIdent": {
+          "type": "string"
+        },
+        "BillingArea": {
+          "type": "string"
+        },
+        "ReferenceDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["Token", "InsuranceIdent", "BillingArea"]
+    },
+    "InsuranceCoreDataResponse": {
+      "type": "object",
+      "properties": {
+        "Vknr": {
+          "type": "string"
+        },
+        "InsuranceName": {
+          "type": "string"
+        },
+        "Shortname": {
+          "type": "string"
+        },
+        "ValidUntil": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "FeeRegulations": {
+          "type": "integer"
+        },
+        "Ident": {
+          "type": "string"
+        },
+        "IdentName": {
+          "type": "string"
+        },
+        "PrintName": {
+          "type": "string"
+        },
+        "BillingArea": {
+          "type": "string"
+        },
+        "IsTemporary": {
+          "type": "boolean"
+        }
+      }
+    },
+    "InsuranceCoreDataSearchRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "Query": {
+          "type": "string"
+        }
+      },
+      "required": ["Token", "Query"]
+    },
+    "GetBarcodeForSenderRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "Barcode": {
+          "type": "string"
+        },
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CheckIn": {
+          "type": "boolean"
+        }
+      },
+      "required": ["Token", "Barcode", "LaboratoryId"]
+    },
+    "GetBarcodeForSenderResponse": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Fullname": {
+          "type": "string"
+        },
+        "Firstname": {
+          "type": "string"
+        },
+        "Lastname": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "CustomerNo": {
+          "type": "string"
+        },
+        "SiteName": {
+          "type": "string"
+        },
+        "Street": {
+          "type": "string"
+        },
+        "Zip": {
+          "type": "string"
+        },
+        "City": {
+          "type": "string"
+        },
+        "CountryCode": {
+          "type": "string"
+        },
+        "AddressSupplement": {
+          "type": "string"
+        },
+        "Phone": {
+          "type": "string"
+        },
+        "Mobile": {
+          "type": "string"
+        },
+        "Fax": {
+          "type": "string"
+        },
+        "EMail": {
+          "type": "string"
+        },
+        "Note": {
+          "type": "string"
+        },
+        "Bsnr": {
+          "type": "string"
+        },
+        "SpecialField": {
+          "type": "string"
+        }
+      }
+    },
+    "GetPushSettingsRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetPushSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "PushNormal": {
+          "type": "boolean"
+        },
+        "PushPatho": {
+          "type": "boolean"
+        },
+        "PushHighPatho": {
+          "type": "boolean"
+        },
+        "PushUrgent": {
+          "type": "boolean"
+        },
+        "PushConfirmable": {
+          "type": "boolean"
+        },
+        "PushNews": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SetPushSettingsRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "PushNormal": {
+          "type": "boolean"
+        },
+        "PushPatho": {
+          "type": "boolean"
+        },
+        "PushHighPatho": {
+          "type": "boolean"
+        },
+        "PushUrgent": {
+          "type": "boolean"
+        },
+        "PushConfirmable": {
+          "type": "boolean"
+        },
+        "PushNews": {
+          "type": "boolean"
+        }
+      },
+      "required": ["Token"]
+    },
+    "SetPushSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "Successfully": {
+          "type": "boolean"
+        }
+      }
+    },
+    "GetFaqsRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        }
+      },
+      "required": ["Token"]
+    },
+    "GetFaqsResponse": {
+      "type": "object",
+      "properties": {
+        "Question": {
+          "type": "string"
+        },
+        "Answer": {
+          "type": "string"
+        }
+      }
+    },
+    "LaboratoryInfoResponse": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Labor-ID."
+        },
+        "Name": {
+          "type": "string",
+          "description": "Der Laborname."
+        }
+      }
+    },
+    "ExportOrdersRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/OrderPrepareAuthentication",
+          "description": "Die Authentifizierungsinformationen."
+        },
+        "LaboratoryIdList": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "Liste der Labor-IDs für den Export."
+        },
+        "Type": {
+          "type": "string",
+          "enum": ["Specialist", "Microbiology", "Pathology"],
+          "description": "Der Typ der zu exportierenden Aufträge."
+        },
+        "DocumentFormat": {
+          "type": "string",
+          "enum": ["PDF", "TIFF", "ZPL"],
+          "description": "Das Dokumentformat."
+        },
+        "AdditionalDocumentFormat": {
+          "type": "string",
+          "enum": ["PDF", "TIFF", "ZPL"],
+          "description": "Ein zusätzliches Dokumentformat."
+        },
+        "OrderRetrievalLimit": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Maximale Anzahl der abzurufenden Aufträge."
+        }
+      },
+      "required": ["Authentication", "LaboratoryIdList"]
+    },
+    "ExportOrdersResponse": {
+      "type": "object",
+      "description": "Die Antwort enthält die exportierten Auftragsdaten. Die genaue Struktur ist komplex und umfasst Patienten-, Einsender-, Labor- und Auftragsdaten."
+    },
+    "ExportFeedbackRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/OrderPrepareAuthentication",
+          "description": "Die Authentifizierungsinformationen."
+        },
+        "LaboratoryOrderId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die ID des Laborauftrags."
+        },
+        "OrderNo": {
+          "type": "string",
+          "description": "Die Auftragsnummer."
+        },
+        "LaboratoryIdent": {
+          "type": "string",
+          "description": "Die Labor-Kennung."
+        },
+        "Status": {
+          "type": "string",
+          "enum": ["Success", "Error", "Warning"],
+          "description": "Der Status des Feedbacks."
+        },
+        "Message": {
+          "type": "string",
+          "description": "Die Feedback-Nachricht."
+        },
+        "ErrorCode": {
+          "type": "string",
+          "description": "Ein optionaler Fehlercode."
+        }
+      },
+      "required": ["Authentication"]
+    },
+    "ExportFeedbackResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "description": "Der Status der Verarbeitung."
+        },
+        "StatusDescription": {
+          "type": "string",
+          "description": "Eine Beschreibung des Status."
+        }
+      }
+    },
+    "GetStatisticRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/AuthenticationData",
+          "description": "Die Authentifizierungsdaten."
+        }
+      },
+      "required": ["Authentication"]
+    },
+    "ExportStatisticResultData": {
+      "type": "object",
+      "properties": {
+        "Request": {
+          "$ref": "#/definitions/ExportStatisticResultDataRequest"
+        },
+        "Sender": {
+          "$ref": "#/definitions/ExportStatisticResultDataSender"
+        },
+        "Order": {
+          "$ref": "#/definitions/ExportStatisticResultDataOrder"
+        }
+      }
+    },
+    "ExportStatisticResultDataRequest": {
+      "type": "object",
+      "properties": {
+        "Ident": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        }
+      }
+    },
+    "ExportStatisticResultDataSender": {
+      "type": "object",
+      "properties": {
+        "Title": {
+          "type": "string"
+        },
+        "Firstname": {
+          "type": "string"
+        },
+        "Lastname": {
+          "type": "string"
+        },
+        "BSNR": {
+          "type": "string"
+        },
+        "SiteName": {
+          "type": "string"
+        }
+      }
+    },
+    "ExportStatisticResultDataOrder": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "OrderCreated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ExportResultConfirmationsRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/AuthenticationData",
+          "description": "Die Authentifizierungsdaten."
+        },
+        "LaboratoryIdList": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "Liste der Labor-IDs."
+        }
+      },
+      "required": ["Authentication", "LaboratoryIdList"]
+    },
+    "ExportResultConfirmationsResponse": {
+      "type": "object",
+      "properties": {
+        "ConfirmedResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExportResultConfirmationsResult"
+          }
+        }
+      }
+    },
+    "ExportResultConfirmationsResult": {
+      "type": "object",
+      "properties": {
+        "ResultId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "LabIdent": {
+          "type": "string"
+        },
+        "LabNo": {
+          "type": "string"
+        },
+        "ReportDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ConfirmationDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ConfirmedByUser": {
+          "$ref": "#/definitions/ExportResultConfirmationsUser"
+        },
+        "ConfirmedOnDevice": {
+          "$ref": "#/definitions/ExportResultConfirmationsDevice"
+        },
+        "Sender": {
+          "$ref": "#/definitions/ExportResultConfirmationsSenderInfo"
+        }
+      }
+    },
+    "ExportResultConfirmationsUser": {
+      "type": "object",
+      "properties": {
+        "Fullname": {
+          "type": "string"
+        },
+        "Username": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        }
+      }
+    },
+    "ExportResultConfirmationsDevice": {
+      "type": "object",
+      "properties": {
+        "DeviceName": {
+          "type": "string"
+        },
+        "Model": {
+          "type": "string"
+        }
+      }
+    },
+    "ExportResultConfirmationsSenderInfo": {
+      "type": "object",
+      "properties": {
+        "Fullname": {
+          "type": "string"
+        },
+        "CustomerNo": {
+          "type": "string"
+        },
+        "BSNR": {
+          "type": "string"
+        }
+      }
+    },
+    "SetResultConfirmationExportedRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/AuthenticationData",
+          "description": "Die Authentifizierungsdaten."
+        },
+        "ResultIdList": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "Liste der Befund-IDs."
+        }
+      },
+      "required": ["Authentication", "ResultIdList"]
+    },
+    "GetByCodeRequest": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": ["Order", "Result"],
+          "description": "Der Typ des Abrufcodes."
+        },
+        "Guid": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Der Abrufcode als GUID."
+        },
+        "Id": {
+          "type": "string",
+          "description": "Die ID des Auftrags oder Befunds."
+        },
+        "Patient": {
+          "$ref": "#/definitions/GetByCodePatient",
+          "description": "Patientendaten zur Verifizierung."
+        }
+      },
+      "required": ["Type", "Guid", "Id", "Patient"]
+    },
+    "GetByCodePatient": {
+      "type": "object",
+      "properties": {
+        "DateOfBirth": {
+          "type": "string",
+          "format": "date",
+          "description": "Das Geburtsdatum des Patienten."
+        }
+      },
+      "required": ["DateOfBirth"]
+    },
+    "ImportResultRequestResult": {
+      "type": "object",
+      "description": "Die vollständigen Befunddaten."
+    },
+    "ImportResultRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/AuthenticationData",
+          "description": "Die Authentifizierungsdaten."
+        },
+        "Results": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Die zu importierenden Befunde."
+        }
+      },
+      "required": ["Authentication"]
+    },
+    "ImportResultResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "description": "Der Import-Status."
+        },
+        "ResultId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die ID des importierten Befunds."
+        }
+      }
+    },
+    "ImportResultDocumentRequest": {
+      "type": "object",
+      "properties": {
+        "Authentication": {
+          "$ref": "#/definitions/AuthenticationData",
+          "description": "Die Authentifizierungsdaten."
+        },
+        "ResultId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Befund-ID."
+        },
+        "Document": {
+          "type": "object",
+          "description": "Die Dokumentdaten."
+        }
+      },
+      "required": ["Authentication", "ResultId"]
+    },
+    "ResultDocumentImportResponse": {
+      "type": "object",
+      "properties": {
+        "Status": {
+          "type": "string",
+          "description": "Der Import-Status."
+        },
+        "DocumentId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die ID des importierten Dokuments."
+        }
+      }
+    },
+    "FetchDocumentRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "DocumentId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Dokumenten-ID."
+        }
+      },
+      "required": ["Token", "DocumentId"]
+    },
+    "FetchDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "Document": {
+          "type": "string",
+          "format": "byte",
+          "description": "Der Dokumentinhalt als Base64."
+        }
+      }
+    },
+    "GetUnsignedDimusDocumentListRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "SenderIds": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "Liste der Einsender-IDs."
+        }
+      },
+      "required": ["Token", "SenderIds"]
+    },
+    "GetUnsignedDimusDocumentListResponse": {
+      "type": "object",
+      "properties": {
+        "Documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DimusDocumentInfo"
+          },
+          "description": "Liste der zu signierenden Dokumente."
+        }
+      }
+    },
+    "DimusDocumentInfo": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Dokumenten-ID."
+        },
+        "Created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Erstellungsdatum."
+        },
+        "SigningStatus": {
+          "type": "string",
+          "description": "Der Signaturstatus."
+        },
+        "KvConnectAddress": {
+          "type": "string",
+          "description": "Die KV-Connect-Adresse."
+        },
+        "KimAddress": {
+          "type": "string",
+          "description": "Die KIM-Adresse."
+        },
+        "Order": {
+          "type": "object",
+          "description": "Auftragsinformationen."
+        }
+      }
+    },
+    "DimusDocumentSigningFeedbackRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "DocumentFeedbacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DimusDocumentFeedback"
+          },
+          "description": "Liste der Signatur-Feedbacks."
+        }
+      },
+      "required": ["Token", "DocumentFeedbacks"]
+    },
+    "DimusDocumentFeedback": {
+      "type": "object",
+      "properties": {
+        "DocumentId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Dokumenten-ID."
+        },
+        "SigningStatus": {
+          "type": "string",
+          "enum": ["Succeeded", "Failed", "Aborted"],
+          "description": "Der Signaturstatus."
+        },
+        "SigningStatusDescription": {
+          "type": "string",
+          "description": "Eine Beschreibung des Status."
+        }
+      },
+      "required": ["DocumentId", "SigningStatus"]
+    },
+    "DimusDocumentSigningFeedbackResponse": {
+      "type": "object",
+      "properties": {}
+    },
+    "ImportRequestsRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Labor-ID."
+        },
+        "Requests": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Die zu importierenden Anforderungen."
+        }
+      },
+      "required": ["Token", "LaboratoryId"]
+    },
+    "ImportRequestsMibiRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        },
+        "LaboratoryId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Labor-ID."
+        },
+        "Requests": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Die zu importierenden mikrobiologischen Anforderungen."
+        }
+      },
+      "required": ["Token", "LaboratoryId"]
+    },
+    "ImportRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "RequestId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Die Anforderungs-ID."
+        },
+        "Status": {
+          "type": "string",
+          "description": "Der Import-Status."
+        },
+        "Message": {
+          "type": "string",
+          "description": "Eine Statusmeldung."
+        }
+      }
+    },
+    "AuthenticationData": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string",
+          "description": "Der Authentifizierungs-Token."
+        }
+      },
+      "required": ["Token"]
+    }
+  }
+}

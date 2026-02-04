@@ -6,17 +6,9 @@ import { RESULTS_ENDPOINTS } from '../../../api/endpoints';
 import { resultsKeys } from '../../../api/queryKeys';
 import { mapFiltersToV3 } from '../../../api/mappers/results';
 
-// Different page sizes for different loading scenarios
-const INITIAL_PAGE_SIZE = 25;      // First load
-const PREFETCH_PAGE_SIZE = 25;     // Second automatic load
-const SCROLL_PAGE_SIZE = 50;       // Scroll-triggered loads
-
-// Get items per page based on page number
-function getItemsPerPage(pageNumber: number): number {
-  if (pageNumber === 1) return INITIAL_PAGE_SIZE;
-  if (pageNumber === 2) return PREFETCH_PAGE_SIZE;
-  return SCROLL_PAGE_SIZE;
-}
+// Fixed page size for all requests to avoid pagination offset bugs
+// (variable page sizes cause items to be skipped due to API offset calculation)
+const PAGE_SIZE = 50;
 
 // V3 API response format
 interface ResultsResponseV3 {
@@ -32,9 +24,8 @@ export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
   return useInfiniteQuery({
     queryKey: resultsKeys.list(filter, period),
     queryFn: async ({ pageParam = 1 }) => {
-      // Build query params with dynamic page size
-      const currentPageSize = getItemsPerPage(pageParam);
-      const params = mapFiltersToV3(filter, pageParam, currentPageSize, period);
+      // Build query params with fixed page size
+      const params = mapFiltersToV3(filter, pageParam, PAGE_SIZE, period);
 
       // Fetch results - use TotalCount from results endpoint (reflects filtered count)
       const resultsResponse = await axiosInstance.get<ResultsResponseV3>(RESULTS_ENDPOINTS.LIST, { params });
@@ -46,8 +37,8 @@ export function useResults(filter?: ResultFilter, period?: ResultPeriodFilter) {
         Results: results,
         TotalCount: totalCount, // May be undefined if API doesn't provide it
         CurrentPage: pageParam - 1, // API uses 0-based
-        ItemsPerPage: currentPageSize,
-        TotalPages: totalCount ? Math.ceil(totalCount / SCROLL_PAGE_SIZE) : undefined,
+        ItemsPerPage: PAGE_SIZE,
+        TotalPages: totalCount ? Math.ceil(totalCount / PAGE_SIZE) : undefined,
         pageNumber: pageParam,
       };
     },

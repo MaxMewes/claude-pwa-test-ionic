@@ -129,9 +129,9 @@ export const ResultsPage: React.FC = () => {
 
   // Handle infinite scroll via IonContent scroll event
   const handleScroll = useCallback((event: CustomEvent) => {
-    // Skip scroll-based loading during initial load or auto-prefetch
+    // Skip scroll-based loading during initial load
     const pagesLoaded = data?.pages?.length ?? 0;
-    if (pagesLoaded < 2) return;
+    if (pagesLoaded < 1) return;
 
     // Debounce: prevent fetching more than once per second
     const now = Date.now();

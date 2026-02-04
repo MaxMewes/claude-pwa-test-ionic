@@ -254,7 +254,23 @@ The app is a fully-featured Progressive Web App with:
 
 ## API
 
-The app connects to the labGate API v3. See [API Documentation](docs/v3.json) for details.
+The app connects to the labGate backend using two API versions:
+
+- **API v2** - Authentication, login, 2FA, and some legacy endpoints
+- **API v3** - Main data endpoints (results, patients, laboratories, news)
+
+### Documentation
+
+- [API Documentation](docs/API.md) - Human-readable API overview
+- [API v2 Swagger](docs/v2.json) - OpenAPI spec for authentication endpoints
+- [API v3 Swagger](docs/v3.json) - OpenAPI spec for data endpoints
+
+### Base URLs
+
+| Environment | URL                          |
+|-------------|------------------------------|
+| Demo        | `https://demo.labgate.net`   |
+| Production  | `https://api.labgate.de`     |
 
 ## License
 

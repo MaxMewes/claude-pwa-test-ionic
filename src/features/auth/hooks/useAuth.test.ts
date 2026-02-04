@@ -172,7 +172,7 @@ describe('useAuth', () => {
           email: 'test@example.com',
           firstName: 'John',
           lastName: 'Doe',
-          role: 'doctor',
+          role: 'doctor' as const,
           permissions: [],
           createdAt: '2024-01-01',
         },
@@ -201,7 +201,7 @@ describe('useAuth', () => {
         email: 'test@example.com',
         firstName: 'John',
         lastName: 'Doe',
-        role: 'doctor',
+        role: 'doctor' as const,
         permissions: [],
         createdAt: '2024-01-01',
       };
@@ -229,7 +229,17 @@ describe('useAuth', () => {
     it('should call setTempToken when 2FA is required', async () => {
       mockAuthService.login.mockResolvedValueOnce({
         tempToken: 'temp-token-123',
-        user: { username: 'testuser' },
+        token: '',
+        user: {
+          id: '1',
+          email: '',
+          username: 'testuser',
+          firstName: '',
+          lastName: '',
+          role: 'doctor' as const,
+          permissions: [],
+          createdAt: '2024-01-01',
+        },
         requiresTwoFactor: true,
         passwordExpired: false,
       });
@@ -348,7 +358,7 @@ describe('useAuth', () => {
           email: 'test@example.com',
           firstName: 'John',
           lastName: 'Doe',
-          role: 'doctor',
+          role: 'doctor' as const,
           permissions: [],
           createdAt: '2024-01-01',
         },

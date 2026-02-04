@@ -1,18 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { User } from '../../../api/types/auth';
 
-export interface User {
-  id: string;
-  email: string;
-  username?: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'doctor' | 'nurse' | 'patient' | 'lab_technician';
-  permissions: string[];
-  laboratoryId?: string;
-  avatar?: string;
-  createdAt: string;
-}
+// Re-export User for backward compatibility
+export type { User };
 
 interface AuthState {
   user: User | null;
@@ -117,7 +108,8 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      // Use sessionStorage for enhanced security - tokens cleared when browser closes
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         user: state.user,
         token: state.token,

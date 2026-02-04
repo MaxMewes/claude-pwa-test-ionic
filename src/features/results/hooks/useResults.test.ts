@@ -4,11 +4,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { format, startOfDay, subDays } from 'date-fns';
 import React from 'react';
 
+// Use vi.hoisted to define mock functions that are hoisted with vi.mock
+const { mockGet, mockPatch } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPatch: vi.fn(),
+}));
+
 // Mock axios before importing the hook
 vi.mock('../../../api/client/axiosInstance', () => ({
   axiosInstance: {
-    get: vi.fn(),
-    patch: vi.fn(),
+    get: mockGet,
+    patch: mockPatch,
   },
 }));
 
@@ -24,9 +30,8 @@ import {
   useMarkResultAsNotArchived,
   useToggleResultPin,
 } from './useResults';
-import { axiosInstance } from '../../../api/client/axiosInstance';
 
-const mockAxios = vi.mocked(axiosInstance);
+const mockAxios = { get: mockGet, patch: mockPatch };
 
 // Create a wrapper with QueryClientProvider
 const createWrapper = () => {
@@ -75,11 +80,11 @@ describe('useResults', () => {
       const callArgs = mockAxios.get.mock.calls[0];
       expect(callArgs[0]).toBe('/api/v3/results');
       expect(callArgs[1]?.params).toMatchObject({
-        Area: 'NotArchived',
+        area: 'NotArchived',
       });
-      // Verify StartDate is today
+      // Verify startDate is today
       const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
-      expect(callArgs[1]?.params.StartDate).toBe(today);
+      expect(callArgs[1]?.params.startDate).toBe(today);
     });
 
     it('should call API with 7 days date filter for 7days period', async () => {
@@ -103,8 +108,8 @@ describe('useResults', () => {
 
       const callArgs = mockAxios.get.mock.calls[0];
       const sevenDaysAgo = format(subDays(startOfDay(new Date()), 7), 'yyyy-MM-dd');
-      expect(callArgs[1]?.params.StartDate).toBe(sevenDaysAgo);
-      expect(callArgs[1]?.params.Area).toBe('NotArchived');
+      expect(callArgs[1]?.params.startDate).toBe(sevenDaysAgo);
+      expect(callArgs[1]?.params.area).toBe('NotArchived');
     });
 
     it('should call API with 30 days date filter for 30days period', async () => {
@@ -128,8 +133,8 @@ describe('useResults', () => {
 
       const callArgs = mockAxios.get.mock.calls[0];
       const thirtyDaysAgo = format(subDays(startOfDay(new Date()), 30), 'yyyy-MM-dd');
-      expect(callArgs[1]?.params.StartDate).toBe(thirtyDaysAgo);
-      expect(callArgs[1]?.params.Area).toBe('NotArchived');
+      expect(callArgs[1]?.params.startDate).toBe(thirtyDaysAgo);
+      expect(callArgs[1]?.params.area).toBe('NotArchived');
     });
 
     it('should call API with Archive area for archive period', async () => {
@@ -152,8 +157,8 @@ describe('useResults', () => {
       });
 
       const callArgs = mockAxios.get.mock.calls[0];
-      expect(callArgs[1]?.params.Area).toBe('Archived');
-      expect(callArgs[1]?.params.StartDate).toBeUndefined();
+      expect(callArgs[1]?.params.area).toBe('Archived');
+      expect(callArgs[1]?.params.startDate).toBeUndefined();
     });
 
     it('should call API with NotArchived area for all period', async () => {
@@ -176,8 +181,8 @@ describe('useResults', () => {
       });
 
       const callArgs = mockAxios.get.mock.calls[0];
-      expect(callArgs[1]?.params.Area).toBe('NotArchived');
-      expect(callArgs[1]?.params.StartDate).toBeUndefined();
+      expect(callArgs[1]?.params.area).toBe('NotArchived');
+      expect(callArgs[1]?.params.startDate).toBeUndefined();
     });
   });
 
@@ -202,7 +207,7 @@ describe('useResults', () => {
       });
 
       const callArgs = mockAxios.get.mock.calls[0];
-      expect(callArgs[1]?.params.Query).toBe('test search');
+      expect(callArgs[1]?.params.query).toBe('test search');
     });
 
     it('should pass patient IDs to API', async () => {
@@ -225,7 +230,7 @@ describe('useResults', () => {
       });
 
       const callArgs = mockAxios.get.mock.calls[0];
-      expect(callArgs[1]?.params.PatientIds).toEqual([1, 2, 3]);
+      expect(callArgs[1]?.params.patientIds).toEqual([1, 2, 3]);
     });
 
     it('should pass category filter to API', async () => {
@@ -248,7 +253,7 @@ describe('useResults', () => {
       });
 
       const callArgs = mockAxios.get.mock.calls[0];
-      expect(callArgs[1]?.params.ResultCategory).toBe('Pathological');
+      expect(callArgs[1]?.params.resultCategory).toBe('Pathological');
     });
   });
 
@@ -325,8 +330,8 @@ describe('useResults', () => {
       });
 
       const callArgs = mockAxios.get.mock.calls[0];
-      expect(callArgs[1]?.params.SortColumn).toBe('ReportDate');
-      expect(callArgs[1]?.params.SortDirection).toBe('Descending');
+      expect(callArgs[1]?.params.sortColumn).toBe('ReportDate');
+      expect(callArgs[1]?.params.sortDirection).toBe('Descending');
     });
   });
 });
@@ -412,7 +417,7 @@ describe('additional filter branches', () => {
     });
 
     const callArgs = mockAxios.get.mock.calls[0];
-    expect(callArgs[1]?.params.Area).toBe('Archived');
+    expect(callArgs[1]?.params.area).toBe('Archived');
   });
 
   it('should pass new category filter to API', async () => {
@@ -435,7 +440,7 @@ describe('additional filter branches', () => {
     });
 
     const callArgs = mockAxios.get.mock.calls[0];
-    expect(callArgs[1]?.params.ResultCategory).toBe('New');
+    expect(callArgs[1]?.params.resultCategory).toBe('New');
   });
 
   it('should pass urgent category filter to API', async () => {
@@ -458,7 +463,7 @@ describe('additional filter branches', () => {
     });
 
     const callArgs = mockAxios.get.mock.calls[0];
-    expect(callArgs[1]?.params.ResultCategory).toBe('Urgent');
+    expect(callArgs[1]?.params.resultCategory).toBe('Urgent');
   });
 
   it('should pass date filters when no period is set', async () => {
@@ -481,8 +486,8 @@ describe('additional filter branches', () => {
     });
 
     const callArgs = mockAxios.get.mock.calls[0];
-    expect(callArgs[1]?.params.StartDate).toBe('2024-01-01');
-    expect(callArgs[1]?.params.EndDate).toBe('2024-01-31');
+    expect(callArgs[1]?.params.startDate).toBe('2024-01-01');
+    expect(callArgs[1]?.params.endDate).toBe('2024-01-31');
   });
 
   it('should pass sender IDs to API', async () => {
@@ -505,7 +510,7 @@ describe('additional filter branches', () => {
     });
 
     const callArgs = mockAxios.get.mock.calls[0];
-    expect(callArgs[1]?.params.SenderIds).toEqual([10, 20]);
+    expect(callArgs[1]?.params.senderIds).toEqual([10, 20]);
   });
 
   it('should pass sort column and direction to API', async () => {
@@ -528,8 +533,8 @@ describe('additional filter branches', () => {
     });
 
     const callArgs = mockAxios.get.mock.calls[0];
-    expect(callArgs[1]?.params.SortColumn).toBe('LabNo');
-    expect(callArgs[1]?.params.SortDirection).toBe('Ascending');
+    expect(callArgs[1]?.params.sortColumn).toBe('LabNo');
+    expect(callArgs[1]?.params.sortDirection).toBe('Ascending');
   });
 });
 

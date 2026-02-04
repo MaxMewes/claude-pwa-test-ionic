@@ -104,7 +104,8 @@ describe('ROUTES', () => {
 
     it('should not have trailing slashes', () => {
       Object.values(ROUTES).forEach((route) => {
-        if (route !== '/') {
+        // Cast to string for comparison since ROUTES is a const object
+        if ((route as string) !== '/') {
           expect(route).not.toMatch(/\/$/);
         }
       });

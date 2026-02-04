@@ -53,7 +53,7 @@ describe('authStore', () => {
         firstName: 'John',
         lastName: 'Doe',
         role: 'doctor' as const,
-        permissions: ['view_results'],
+        permissions: ['view_results' as const],
         createdAt: '2024-01-01',
       };
 

@@ -379,5 +379,22 @@
     "abnormalValues": "Auffaellige Werte",
     "normalValues": "Normale Werte",
     "reference": "Ref"
+  },
+  "cumulativeResults": {
+    "loading": "Lade kumulative Befunde...",
+    "errorLoading": "Fehler beim Laden der Daten",
+    "noData": "Keine kumulativen Daten verfuegbar",
+    "investigation": "Untersuchung",
+    "referenceRange": "Referenzbereich",
+    "unit": "Einh.",
+    "resultsCount": "{{count}} Befunde",
+    "testsCount": "{{count}} Untersuchungen"
+  },
+  "resultDetail": {
+    "tabs": {
+      "result": "Befund",
+      "cumulative": "Kumulativ",
+      "trend": "Verlauf"
+    }
   }
 }

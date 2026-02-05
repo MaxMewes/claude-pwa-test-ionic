@@ -379,5 +379,22 @@
     "abnormalValues": "Abnormal Values",
     "normalValues": "Normal Values",
     "reference": "Ref"
+  },
+  "cumulativeResults": {
+    "loading": "Loading cumulative results...",
+    "errorLoading": "Error loading data",
+    "noData": "No cumulative data available",
+    "investigation": "Investigation",
+    "referenceRange": "Reference range",
+    "unit": "Unit",
+    "resultsCount": "{{count}} results",
+    "testsCount": "{{count}} tests"
+  },
+  "resultDetail": {
+    "tabs": {
+      "result": "Result",
+      "cumulative": "Cumulative",
+      "trend": "Trend"
+    }
   }
 }

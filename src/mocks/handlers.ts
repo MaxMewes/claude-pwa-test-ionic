@@ -169,8 +169,31 @@ export const handlers = [
   http.get(`${API_BASE_URL}/patients/:id`, ({ params }) => {
     const mockPatients = createMockPatients(1);
     const patient = { ...mockPatients[0], Id: Number(params.id) };
-    
+
     return HttpResponse.json(patient);
+  }),
+
+  // Patient results endpoint (for cumulative view and trends)
+  http.get(`${API_BASE_URL}/patients/:patientId/results`, ({ params }) => {
+    const patientId = Number(params.patientId);
+    // Generate 20 results for this patient with consistent patient data
+    const results = createMockLabResults(20).map((result, index) => ({
+      ...result,
+      Patient: {
+        ...result.Patient,
+        Id: patientId,
+      },
+      // Spread out dates over the last 6 months
+      ReportDate: new Date(Date.now() - index * 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }));
+
+    return HttpResponse.json({
+      Results: results,
+      TotalCount: results.length,
+      CurrentPage: 1,
+      ItemsPerPage: 25,
+      TotalPages: 1,
+    });
   }),
 
   // Laboratories endpoints (V3)

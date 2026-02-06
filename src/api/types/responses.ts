@@ -62,15 +62,15 @@ export interface NewsArticle {
 
 export type NewsCategory = 'announcement' | 'health_tip' | 'laboratory_news' | 'app_update';
 
-// FAQ Types
+// FAQ Types (matching v3 API: FaqGetListResponseEntry)
 export interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-  category?: string;
-  order?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  Id: number;
+  Question: string;
+  Answer: string;
+}
+
+export interface FAQListResponse {
+  Items: FAQ[];
 }
 
 // Feedback Types

@@ -24,14 +24,14 @@ import { usePatients } from '../hooks/usePatients';
 import { PullToRefresh, SkeletonLoader, EmptyState, TestTubeLoader } from '../../../shared/components';
 import { Patient } from '../../../api/types';
 
-// Colors matching the app design
+// Colors using CSS variables for dark mode support
 const COLORS = {
-  brand: '#70CC60',
-  text: '#3C3C3B',
-  textLight: '#646363',
-  rowEven: '#F4F4F4',
-  rowOdd: '#FFFFFF',
-  border: '#E5E5E5',
+  brand: 'var(--labgate-brand)',
+  text: 'var(--labgate-text)',
+  textLight: 'var(--labgate-text-light)',
+  rowEven: 'var(--labgate-row-even)',
+  rowOdd: 'var(--labgate-row-odd)',
+  border: 'var(--labgate-border)',
 };
 
 export const PatientsPage: React.FC = () => {
@@ -149,13 +149,13 @@ export const PatientsPage: React.FC = () => {
   const getGenderDisplay = (gender: string | number | undefined) => {
     // API v3 uses numbers: 1=female, 2=male, or strings: 'Female', 'Male', 'Diverse'
     if (gender === 2 || gender === 'Male' || gender === 'male') {
-      return { icon: maleOutline, color: '#3B82F6' }; // Blue
+      return { icon: maleOutline, color: 'var(--gender-male)' };
     }
     if (gender === 1 || gender === 'Female' || gender === 'female') {
-      return { icon: femaleOutline, color: '#EC4899' }; // Pink
+      return { icon: femaleOutline, color: 'var(--gender-female)' };
     }
     if (gender === 'Diverse' || gender === 'other') {
-      return { icon: maleFemaleOutline, color: '#8B5CF6' }; // Purple
+      return { icon: maleFemaleOutline, color: 'var(--gender-other)' };
     }
     return null;
   };
@@ -203,7 +203,6 @@ export const PatientsPage: React.FC = () => {
                 placeholder={t('patients.searchPlaceholder')}
                 animated
                 showCancelButton="never"
-                style={{ '--background': 'var(--labgate-selected-bg)' }}
               />
               <IonButtons slot="end">
                 <IonButton onClick={handleSearchToggle}>
@@ -257,7 +256,7 @@ export const PatientsPage: React.FC = () => {
                       </p>
                     </IonLabel>
                   </IonItem>
-                  <div slot="content" style={{ backgroundColor: '#FFFFFF' }}>
+                  <div slot="content" style={{ backgroundColor: COLORS.rowOdd }}>
                     {items.map((patient, index) => {
                       const patientId = getPatientId(patient);
                       const firstName = getPatientFirstName(patient);

@@ -110,11 +110,15 @@ export interface TestResultHistory {
 export type ResultFlag = 'normal' | 'low' | 'high' | 'critical_low' | 'critical_high' | 'abnormal';
 
 export interface ResultDocument {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  url: string;
+  Id: number;
+  Title: string;
+  Description?: string;
+  Extension: string;
+  ContentUrl?: string;
+  Created: string;
+  DocumentCreated?: string;
+  IsPrintingAllowed?: boolean;
+  IsFileAvailable: boolean;
 }
 
 // Result types for filtering (German labGate categories)

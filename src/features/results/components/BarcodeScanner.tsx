@@ -240,8 +240,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
           {error && (
             <div style={{ textAlign: 'center', color: '#fff', maxWidth: '400px' }}>
-              <IonIcon icon={cameraOutline} style={{ fontSize: '48px', marginBottom: '16px', color: '#ef4444' }} />
-              <p style={{ color: '#ef4444', marginBottom: '16px', fontSize: '14px' }}>{error}</p>
+              <IonIcon icon={cameraOutline} style={{ fontSize: '48px', marginBottom: '16px', color: 'var(--ion-color-danger)' }} />
+              <p style={{ color: 'var(--ion-color-danger)', marginBottom: '16px', fontSize: '14px' }}>{error}</p>
               <IonButton expand="block" onClick={handleRetry} style={{ marginBottom: '8px' }}>
                 {t('common.retry')}
               </IonButton>

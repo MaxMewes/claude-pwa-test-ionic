@@ -30,6 +30,7 @@ export const resultsKeys = {
   details: () => [...resultsKeys.all, 'detail'] as const,
   detail: (id: number | string) => [...resultsKeys.details(), id] as const,
   counters: (period?: ResultPeriodFilter) => [...resultsKeys.all, 'counters', { period }] as const,
+  documents: (resultId: number | string) => [...resultsKeys.detail(resultId), 'documents'] as const,
 } as const;
 
 /**

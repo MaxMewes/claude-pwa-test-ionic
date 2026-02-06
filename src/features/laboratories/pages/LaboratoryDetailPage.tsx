@@ -536,7 +536,6 @@ export const LaboratoryDetailPage: React.FC = () => {
                 placeholder={t('laboratories.searchPlaceholder')}
                 animated
                 showCancelButton="never"
-                style={{ '--background': 'var(--labgate-selected-bg)' }}
               />
               <IonButtons slot="end">
                 <IonButton onClick={handleSearchToggle}>

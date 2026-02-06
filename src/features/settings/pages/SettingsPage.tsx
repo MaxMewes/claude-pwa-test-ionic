@@ -23,7 +23,6 @@ import {
   helpCircleOutline,
   logOutOutline,
   moonOutline,
-  chevronForwardOutline,
   serverOutline,
   informationCircleOutline,
   eyeOutline,
@@ -111,56 +110,33 @@ export const SettingsPage: React.FC = () => {
       </IonHeader>
 
       <IonContent>
-        {/* User Profile Section - Modern Card Design */}
+        {/* User Profile Section */}
         {user && (
-          <div style={{
-            padding: '24px 16px',
-            background: 'linear-gradient(135deg, var(--labgate-brand) 0%, var(--labgate-brand-dark) 100%)',
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              backgroundColor: 'var(--labgate-surface)',
-              borderRadius: '16px',
-              padding: '20px',
-              boxShadow: 'var(--labgate-shadow-lg)',
-            }}>
-              {/* User Info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <h2 style={{
-                  margin: '0 0 4px 0',
-                  color: 'var(--labgate-text)',
-                  fontWeight: 600,
-                  fontSize: '17px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}>
-                  {displayName}
-                </h2>
-                <p style={{
-                  margin: 0,
-                  color: 'var(--labgate-text-light)',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}>
-                  {user.email || user.username}
-                </p>
-              </div>
-
-              {/* Edit Profile Chevron */}
-              <IonIcon
-                icon={chevronForwardOutline}
+          <IonList>
+            <IonItem button detail>
+              <div
+                slot="start"
                 style={{
-                  fontSize: '20px',
-                  color: 'var(--labgate-text-muted)',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--labgate-brand) 0%, var(--labgate-brand-dark) 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--labgate-brand-text-on-brand)',
+                  fontWeight: 600,
+                  fontSize: '14px',
                 }}
-              />
-            </div>
-          </div>
+              >
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+              <IonLabel>
+                <h2 style={{ fontWeight: 600, fontSize: '15px' }}>{displayName}</h2>
+                <p style={{ fontSize: '13px' }}>{user.email || user.username}</p>
+              </IonLabel>
+            </IonItem>
+          </IonList>
         )}
 
         {/* Appearance */}

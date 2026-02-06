@@ -108,7 +108,7 @@ export const handlers = [
     const result = createMockLabResult({ Id: Number(id) });
     
     return HttpResponse.json({
-      Result: result,
+      Result: { ...result, HasDocuments: true },
       Sender: result.Sender,
       LaboratoryName: result.Laboratory?.Name,
       LaboratoryId: result.Laboratory?.Id,
@@ -151,6 +151,42 @@ export const handlers = [
 
   http.patch(`${API_BASE_URL}/results/:id/pin`, () => {
     return HttpResponse.json({ success: true });
+  }),
+
+  // Documents endpoints (V3)
+  http.get(`${API_BASE_URL}/results/:resultId/documents`, () => {
+    return HttpResponse.json({
+      Documents: [
+        {
+          Id: 1,
+          Title: 'Laborbefund',
+          Description: 'Vollstaendiger Laborbefund als PDF',
+          Extension: 'pdf',
+          ContentUrl: null,
+          Created: new Date().toISOString(),
+          DocumentCreated: new Date().toISOString(),
+          IsPrintingAllowed: true,
+          IsFileAvailable: true,
+        },
+        {
+          Id: 2,
+          Title: 'Antibiogramm',
+          Description: 'Antibiogramm Ergebnis',
+          Extension: 'pdf',
+          ContentUrl: null,
+          Created: new Date().toISOString(),
+          DocumentCreated: new Date().toISOString(),
+          IsPrintingAllowed: true,
+          IsFileAvailable: true,
+        },
+      ],
+    });
+  }),
+
+  http.get(`${API_BASE_URL}/results/:resultId/documents/:documentId/download`, () => {
+    return new HttpResponse(new Blob(['mock pdf content'], { type: 'application/pdf' }), {
+      headers: { 'Content-Type': 'application/pdf' },
+    });
   }),
 
   // Patients endpoints (V3)
@@ -235,6 +271,44 @@ export const handlers = [
       CurrentPage: 1,
       ItemsPerPage: 25,
       TotalPages: 0,
+    });
+  }),
+
+  // FAQ endpoint (V3)
+  http.get(`${API_BASE_URL}/faqs`, () => {
+    return HttpResponse.json({
+      Items: [
+        {
+          Id: 1,
+          Question: 'Wie kann ich meine Befunde einsehen?',
+          Answer: 'Navigieren Sie zum Bereich "Befunde" in der Hauptnavigation. Dort finden Sie eine Liste aller Ihrer Laborbefunde, sortiert nach Datum. Sie können einzelne Befunde anklicken, um die Details einzusehen.',
+        },
+        {
+          Id: 2,
+          Question: 'Was bedeuten die farbigen Markierungen bei den Laborwerten?',
+          Answer: 'Die farbigen Markierungen zeigen an, ob ein Laborwert im Normalbereich liegt:\n\n- Grün: Der Wert liegt im Normalbereich\n- Gelb: Der Wert ist leicht erhöht oder erniedrigt\n- Rot: Der Wert weicht stark vom Normalbereich ab\n\nBei Fragen zu Ihren Werten wenden Sie sich bitte an Ihren Arzt.',
+        },
+        {
+          Id: 3,
+          Question: 'Wie aktiviere ich Push-Benachrichtigungen?',
+          Answer: 'Gehen Sie zu Einstellungen > Benachrichtigungen und aktivieren Sie die gewünschten Benachrichtigungstypen. Stellen Sie sicher, dass Sie der App die Berechtigung für Benachrichtigungen in Ihren Geräteeinstellungen erteilt haben.',
+        },
+        {
+          Id: 4,
+          Question: 'Kann ich meine Befunde als PDF herunterladen?',
+          Answer: 'Ja, öffnen Sie den gewünschten Befund und tippen Sie auf das PDF-Symbol in der oberen rechten Ecke. Der Befund wird als PDF-Datei heruntergeladen.',
+        },
+        {
+          Id: 5,
+          Question: 'Wie kann ich mein Passwort ändern?',
+          Answer: 'Navigieren Sie zu Einstellungen > Passwort ändern. Geben Sie Ihr aktuelles Passwort ein und wählen Sie anschließend ein neues Passwort. Das neue Passwort muss mindestens 8 Zeichen lang sein und Groß-/Kleinbuchstaben sowie Zahlen enthalten.',
+        },
+        {
+          Id: 6,
+          Question: 'Was ist der kumulative Befundverlauf?',
+          Answer: 'Der kumulative Befundverlauf zeigt Ihnen alle Laborwerte eines bestimmten Tests über einen Zeitraum hinweg. So können Sie Trends und Veränderungen Ihrer Werte erkennen. Öffnen Sie einen Befund und wechseln Sie zum Tab "Kumulativ" oder "Verlauf".',
+        },
+      ],
     });
   }),
 

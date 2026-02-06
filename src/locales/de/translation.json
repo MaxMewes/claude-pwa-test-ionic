@@ -153,7 +153,8 @@
     "address": "Adresse",
     "lastVisit": "Letzter Besuch",
     "resultCount": "Anzahl Befunde",
-    "searchPlaceholder": "Patient suchen..."
+    "searchPlaceholder": "Patient suchen...",
+    "allLoaded": "Alle {{count}} Patienten geladen"
   },
   "laboratories": {
     "title": "Labore",
@@ -390,11 +391,19 @@
     "resultsCount": "{{count}} Befunde",
     "testsCount": "{{count}} Untersuchungen"
   },
+  "documents": {
+    "loading": "Lade Dokumente...",
+    "errorLoading": "Fehler beim Laden der Dokumente",
+    "noDocuments": "Keine Dokumente vorhanden",
+    "download": "Herunterladen",
+    "downloadError": "Fehler beim Herunterladen"
+  },
   "resultDetail": {
     "tabs": {
       "result": "Befund",
       "cumulative": "Kumulativ",
-      "trend": "Verlauf"
+      "trend": "Verlauf",
+      "documents": "Dokumente"
     }
   }
 }

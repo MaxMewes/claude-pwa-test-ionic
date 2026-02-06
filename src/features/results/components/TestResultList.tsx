@@ -1,22 +1,25 @@
-import React from 'react';
-import { IonIcon } from '@ionic/react';
-import { arrowUp, arrowDown, chevronForward } from 'ionicons/icons';
+import React, { useState, useCallback } from 'react';
+import { IonIcon, IonAccordionGroup, IonAccordion, IonItem } from '@ionic/react';
+import { arrowUp, arrowDown } from 'ionicons/icons';
 import { TestResult } from '../../../api/types';
+import { TrendChart } from './TrendChart';
+import { usePatientLabTrends } from '../hooks/usePatientLabTrends';
 
 interface TestResultListProps {
   tests: TestResult[];
+  patientId?: number;
   onTestClick?: (test: TestResult) => void;
 }
 
-// Colors matching the old Xamarin app
+// Colors using CSS variables for dark mode support
 const COLORS = {
-  normal: '#70CC60',           // Green
-  pathologicalLowHigh: '#F7CD45',    // Yellow/Orange
-  pathologicalVeryLowHigh: '#FF6B6B', // Red
-  text: '#3C3C3B',
-  textLight: '#646363',
-  rowEven: '#F4F4F4',
-  rowOdd: '#FFFFFF',
+  normal: 'var(--result-normal)',
+  pathologicalLowHigh: 'var(--result-high)',
+  pathologicalVeryLowHigh: 'var(--result-critical)',
+  text: 'var(--labgate-text)',
+  textLight: 'var(--labgate-text-light)',
+  rowEven: 'var(--labgate-row-even)',
+  rowOdd: 'var(--labgate-row-odd)',
 };
 
 // Get pathology info based on indicator
@@ -61,32 +64,49 @@ const formatReferenceRange = (test: TestResult): string => {
   return '';
 };
 
-export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestClick }) => {
+export const TestResultList: React.FC<TestResultListProps> = ({ tests, patientId, onTestClick }) => {
+  const [expandedTest, setExpandedTest] = useState<string | undefined>();
+  const { data: trendData } = usePatientLabTrends(patientId);
+
+  const handleAccordionChange = useCallback((e: CustomEvent) => {
+    setExpandedTest(e.detail.value as string | undefined);
+  }, []);
+
+  // Check if a test has 2+ trend data points
+  const hasTrend = useCallback((testIdent: string): boolean => {
+    if (!trendData) return false;
+    const points = trendData.trendData.get(testIdent);
+    return !!points && points.length >= 2;
+  }, [trendData]);
+
   // Group tests: pathological first, then normal
   const pathologicalTests = tests.filter((t) => t.IsPathological);
   const normalTests = tests.filter((t) => !t.IsPathological);
 
-  const renderTestRow = (test: TestResult, index: number) => {
+  const renderTestRowContent = (test: TestResult, index: number) => {
     const pathoInfo = getPathoInfo(test);
     const refRange = formatReferenceRange(test);
     const bgColor = index % 2 === 0 ? COLORS.rowEven : COLORS.rowOdd;
 
-    return (
+    return { pathoInfo, refRange, bgColor };
+  };
+
+  const renderTestRow = (test: TestResult, index: number) => {
+    const { pathoInfo, refRange, bgColor } = renderTestRowContent(test, index);
+    const showAccordion = hasTrend(test.TestIdent);
+    const accordionValue = test.TestIdent || test.Id.toString();
+
+    const rowContent = (
       <div
-        key={test.Id}
-        onClick={() => onTestClick?.(test)}
         style={{
           display: 'flex',
           alignItems: 'center',
-          padding: '12px 16px',
-          backgroundColor: bgColor,
-          cursor: onTestClick ? 'pointer' : 'default',
-          borderBottom: '1px solid #E5E5E5',
+          width: '100%',
+          padding: '4px 0',
         }}
       >
         {/* Left side: Test name + reference range */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Test name with patho icon inline */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span
               style={{
@@ -100,7 +120,6 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
             >
               {test.TestName}
             </span>
-            {/* Pathological indicator icon */}
             {pathoInfo.icon && (
               <IonIcon
                 icon={pathoInfo.icon}
@@ -112,8 +131,6 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
               />
             )}
           </div>
-
-          {/* Reference range */}
           {refRange && (
             <div
               style={{
@@ -158,18 +175,40 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
               </span>
             )}
           </span>
-
-          {/* Forward chevron */}
-          {onTestClick && (
-            <IonIcon
-              icon={chevronForward}
-              style={{
-                color: COLORS.textLight,
-                fontSize: '16px',
-              }}
-            />
-          )}
         </div>
+      </div>
+    );
+
+    if (showAccordion) {
+      return (
+        <IonAccordion key={test.Id} value={accordionValue}>
+          <IonItem slot="header" lines="full" style={{ '--background': bgColor }}>
+            {rowContent}
+          </IonItem>
+          <div slot="content" style={{ padding: '0 8px 8px' }}>
+            {expandedTest === accordionValue && patientId && (
+              <TrendChart patientId={patientId} initialTestIdent={test.TestIdent} />
+            )}
+          </div>
+        </IonAccordion>
+      );
+    }
+
+    // Plain row for tests without trend data
+    return (
+      <div
+        key={test.Id}
+        onClick={() => onTestClick?.(test)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '12px 16px',
+          backgroundColor: bgColor,
+          cursor: onTestClick ? 'pointer' : 'default',
+          borderBottom: '1px solid var(--labgate-border)',
+        }}
+      >
+        {rowContent}
       </div>
     );
   };
@@ -178,8 +217,8 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
     <div
       style={{
         padding: '10px 16px',
-        backgroundColor: '#FAFAFA',
-        borderBottom: '1px solid #E5E5E5',
+        backgroundColor: 'var(--ion-background-color)',
+        borderBottom: '1px solid var(--labgate-border)',
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
@@ -214,22 +253,24 @@ export const TestResultList: React.FC<TestResultListProps> = ({ tests, onTestCli
   );
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF' }}>
-      {/* Pathological values first */}
-      {pathologicalTests.length > 0 && (
-        <>
-          {renderSectionHeader('Auffällige Werte', pathologicalTests.length, COLORS.pathologicalVeryLowHigh)}
-          {pathologicalTests.map((test, index) => renderTestRow(test, index))}
-        </>
-      )}
+    <div style={{ backgroundColor: 'var(--labgate-surface)' }}>
+      <IonAccordionGroup onIonChange={handleAccordionChange}>
+        {/* Pathological values first */}
+        {pathologicalTests.length > 0 && (
+          <>
+            {renderSectionHeader('Auffällige Werte', pathologicalTests.length, COLORS.pathologicalVeryLowHigh)}
+            {pathologicalTests.map((test, index) => renderTestRow(test, index))}
+          </>
+        )}
 
-      {/* Normal values */}
-      {normalTests.length > 0 && (
-        <>
-          {renderSectionHeader('Normale Werte', normalTests.length, COLORS.normal)}
-          {normalTests.map((test, index) => renderTestRow(test, index))}
-        </>
-      )}
+        {/* Normal values */}
+        {normalTests.length > 0 && (
+          <>
+            {renderSectionHeader('Normale Werte', normalTests.length, COLORS.normal)}
+            {normalTests.map((test, index) => renderTestRow(test, index))}
+          </>
+        )}
+      </IonAccordionGroup>
 
       {/* Empty state */}
       {tests.length === 0 && (

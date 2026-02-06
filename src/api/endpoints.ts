@@ -26,17 +26,25 @@ export const RESULTS_ENDPOINTS = {
   LIST: `${API_V3}/results`,
   DETAIL: (id: number | string) => `${API_V3}/results/${id}`,
   COUNTER: `${API_V3}/results/counter`,
+  CUMULATIVE: (id: number | string) => `${API_V3}/results/${id}/cumulative`,
+  CUMULATIVE_VALUES: (resultId: number | string, resultDataId: number | string) =>
+    `${API_V3}/results/${resultId}/data/${resultDataId}/cumulative`,
+  CUMULATIVE_SECTIONS: (id: number | string) => `${API_V3}/results/${id}/cumulative-result-sections`,
   MARK_READ: (id: number | string) => `${API_V3}/results/${id}/read`,
   MARK_FAVORITE: (id: number | string) => `${API_V3}/results/${id}/favorite`,
   ARCHIVE: (id: number | string) => `${API_V3}/results/${id}/archive`,
   PDF: (id: number | string) => `${API_V3}/results/${id}/pdf`,
+  DOCUMENTS: (resultId: number | string) => `${API_V3}/results/${resultId}/documents`,
+  DOCUMENT_DETAIL: (resultId: number | string, documentId: number | string) =>
+    `${API_V3}/results/${resultId}/documents/${documentId}`,
+  DOCUMENT_DOWNLOAD: (resultId: number | string, documentId: number | string) =>
+    `${API_V3}/results/${resultId}/documents/${documentId}/download`,
 } as const;
 
 // Patients Endpoints (v3)
 export const PATIENTS_ENDPOINTS = {
   LIST: `${API_V3}/patients`,
   DETAIL: (id: number | string) => `${API_V3}/patients/${id}`,
-  RESULTS: (id: number | string) => `${API_V3}/patients/${id}/results`,
   CREATE: `${API_V3}/patients`,
   UPDATE: (id: number | string) => `${API_V3}/patients/${id}`,
   DELETE: (id: number | string) => `${API_V3}/patients/${id}`,
@@ -65,7 +73,7 @@ export const NEWS_ENDPOINTS = {
 
 // Settings Endpoints (v3)
 export const SETTINGS_ENDPOINTS = {
-  FAQ: `${API_V3}/settings/faq`,
+  FAQ: `${API_V3}/faqs`,
   FEEDBACK: `${API_V3}/settings/feedback`,
   UPDATE_INFO: `${API_V3}/settings/update-info`,
 } as const;

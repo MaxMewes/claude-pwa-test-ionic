@@ -109,7 +109,7 @@ export const SenderDetailPage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
+                color: 'var(--ion-color-primary-contrast)',
                 fontSize: '28px',
                 fontWeight: 600,
               }}

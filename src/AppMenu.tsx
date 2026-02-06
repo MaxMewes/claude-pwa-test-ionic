@@ -1,6 +1,10 @@
 import React from 'react';
 import {
   IonMenu,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
   IonContent,
   IonList,
   IonItem,
@@ -10,6 +14,7 @@ import {
   IonIcon,
   IonLabel,
 } from '@ionic/react';
+import { menuController } from '@ionic/core/components';
 import {
   statsChartOutline,
   peopleOutline,
@@ -18,6 +23,7 @@ import {
   settingsOutline,
   helpCircleOutline,
   logOutOutline,
+  closeOutline,
 } from 'ionicons/icons';
 import { useAuthStore } from './features/auth/store/authStore';
 import { useSettingsStore, ResultPeriodFilter } from './shared/store/useSettingsStore';
@@ -42,6 +48,15 @@ export const AppMenu: React.FC = () => {
 
   return (
     <IonMenu contentId="main-content" type="overlay">
+      <IonHeader className="ion-no-border">
+        <IonToolbar className={styles.menuToolbar}>
+          <IonButtons slot="end">
+            <IonButton onClick={() => menuController.close()} className={styles.closeButton}>
+              <IonIcon slot="icon-only" icon={closeOutline} />
+            </IonButton>
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
       <IonContent>
         <IonList lines="full" className={styles.menuList}>
           {/* Meine Befunde - Expandable (default open) */}

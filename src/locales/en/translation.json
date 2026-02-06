@@ -153,7 +153,8 @@
     "address": "Address",
     "lastVisit": "Last Visit",
     "resultCount": "Number of Results",
-    "searchPlaceholder": "Search patient..."
+    "searchPlaceholder": "Search patient...",
+    "allLoaded": "All {{count}} patients loaded"
   },
   "laboratories": {
     "title": "Laboratories",
@@ -390,11 +391,19 @@
     "resultsCount": "{{count}} results",
     "testsCount": "{{count}} tests"
   },
+  "documents": {
+    "loading": "Loading documents...",
+    "errorLoading": "Error loading documents",
+    "noDocuments": "No documents available",
+    "download": "Download",
+    "downloadError": "Download error"
+  },
   "resultDetail": {
     "tabs": {
       "result": "Result",
       "cumulative": "Cumulative",
-      "trend": "Trend"
+      "trend": "Trend",
+      "documents": "Documents"
     }
   }
 }

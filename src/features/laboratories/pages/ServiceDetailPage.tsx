@@ -19,13 +19,14 @@ import { useTranslation } from 'react-i18next';
 import { useServiceDetail } from '../hooks/useLaboratories';
 import { SkeletonLoader, EmptyState } from '../../../shared/components';
 
-// Colors matching old app
+// Colors using CSS variables for dark mode support
 const COLORS = {
-  brand: '#70CC60',
-  text: '#3C3C3B',
-  textLight: '#646363',
-  border: '#E5E5E5',
-  background: '#F4F4F4',
+  brand: 'var(--labgate-brand)',
+  brandText: 'var(--labgate-brand-text-on-brand)',
+  text: 'var(--labgate-text)',
+  textLight: 'var(--labgate-text-light)',
+  border: 'var(--labgate-border)',
+  background: 'var(--labgate-row-even)',
 };
 
 export const ServiceDetailPage: React.FC = () => {
@@ -91,7 +92,7 @@ export const ServiceDetailPage: React.FC = () => {
           style={{
             padding: '20px 16px',
             backgroundColor: COLORS.brand,
-            color: '#FFFFFF',
+            color: COLORS.brandText,
           }}
         >
           <h2 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 600 }}>

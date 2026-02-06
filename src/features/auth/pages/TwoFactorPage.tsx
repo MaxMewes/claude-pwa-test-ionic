@@ -66,7 +66,7 @@ export const TwoFactorPage: React.FC = () => {
                 margin: '0 auto 16px',
               }}
             >
-              <span style={{ color: '#fff', fontSize: '28px' }}>2FA</span>
+              <span style={{ color: 'var(--ion-color-primary-contrast)', fontSize: '28px' }}>2FA</span>
             </div>
             <IonText color="dark">
               <h2 style={{ margin: '0 0 8px 0' }}>{t('auth.twoFactor.title')}</h2>

@@ -138,7 +138,7 @@ export const ResultFilterModal: React.FC<ResultFilterModalProps> = ({
             onClick={resetFilters}
             disabled={!hasActiveFilters}
             style={{
-              '--color': '#70CC60',
+              '--color': 'var(--labgate-brand)',
               fontWeight: 600,
               fontSize: '14px',
               textTransform: 'uppercase',

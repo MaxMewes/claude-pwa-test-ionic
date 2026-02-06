@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosInstance } from '../../../api/client/axiosInstance';
-import { LabResult } from '../../../api/types';
-import { PATIENTS_ENDPOINTS, RESULTS_ENDPOINTS } from '../../../api/endpoints';
+import { RESULTS_ENDPOINTS } from '../../../api/endpoints';
 import { patientsKeys } from '../../../api/queryKeys';
 
 export interface TrendDataPoint {
@@ -21,32 +20,60 @@ export interface TestInfo {
   normalText: string | null;
 }
 
-interface ResultDataItemV3 {
+// Response types matching the v3 API spec
+
+interface GetResultsResultInfo {
   Id: number;
-  TestIdent: string;
-  TestName: string;
+  LabNo: string | null;
+  ReportDate: string | null;
+}
+
+interface GetResultsResponse {
+  Results: GetResultsResultInfo[];
+}
+
+interface CumulativeResultData {
   Value: number | null;
   ValueText: string | null;
+  NormalText: string | null;
+  NormalHigh: number | null;
+  NormalLow: number | null;
+  Unit: string | null;
+  PathoFlag: 'VeryLow' | 'Low' | 'Unknown' | 'High' | 'VeryHigh' | null;
+  PathoFlagText: string | null;
+  LaboratorySection: string | null;
+}
+
+interface CumulativeResult {
+  Id: number;
+  ReportDate: string | null;
+  LaboratoryOrderNumber: string | null;
+  ResultDataByTestIdent: Record<string, CumulativeResultData> | null;
+}
+
+interface CumulativeTest {
+  Ident: string | null;
+  Name: string | null;
   Unit: string | null;
   NormalLow: number | null;
   NormalHigh: number | null;
   NormalText: string | null;
-  PathoFlag: 'VeryLow' | 'Low' | 'Unknown' | 'High' | 'VeryHigh' | null;
 }
 
-interface ResultDetailV3 {
-  Id: number;
-  LabNo: string;
-  ReportDate: string;
-  ResultData?: Record<string, ResultDataItemV3[]>;
+interface CumulativeRequest {
+  Name: string | null;
+  Ident: string | null;
+  Tests: CumulativeTest[] | null;
 }
 
-interface ResultDetailResponse {
-  Result: ResultDetailV3;
+interface CumulativeSection {
+  Name: string | null;
+  Requests: CumulativeRequest[] | null;
 }
 
-interface PatientResultsResponse {
-  Results: LabResult[];
+interface GetCumulativeResultsResponse {
+  Results: CumulativeResult[] | null;
+  Sections: CumulativeSection[] | null;
 }
 
 interface PatientLabTrendsData {
@@ -58,86 +85,87 @@ export function usePatientLabTrends(patientId: number | undefined) {
   return useQuery({
     queryKey: patientsKeys.labTrends(patientId),
     queryFn: async (): Promise<PatientLabTrendsData> => {
-      // labGate API v3 endpoint
-      const listResponse = await axiosInstance.get<PatientResultsResponse>(
-        PATIENTS_ENDPOINTS.RESULTS(patientId as number)
+      // Step 1: Get results for patient using patientIds query parameter
+      const listResponse = await axiosInstance.get<GetResultsResponse>(
+        RESULTS_ENDPOINTS.LIST,
+        { params: { patientIds: patientId } }
       );
 
-      const resultIds = (listResponse.data.Results || []).map((r) => r.Id);
+      const results = listResponse.data.Results || [];
+      if (results.length === 0) {
+        return { testsMap: new Map(), trendData: new Map() };
+      }
 
-      // Fetch details for each result (limit to last 20 for performance)
-      const recentIds = resultIds.slice(0, 20);
+      // Step 2: Get cumulative data using the first result ID
+      const firstResultId = results[0].Id;
+      const cumulativeResponse = await axiosInstance.get<GetCumulativeResultsResponse>(
+        RESULTS_ENDPOINTS.CUMULATIVE(firstResultId)
+      );
+
+      const cumulative = cumulativeResponse.data;
       const testsMap = new Map<string, TestInfo>();
       const trendData = new Map<string, TrendDataPoint[]>();
 
-      // Request batching: Process in batches of 5 to avoid overwhelming the server
-      const BATCH_SIZE = 5;
-      const BATCH_DELAY = 100; // 100ms delay between batches to rate limit
-
-      for (let i = 0; i < recentIds.length; i += BATCH_SIZE) {
-        const batch = recentIds.slice(i, i + BATCH_SIZE);
-
-        // Add delay between batches for rate limiting (except first batch)
-        if (i > 0) {
-          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
-        }
-
-        // Process batch in parallel
-        await Promise.all(
-          batch.map(async (resultId) => {
-            try {
-              const detailResponse = await axiosInstance.get<ResultDetailResponse>(RESULTS_ENDPOINTS.DETAIL(resultId));
-              const result = detailResponse.data.Result;
-
-              // Process all tests from ResultData
-              if (result.ResultData) {
-                for (const sectionTests of Object.values(result.ResultData)) {
-                  for (const test of sectionTests) {
-                    if (!test.ValueText) continue;
-
-                    // Try to parse numeric value
-                    const numericMatch = test.ValueText.match(/^[\d.,]+/);
-                    if (!numericMatch) continue;
-
-                    const value = parseFloat(numericMatch[0].replace(',', '.'));
-                    if (isNaN(value)) continue;
-
-                    // Store test info
-                    if (!testsMap.has(test.TestIdent)) {
-                      testsMap.set(test.TestIdent, {
-                        testIdent: test.TestIdent,
-                        testName: test.TestName,
-                        unit: test.Unit,
-                        normalLow: test.NormalLow,
-                        normalHigh: test.NormalHigh,
-                        normalText: test.NormalText,
-                      });
-                    }
-
-                    // Add to trend data
-                    const existing = trendData.get(test.TestIdent) || [];
-                    existing.push({
-                      date: new Date(result.ReportDate).toLocaleDateString('de-DE'),
-                      dateRaw: result.ReportDate,
-                      value,
-                      resultId: result.Id,
-                      labNo: result.LabNo,
-                    });
-                    trendData.set(test.TestIdent, existing);
-                  }
-                }
+      // Build test info from Sections (contains test names, units, reference ranges)
+      if (cumulative.Sections) {
+        for (const section of cumulative.Sections) {
+          if (!section.Requests) continue;
+          for (const request of section.Requests) {
+            if (!request.Tests) continue;
+            for (const test of request.Tests) {
+              if (!test.Ident) continue;
+              if (!testsMap.has(test.Ident)) {
+                testsMap.set(test.Ident, {
+                  testIdent: test.Ident,
+                  testName: test.Name || test.Ident,
+                  unit: test.Unit,
+                  normalLow: test.NormalLow,
+                  normalHigh: test.NormalHigh,
+                  normalText: test.NormalText,
+                });
               }
-            } catch (err) {
-              console.error('Error fetching result details:', err);
             }
-          })
-        );
+          }
+        }
       }
 
-      // Sort trend data by date
-      trendData.forEach((data, key) => {
-        data.sort((a, b) => new Date(a.dateRaw).getTime() - new Date(b.dateRaw).getTime());
-        trendData.set(key, data);
+      // Build trend data from cumulative Results
+      if (cumulative.Results) {
+        for (const result of cumulative.Results) {
+          if (!result.ResultDataByTestIdent || !result.ReportDate) continue;
+
+          for (const [testIdent, resultData] of Object.entries(result.ResultDataByTestIdent)) {
+            if (resultData.Value == null) continue;
+
+            const existing = trendData.get(testIdent) || [];
+            existing.push({
+              date: new Date(result.ReportDate).toLocaleDateString('de-DE'),
+              dateRaw: result.ReportDate,
+              value: resultData.Value,
+              resultId: result.Id,
+              labNo: result.LaboratoryOrderNumber || '',
+            });
+            trendData.set(testIdent, existing);
+
+            // Fill test info from result data if not already known from sections
+            if (!testsMap.has(testIdent)) {
+              testsMap.set(testIdent, {
+                testIdent,
+                testName: testIdent,
+                unit: resultData.Unit,
+                normalLow: resultData.NormalLow,
+                normalHigh: resultData.NormalHigh,
+                normalText: resultData.NormalText,
+              });
+            }
+          }
+        }
+      }
+
+      // Sort trend data by date ascending
+      trendData.forEach((points, key) => {
+        points.sort((a, b) => new Date(a.dateRaw).getTime() - new Date(b.dateRaw).getTime());
+        trendData.set(key, points);
       });
 
       return { testsMap, trendData };

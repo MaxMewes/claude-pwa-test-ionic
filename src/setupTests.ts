@@ -3,8 +3,10 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import { server } from './mocks/server';
 
-// Start MSW server - it will be cleaned up when the process exits
-server.listen({ onUnhandledRequest: 'warn' });
+// Start MSW server unless explicitly disabled (vitest --mode api loads .env.api with VITE_MSW=false)
+if (import.meta.env.VITE_MSW !== 'false') {
+  server.listen({ onUnhandledRequest: 'warn' });
+}
 
 // Mock matchMedia for Ionic components
 Object.defineProperty(window, 'matchMedia', {

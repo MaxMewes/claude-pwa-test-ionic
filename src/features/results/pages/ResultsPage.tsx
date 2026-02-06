@@ -41,7 +41,7 @@ export const ResultsPage: React.FC = () => {
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
   const lastFetchTimeRef = useRef<number>(0);
 
-  const { isFavorite, toggleFavorite, resultsPeriod: storedPeriod, setResultsPeriod } = useSettingsStore();
+  const { isFavorite, toggleFavorite, favorites, resultsPeriod: storedPeriod, setResultsPeriod } = useSettingsStore();
 
   // Read period and search from URL, fall back to store
   const urlParams = new URLSearchParams(location.search);
@@ -76,7 +76,9 @@ export const ResultsPage: React.FC = () => {
   }, [storedPeriod, location.pathname, location.search, history]);
 
   // Combine filter state with category for API - maps UI category to API area filter
+  // Exclude isPinned from API filter since favorites are tracked locally (zustand), not server-side
   const effectiveFilter = useMemo((): ResultFilter => {
+    const { isPinned: _isPinned, ...apiFilter } = filter;
     const categoryToArea: Record<ResultCategory, ResultFilter['area']> = {
       all: undefined,        // No filter - show all
       unread: 'new',         // API: resultCategory = 'New'
@@ -85,7 +87,7 @@ export const ResultsPage: React.FC = () => {
       urgent: 'urgent',
     };
     return {
-      ...filter,
+      ...apiFilter,
       area: categoryToArea[category] || filter.area,
     };
   }, [filter, category]);
@@ -244,7 +246,7 @@ export const ResultsPage: React.FC = () => {
     }
 
     return results;
-  }, [allResults, searchQuery, filter, isFavorite]);
+  }, [allResults, searchQuery, filter, isFavorite, favorites]);
 
   // Use API counter for total counts, fall back to loaded results if counter not available
   const counts = useMemo(() => {
@@ -268,11 +270,11 @@ export const ResultsPage: React.FC = () => {
   }, [counter, allResults]);
 
   const tabs: { key: ResultCategory; label: string; count: number; color: string }[] = [
-    { key: 'all', label: t('results.tabs.all'), count: counts.all, color: '#000000' },
-    { key: 'unread', label: t('results.tabs.unread'), count: counts.unread, color: '#000000' },
-    { key: 'pathological', label: t('results.tabs.pathological'), count: counts.pathological, color: '#F59E0B' },
-    { key: 'highPatho', label: t('results.tabs.highPatho'), count: counts.highPatho, color: '#EF4444' },
-    { key: 'urgent', label: t('results.tabs.urgent'), count: counts.urgent, color: '#EF4444' },
+    { key: 'all', label: t('results.tabs.all'), count: counts.all, color: '' },
+    { key: 'unread', label: t('results.tabs.unread'), count: counts.unread, color: '' },
+    { key: 'pathological', label: t('results.tabs.pathological'), count: counts.pathological, color: 'var(--ion-color-warning)' },
+    { key: 'highPatho', label: t('results.tabs.highPatho'), count: counts.highPatho, color: 'var(--ion-color-danger)' },
+    { key: 'urgent', label: t('results.tabs.urgent'), count: counts.urgent, color: 'var(--ion-color-danger)' },
   ];
 
   return (
@@ -289,7 +291,6 @@ export const ResultsPage: React.FC = () => {
                 placeholder={t('results.searchPlaceholder')}
                 animated
                 showCancelButton="never"
-                style={{ '--background': 'var(--labgate-selected-bg)' }}
               />
               <IonButtons slot="end">
                 <IonButton onClick={handleBarcodeScan}>
@@ -356,7 +357,7 @@ export const ResultsPage: React.FC = () => {
                     gap: '6px',
                     padding: '8px 4px',
                     border: 'none',
-                    backgroundColor: isActive ? 'rgba(0,0,0,0.15)' : 'transparent',
+                    backgroundColor: isActive ? 'var(--labgate-selected-bg)' : 'transparent',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -375,7 +376,7 @@ export const ResultsPage: React.FC = () => {
                     style={{
                       fontSize: '14px',
                       fontWeight: 600,
-                      color: tab.color === '#000000' ? 'var(--ion-toolbar-color, var(--ion-text-color))' : tab.color,
+                      color: tab.color || 'var(--ion-toolbar-color, var(--ion-text-color))',
                     }}
                   >
                     {tab.count}

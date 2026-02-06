@@ -29,12 +29,14 @@ import { usePatient } from '../hooks/usePatients';
 import { SkeletonLoader } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
 
-// Colors matching the app design
+// Colors using CSS variables for dark mode support
 const COLORS = {
-  brand: '#70CC60',
-  text: '#3C3C3B',
-  textLight: '#646363',
-  border: '#E5E5E5',
+  brand: 'var(--labgate-brand)',
+  brandText: 'var(--labgate-brand-text-on-brand)',
+  text: 'var(--labgate-text)',
+  textLight: 'var(--labgate-text-light)',
+  border: 'var(--labgate-border)',
+  surface: 'var(--labgate-surface)',
 };
 
 export const PatientDetailPage: React.FC = () => {
@@ -164,10 +166,10 @@ export const PatientDetailPage: React.FC = () => {
             icon={personOutline}
             style={{
               fontSize: '32px',
-              color: '#FFFFFF',
+              color: COLORS.brandText,
             }}
           />
-          <div style={{ flex: 1, color: '#FFFFFF' }}>
+          <div style={{ flex: 1, color: COLORS.brandText }}>
             <div style={{ fontSize: '18px', fontWeight: 600 }}>
               {lastName}, {firstName}
             </div>
@@ -175,7 +177,7 @@ export const PatientDetailPage: React.FC = () => {
         </div>
 
         {/* Patient Details */}
-        <div style={{ backgroundColor: '#FFFFFF' }}>
+        <div style={{ backgroundColor: COLORS.surface }}>
           {/* Gender */}
           <div
             style={{
@@ -194,7 +196,7 @@ export const PatientDetailPage: React.FC = () => {
               <div style={{ fontSize: '15px', color: COLORS.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {genderDisplay}
                 {genderSymbol && (
-                  <span style={{ color: '#5DADE2', fontWeight: 'bold' }}>{genderSymbol}</span>
+                  <span style={{ color: 'var(--ion-color-secondary)', fontWeight: 'bold' }}>{genderSymbol}</span>
                 )}
               </div>
             </div>

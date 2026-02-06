@@ -10,11 +10,9 @@ import {
   IonButton,
   IonIcon,
   IonText,
-  IonSegment,
-  IonSegmentButton,
-  IonLabel,
+  IonFooter,
 } from '@ionic/react';
-import { star, starOutline } from 'ionicons/icons';
+import { star, starOutline, documentTextOutline, statsChartOutline, documentsOutline } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -23,11 +21,11 @@ import { useResult } from '../hooks/useResults';
 import { useSettingsStore } from '../../../shared/store/useSettingsStore';
 import { TestResultList } from '../components/TestResultList';
 import { CumulativeResultsView } from '../components/CumulativeResultsView';
-import { TrendChart } from '../components/TrendChart';
+import { DocumentList } from '../components/DocumentList';
 import { SkeletonLoader } from '../../../shared/components';
 import { ROUTES } from '../../../config/routes';
 
-type DetailViewTab = 'result' | 'cumulative' | 'trend';
+type DetailViewTab = 'result' | 'cumulative' | 'documents';
 
 export const ResultDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -35,21 +33,13 @@ export const ResultDetailPage: React.FC = () => {
   const { data: result, isLoading } = useResult(id);
   const { isFavorite, toggleFavorite } = useSettingsStore();
   const [activeTab, setActiveTab] = useState<DetailViewTab>('result');
-  const [selectedTestIdent, setSelectedTestIdent] = useState<string | undefined>();
 
-  // Check if this result is a favorite (from local storage)
   const isResultFavorite = result?.Id ? isFavorite(result.Id) : false;
 
   const handleToggleFavorite = () => {
     if (result?.Id) {
       toggleFavorite(result.Id);
     }
-  };
-
-  // Handle test click from cumulative view to show trend
-  const handleTestClick = (testIdent: string) => {
-    setSelectedTestIdent(testIdent);
-    setActiveTab('trend');
   };
 
   if (isLoading) {
@@ -88,9 +78,16 @@ export const ResultDetailPage: React.FC = () => {
     );
   }
 
-  // labGate API v3 uses ResultData instead of tests
   const tests = result.ResultData || [];
   const patientId = result.Patient?.Id;
+
+  const tabs: { key: DetailViewTab; label: string; icon: string }[] = [
+    { key: 'result', label: t('resultDetail.tabs.result'), icon: documentTextOutline },
+    { key: 'cumulative', label: t('resultDetail.tabs.cumulative'), icon: statsChartOutline },
+    ...(result.HasDocuments ? [
+      { key: 'documents' as DetailViewTab, label: t('resultDetail.tabs.documents'), icon: documentsOutline },
+    ] : []),
+  ];
 
   return (
     <IonPage>
@@ -99,98 +96,74 @@ export const ResultDetailPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref={ROUTES.RESULTS} />
           </IonButtons>
-          {/* labGate API v3 uses Patient with Firstname/Lastname or Fullname */}
           <IonTitle>{result.Patient?.Fullname || `${result.Patient?.Firstname || ''} ${result.Patient?.Lastname || ''}`.trim() || 'Patient'}</IonTitle>
           <IonButtons slot="end">
             <IonButton onClick={handleToggleFavorite}>
               <IonIcon
                 icon={isResultFavorite ? star : starOutline}
-                style={{ color: isResultFavorite ? '#E18B05' : undefined }}
+                style={{ color: isResultFavorite ? 'var(--labgate-favorite)' : undefined }}
               />
             </IonButton>
           </IonButtons>
         </IonToolbar>
-
-        {/* View Switcher Tabs */}
-        <IonToolbar>
-          <IonSegment
-            value={activeTab}
-            onIonChange={(e) => setActiveTab(e.detail.value as DetailViewTab)}
-          >
-            <IonSegmentButton value="result">
-              <IonLabel>{t('resultDetail.tabs.result')}</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="cumulative">
-              <IonLabel>{t('resultDetail.tabs.cumulative')}</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="trend">
-              <IonLabel>{t('resultDetail.tabs.trend')}</IonLabel>
-            </IonSegmentButton>
-          </IonSegment>
-        </IonToolbar>
       </IonHeader>
 
       <IonContent>
-        {/* Result Info Header - shown for result and cumulative tabs */}
-        {(activeTab === 'result' || activeTab === 'cumulative') && (
-          <div
-            style={{
-              padding: '16px',
-              backgroundColor: 'var(--ion-background-color, #FAFAFA)',
-              borderBottom: '1px solid var(--labgate-border, #E5E5E5)',
-            }}
-          >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div>
-                <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted, #646363)' }}>
-                  {t('results.reportDate')}
-                </IonText>
-                <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text, #3C3C3B)' }}>
-                  {format(new Date(result.ReportDate), 'dd.MM.yyyy HH:mm', { locale: de })}
-                </p>
-              </div>
-              <div>
-                <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted, #646363)' }}>
-                  Labor-Nr.
-                </IonText>
-                <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text, #3C3C3B)' }}>
-                  {result.LabNo}
-                </p>
-              </div>
-              {result.Laboratory?.Name && (
-                <div>
-                  <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted, #646363)' }}>
-                    Labor
-                  </IonText>
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text, #3C3C3B)' }}>
-                    {result.Laboratory.Name}
-                  </p>
-                </div>
-              )}
-              {result.Sender?.Name && (
-                <div>
-                  <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted, #646363)' }}>
-                    Einsender
-                  </IonText>
-                  <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text, #3C3C3B)' }}>
-                    {result.Sender.Name}
-                  </p>
-                </div>
-              )}
+        {/* Result Info Header */}
+        <div
+          style={{
+            padding: '16px',
+            backgroundColor: 'var(--ion-background-color)',
+            borderBottom: '1px solid var(--labgate-border)',
+          }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted)' }}>
+                {t('results.reportDate')}
+              </IonText>
+              <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text)' }}>
+                {format(new Date(result.ReportDate), 'dd.MM.yyyy HH:mm', { locale: de })}
+              </p>
             </div>
+            <div>
+              <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted)' }}>
+                Labor-Nr.
+              </IonText>
+              <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text)' }}>
+                {result.LabNo}
+              </p>
+            </div>
+            {result.Laboratory?.Name && (
+              <div>
+                <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted)' }}>
+                  Labor
+                </IonText>
+                <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text)' }}>
+                  {result.Laboratory.Name}
+                </p>
+              </div>
+            )}
+            {result.Sender?.Name && (
+              <div>
+                <IonText style={{ fontSize: '12px', color: 'var(--labgate-text-muted)' }}>
+                  Einsender
+                </IonText>
+                <p style={{ margin: '4px 0 0 0', fontWeight: 500, fontSize: '14px', color: 'var(--labgate-text)' }}>
+                  {result.Sender.Name}
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Tab Content */}
         {activeTab === 'result' && (
-          <TestResultList tests={tests} />
+          <TestResultList tests={tests} patientId={patientId} />
         )}
 
         {activeTab === 'cumulative' && patientId && (
-          <CumulativeResultsView
-            patientId={patientId}
-            onTestClick={handleTestClick}
-          />
+          <CumulativeResultsView patientId={patientId} />
         )}
 
         {activeTab === 'cumulative' && !patientId && (
@@ -199,19 +172,50 @@ export const ResultDetailPage: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'trend' && patientId && (
-          <TrendChart
-            patientId={patientId}
-            initialTestIdent={selectedTestIdent}
-          />
-        )}
-
-        {activeTab === 'trend' && !patientId && (
-          <div style={{ padding: '48px 16px', textAlign: 'center' }}>
-            <IonText color="medium">{t('trendChart.noData')}</IonText>
-          </div>
+        {activeTab === 'documents' && (
+          <DocumentList resultId={result.Id} />
         )}
       </IonContent>
+
+      {/* Bottom Tab Navigation */}
+      <IonFooter>
+        <div
+          style={{
+            display: 'flex',
+            borderTop: '1px solid var(--labgate-border)',
+            backgroundColor: 'var(--ion-background-color)',
+          }}
+        >
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  padding: '8px 4px',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  color: isActive ? 'var(--labgate-brand)' : 'var(--labgate-text-muted)',
+                  fontSize: '11px',
+                  fontWeight: isActive ? 600 : 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <IonIcon icon={tab.icon} style={{ fontSize: '22px' }} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </IonFooter>
     </IonPage>
   );
 };

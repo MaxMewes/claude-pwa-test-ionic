@@ -82,7 +82,6 @@ export const SendersPage: React.FC = () => {
                 placeholder={t('senders.searchPlaceholder')}
                 animated
                 showCancelButton="never"
-                style={{ '--background': 'var(--labgate-selected-bg)' }}
               />
               <IonButtons slot="end">
                 <IonButton onClick={handleSearchToggle}>

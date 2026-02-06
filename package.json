@@ -5,21 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "ionic serve --external",
-    "start": "ionic serve",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test.e2e": "playwright test",
-    "test.unit": "vitest",
     "lint": "eslint",
-    "generate-icons": "node scripts/generate-icons.mjs",
+    "test": "vitest",
+    "test:api": "vitest --mode api",
+    "test:e2e": "playwright test",
     "screenshots": "playwright test e2e/capture-screenshots.spec.ts",
     "screenshots:ui": "playwright test e2e/capture-screenshots.spec.ts --ui",
+    "generate-icons": "node scripts/generate-icons.mjs",
     "docs": "cd docs/handbook && mkdocs serve",
     "docs:build": "cd docs/handbook && mkdocs build",
-    "api-docs": "node docs/server.cjs",
-    "api:test": "tsx scripts/api-test.ts",
-    "api:fetch-results": "tsx scripts/api-test.ts --fetch-results",
-    "api:create-order": "tsx scripts/api-test.ts --create-order"
+    "api-docs": "node docs/server.cjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.2",

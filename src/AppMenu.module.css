@@ -1,19 +1,43 @@
 /* Menu colors use CSS variables for dark mode support */
+.menuToolbar {
+  --min-height: 40px;
+  --padding-start: 4px;
+  --padding-end: 4px;
+}
+
+.closeButton {
+  --color: var(--ion-text-color);
+}
+
 .menuList {
-  padding-top: 16px;
+  padding-top: 8px;
+}
+
+.menuList ion-item {
+  --min-height: 44px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
 }
 
 .menuIcon {
   color: var(--labgate-brand);
+  font-size: 22px;
+  margin-inline-end: 12px;
 }
 
 .menuLabel {
   color: var(--labgate-brand);
   font-weight: 500;
+  font-size: 14px;
 }
 
 .subMenuItem {
   --padding-start: 48px;
+  --min-height: 40px;
+}
+
+.subMenuItem ion-label {
+  font-size: 14px;
 }
 
 .selectedItem {

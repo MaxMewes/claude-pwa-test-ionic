@@ -12,12 +12,9 @@ import {
   IonItem,
   IonLabel,
   IonList,
-  IonListHeader,
   IonSearchbar,
   IonButton,
   IonIcon,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
 } from '@ionic/react';
 import { searchOutline, closeOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -26,21 +23,10 @@ import { SkeletonLoader, EmptyState } from '../../../shared/components';
 
 export const FAQPage: React.FC = () => {
   const { t } = useTranslation();
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useFAQ();
+  const { data: faqs, isLoading, error } = useFAQ();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
-
-  // Flatten paginated results
-  const allFAQs = data?.pages?.flatMap((page) => page.Results) || [];
-
-  // Handle infinite scroll
-  const handleLoadMore = async (event: CustomEvent<void>) => {
-    if (hasNextPage) {
-      await fetchNextPage();
-    }
-    (event.target as HTMLIonInfiniteScrollElement).complete();
-  };
 
   // Focus searchbar when opening
   useEffect(() => {
@@ -58,33 +44,18 @@ export const FAQPage: React.FC = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
-  // Group FAQs by category and filter by search
-  const groupedFAQs = useMemo(() => {
-    if (!allFAQs.length) return {};
+  // Filter FAQs by search query
+  const filteredFAQs = useMemo(() => {
+    if (!faqs?.length) return [];
+    if (!searchQuery) return faqs;
 
-    const filtered = allFAQs.filter((faq) => {
-      if (!searchQuery) return true;
-      const query = searchQuery.toLowerCase();
-      return (
-        faq.question.toLowerCase().includes(query) ||
-        faq.answer.toLowerCase().includes(query) ||
-        faq.category?.toLowerCase().includes(query)
-      );
-    });
-
-    // Sort by order first
-    const sorted = [...filtered].sort((a, b) => (a.order || 0) - (b.order || 0));
-
-    // Group by category
-    return sorted.reduce((acc, faq) => {
-      const category = faq.category || t('common.general');
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(faq);
-      return acc;
-    }, {} as Record<string, typeof filtered>);
-  }, [allFAQs, searchQuery, t]);
+    const query = searchQuery.toLowerCase();
+    return faqs.filter(
+      (faq) =>
+        faq.Question.toLowerCase().includes(query) ||
+        faq.Answer.toLowerCase().includes(query)
+    );
+  }, [faqs, searchQuery]);
 
   if (isLoading) {
     return (
@@ -126,8 +97,7 @@ export const FAQPage: React.FC = () => {
     );
   }
 
-  const categories = Object.keys(groupedFAQs);
-  const hasResults = categories.length > 0;
+  const hasResults = filteredFAQs.length > 0;
 
   return (
     <IonPage>
@@ -145,7 +115,6 @@ export const FAQPage: React.FC = () => {
                 placeholder={t('help.searchFAQ')}
                 animated
                 showCancelButton="never"
-                style={{ '--background': 'var(--labgate-selected-bg)' }}
               />
               <IonButtons slot="end">
                 <IonButton onClick={handleSearchToggle}>
@@ -180,63 +149,43 @@ export const FAQPage: React.FC = () => {
             onAction={searchQuery ? () => setSearchQuery('') : undefined}
           />
         ) : (
-          <>
-            <IonList lines="none">
-              {categories.map((category) => (
-                <div key={category} style={{ marginBottom: '20px' }}>
-                  <IonListHeader>
-                    <IonLabel>
-                      <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--labgate-brand)' }}>
-                        {category}
-                      </h2>
+          <IonList lines="none">
+            <IonAccordionGroup>
+              {filteredFAQs.map((faq) => (
+                <IonAccordion key={faq.Id} value={String(faq.Id)}>
+                  <IonItem slot="header" color="light">
+                    <IonLabel
+                      style={{
+                        whiteSpace: 'normal',
+                        fontSize: '15px',
+                        fontWeight: '500',
+                      }}
+                    >
+                      {faq.Question}
                     </IonLabel>
-                  </IonListHeader>
-                  <IonAccordionGroup>
-                    {groupedFAQs[category].map((faq) => (
-                      <IonAccordion key={faq.id} value={faq.id}>
-                        <IonItem slot="header" color="light">
-                          <IonLabel
-                            style={{
-                              whiteSpace: 'normal',
-                              fontSize: '15px',
-                              fontWeight: '500',
-                            }}
-                          >
-                            {faq.question}
-                          </IonLabel>
-                        </IonItem>
-                        <div
-                          className="ion-padding"
-                          slot="content"
-                          style={{
-                            backgroundColor: 'var(--ion-background-color)',
-                          }}
-                        >
-                          <p
-                            style={{
-                              margin: 0,
-                              lineHeight: 1.6,
-                              whiteSpace: 'pre-line',
-                              color: 'var(--labgate-text)',
-                            }}
-                          >
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </IonAccordion>
-                    ))}
-                  </IonAccordionGroup>
-                </div>
+                  </IonItem>
+                  <div
+                    className="ion-padding"
+                    slot="content"
+                    style={{
+                      backgroundColor: 'var(--ion-background-color)',
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: 0,
+                        lineHeight: 1.6,
+                        whiteSpace: 'pre-line',
+                        color: 'var(--labgate-text)',
+                      }}
+                    >
+                      {faq.Answer}
+                    </p>
+                  </div>
+                </IonAccordion>
               ))}
-            </IonList>
-            <IonInfiniteScroll
-              onIonInfinite={handleLoadMore}
-              threshold="100px"
-              disabled={!hasNextPage || isFetchingNextPage}
-            >
-              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText={t('common.loadingMore')} />
-            </IonInfiniteScroll>
-          </>
+            </IonAccordionGroup>
+          </IonList>
         )}
       </IonContent>
     </IonPage>

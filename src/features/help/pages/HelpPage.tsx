@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -16,60 +16,55 @@ import {
   IonText,
   IonButtons,
   IonBackButton,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
+  IonButton,
 } from '@ionic/react';
 import {
   helpCircleOutline,
   informationCircleOutline,
   shieldCheckmarkOutline,
   chatbubbleOutline,
+  searchOutline,
+  closeOutline,
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFAQ } from '../../settings/hooks/useFAQ';
-import { FAQ } from '../../../api/types';
 
 export const HelpPage: React.FC = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchbarRef = useRef<HTMLIonSearchbarElement>(null);
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useFAQ();
+  const { data: faqs, isLoading } = useFAQ();
 
-  // Flatten paginated results
-  const faqs = useMemo(() => {
-    return data?.pages?.flatMap((page) => page.Results) || [];
-  }, [data]);
+  // Focus searchbar when opening
+  useEffect(() => {
+    if (isSearchOpen && searchbarRef.current) {
+      setTimeout(() => {
+        searchbarRef.current?.setFocus();
+      }, 100);
+    }
+  }, [isSearchOpen]);
+
+  const handleSearchToggle = () => {
+    if (isSearchOpen) {
+      setSearchQuery('');
+    }
+    setIsSearchOpen(!isSearchOpen);
+  };
 
   const filteredFAQs = useMemo(() => {
+    if (!faqs?.length) return [];
     if (!searchQuery) return faqs;
+    const query = searchQuery.toLowerCase();
     return faqs.filter(
       (faq) =>
-        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+        faq.Question.toLowerCase().includes(query) ||
+        faq.Answer.toLowerCase().includes(query)
     );
   }, [faqs, searchQuery]);
-
-  // Group FAQs by category
-  const groupedFAQs = useMemo(() => {
-    return filteredFAQs.reduce((acc: Record<string, FAQ[]>, faq) => {
-      const category = faq.category || 'Allgemein';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(faq);
-      return acc;
-    }, {} as Record<string, FAQ[]>);
-  }, [filteredFAQs]);
-
-  // Handle infinite scroll
-  const handleLoadMore = async (event: CustomEvent<void>) => {
-    if (hasNextPage) {
-      await fetchNextPage();
-    }
-    (event.target as HTMLIonInfiniteScrollElement).complete();
-  };
 
   return (
     <IonPage>
@@ -78,15 +73,32 @@ export const HelpPage: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/settings" />
           </IonButtons>
-          <IonTitle>{t('settings.support.title')}</IonTitle>
-        </IonToolbar>
-        <IonToolbar>
-          <IonSearchbar
-            value={searchQuery}
-            onIonInput={(e) => setSearchQuery(e.detail.value || '')}
-            placeholder={t('help.searchFAQ')}
-            debounce={300}
-          />
+          {isSearchOpen ? (
+            <>
+              <IonSearchbar
+                ref={searchbarRef}
+                value={searchQuery}
+                onIonInput={(e) => setSearchQuery(e.detail.value || '')}
+                placeholder={t('help.searchFAQ')}
+                animated
+                showCancelButton="never"
+              />
+              <IonButtons slot="end">
+                <IonButton onClick={handleSearchToggle}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </>
+          ) : (
+            <>
+              <IonTitle>{t('settings.support.title')}</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={handleSearchToggle}>
+                  <IonIcon icon={searchOutline} />
+                </IonButton>
+              </IonButtons>
+            </>
+          )}
         </IonToolbar>
       </IonHeader>
 
@@ -135,38 +147,20 @@ export const HelpPage: React.FC = () => {
             </IonText>
           </div>
         ) : (
-          <>
-            <IonAccordionGroup>
-              {Object.entries(groupedFAQs).map(([category, categoryFAQs]) => (
-                <React.Fragment key={category}>
-                  <div style={{ padding: '8px 16px', backgroundColor: 'var(--ion-color-light)' }}>
-                    <IonText color="medium" style={{ fontSize: '12px', fontWeight: 600 }}>
-                      {category}
-                    </IonText>
-                  </div>
-                  {categoryFAQs.map((faq) => (
-                    <IonAccordion key={faq.id} value={faq.id}>
-                      <IonItem slot="header">
-                        <IonLabel className="ion-text-wrap">{faq.question}</IonLabel>
-                      </IonItem>
-                      <div slot="content" style={{ padding: '16px', backgroundColor: 'var(--ion-color-light)' }}>
-                        <IonText>
-                          <p style={{ margin: 0, whiteSpace: 'pre-line' }}>{faq.answer}</p>
-                        </IonText>
-                      </div>
-                    </IonAccordion>
-                  ))}
-                </React.Fragment>
-              ))}
-            </IonAccordionGroup>
-            <IonInfiniteScroll
-              onIonInfinite={handleLoadMore}
-              threshold="100px"
-              disabled={!hasNextPage || isFetchingNextPage}
-            >
-              <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText={t('common.loadingMore')} />
-            </IonInfiniteScroll>
-          </>
+          <IonAccordionGroup>
+            {filteredFAQs.map((faq) => (
+              <IonAccordion key={faq.Id} value={String(faq.Id)}>
+                <IonItem slot="header">
+                  <IonLabel className="ion-text-wrap">{faq.Question}</IonLabel>
+                </IonItem>
+                <div slot="content" style={{ padding: '16px', backgroundColor: 'var(--ion-color-light)' }}>
+                  <IonText>
+                    <p style={{ margin: 0, whiteSpace: 'pre-line' }}>{faq.Answer}</p>
+                  </IonText>
+                </div>
+              </IonAccordion>
+            ))}
+          </IonAccordionGroup>
         )}
       </IonContent>
     </IonPage>

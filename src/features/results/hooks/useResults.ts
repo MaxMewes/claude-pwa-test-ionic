@@ -1,6 +1,7 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '../../../api/client/axiosInstance';
-import { LabResult, ResultCounter, ResultFilter } from '../../../api/types';
+import { LabResult, ResultCounter, ResultFilter, ResultDocument } from '../../../api/types';
 import { ResultPeriodFilter } from '../../../shared/store/useSettingsStore';
 import { RESULTS_ENDPOINTS } from '../../../api/endpoints';
 import { resultsKeys } from '../../../api/queryKeys';
@@ -103,6 +104,7 @@ interface ResultDetailResponse {
       Lastname: string;
       DateOfBirth: string;
     };
+    HasDocuments?: boolean;
     ResultData?: Record<string, ResultDataItemV3[]>;
     ValidatedByName?: string;
   };
@@ -159,6 +161,7 @@ export function useResult(id: string | number | undefined) {
           Lastname: apiResult.Patient.Lastname,
           DateOfBirth: apiResult.Patient.DateOfBirth,
         },
+        HasDocuments: apiResult.HasDocuments,
         Sender: data.Sender ? { Id: data.Sender.Id, Name: data.Sender.Fullname } : undefined,
         Laboratory: data.LaboratoryName ? { Id: data.LaboratoryId || 0, Name: data.LaboratoryName } : undefined,
         ResultData: flattenedTests,
@@ -319,4 +322,56 @@ export function useToggleResultPin() {
       queryClient.invalidateQueries({ queryKey: resultsKeys.all });
     },
   });
+}
+
+// V3 Documents list response
+interface DocumentsListResponse {
+  Documents: ResultDocument[];
+}
+
+export function useResultDocuments(resultId: string | number | undefined) {
+  return useQuery({
+    queryKey: resultsKeys.documents(resultId as number),
+    queryFn: async () => {
+      const response = await axiosInstance.get<DocumentsListResponse>(
+        RESULTS_ENDPOINTS.DOCUMENTS(resultId as number)
+      );
+      return response.data.Documents || [];
+    },
+    enabled: !!resultId,
+  });
+}
+
+export function useDownloadDocument() {
+  const [isDownloading, setIsDownloading] = useState<number | null>(null);
+
+  const downloadDocument = useCallback(async (
+    resultId: number | string,
+    documentId: number,
+    fileName: string,
+  ) => {
+    setIsDownloading(documentId);
+    try {
+      const response = await axiosInstance.get(
+        RESULTS_ENDPOINTS.DOCUMENT_DOWNLOAD(resultId, documentId),
+        { responseType: 'blob' }
+      );
+
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'] || 'application/pdf'
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+      link.remove();
+    } finally {
+      setIsDownloading(null);
+    }
+  }, []);
+
+  return { downloadDocument, isDownloading };
 }

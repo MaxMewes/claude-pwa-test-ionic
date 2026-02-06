@@ -16,7 +16,7 @@
   position: absolute;
   height: 100%;
   width: 100%;
-  background: #B5F0E8;
+  background: var(--labgate-testtube-glass);
   opacity: 0.7;
   border-bottom-left-radius: 50px;
   border-bottom-right-radius: 50px;
@@ -28,7 +28,7 @@
   width: 50%;
   height: 15%;
   top: -15%;
-  background: #5b5b5a;
+  background: var(--labgate-testtube-cap-left);
 }
 
 .test-tube-cap-right {
@@ -37,7 +37,7 @@
   height: 15%;
   top: -15%;
   right: 0%;
-  background: #3C3C3B;
+  background: var(--labgate-testtube-cap-right);
 }
 
 .test-tube-fill {

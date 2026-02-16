@@ -188,14 +188,14 @@ export function useResultCounter(period?: ResultPeriodFilter) {
     queryKey: resultsKeys.counters(period),
     queryFn: async () => {
       // Build params with period filter to match the results query
-      // Counter endpoint uses startDateTime/endDateTime (not startDate/endDate)
+      // Counter endpoint uses StartDateTime/EndDateTime (PascalCase for labGate API)
       const params: Record<string, string> = {};
       if (period) {
         const { mapPeriodToDateParams } = await import('../../../api/mappers/dates');
         const periodParams = mapPeriodToDateParams(period);
-        if (periodParams.startDate) params.startDateTime = periodParams.startDate;
-        if (periodParams.endDate) params.endDateTime = periodParams.endDate;
-        if (periodParams.area) params.area = periodParams.area;
+        if (periodParams.StartDate) params.StartDateTime = periodParams.StartDate;
+        if (periodParams.EndDate) params.EndDateTime = periodParams.EndDate;
+        if (periodParams.Area) params.Area = periodParams.Area;
       }
 
       const response = await axiosInstance.get<CounterResponseV3>(RESULTS_ENDPOINTS.COUNTER, { params });

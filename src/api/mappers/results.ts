@@ -9,25 +9,25 @@ import type { ResultPeriodFilter } from '../../shared/store/useSettingsStore';
 import { mapPeriodToDateParams } from './dates';
 
 /**
- * V3 API query parameters (camelCase as expected by API)
+ * V3 API query parameters (PascalCase as expected by labGate API)
  */
 export interface ApiQueryParams {
-  startDate?: string;
-  endDate?: string;
-  query?: string;
-  resultCategory?: 'None' | 'Favorites' | 'New' | 'Pathological' | 'Urgent' | 'HighPathological';
-  resultTypes?: string;
-  patientIds?: number[];
-  senderIds?: number[];
-  area?: 'NotArchived' | 'Archived' | 'All';
-  currentPage?: number;
-  itemsPerPage?: number;
-  sortColumn?: 'None' | 'ReportDate' | 'LabNo' | 'Patient' | 'KisVisitNumber';
-  sortDirection?: 'None' | 'Descending' | 'Ascending';
+  StartDate?: string;
+  EndDate?: string;
+  Query?: string;
+  ResultCategory?: 'None' | 'Favorites' | 'New' | 'Pathological' | 'Urgent' | 'HighPathological';
+  ResultTypes?: string;
+  PatientIds?: number[];
+  SenderIds?: number[];
+  Area?: 'NotArchived' | 'Archived' | 'All';
+  CurrentPage?: number;
+  ItemsPerPage?: number;
+  SortColumn?: 'None' | 'ReportDate' | 'LabNo' | 'Patient' | 'KisVisitNumber';
+  SortDirection?: 'None' | 'Descending' | 'Ascending';
 }
 
 /**
- * Map local filters to V3 API format (camelCase)
+ * Map local filters to V3 API format (PascalCase for labGate API)
  * @param filters - UI filter model
  * @param page - Current page number (1-based)
  * @param itemsPerPage - Items per page
@@ -41,14 +41,14 @@ export function mapFiltersToV3(
   period?: ResultPeriodFilter
 ): ApiQueryParams {
   const v3Filters: ApiQueryParams = {
-    itemsPerPage,
-    sortColumn: 'ReportDate',
-    sortDirection: 'Descending',
+    ItemsPerPage: itemsPerPage,
+    SortColumn: 'ReportDate',
+    SortDirection: 'Descending',
     // API uses 0-based pagination
-    currentPage: page - 1,
+    CurrentPage: page - 1,
   };
 
-  // Apply period filter first (sets startDate, endDate, area)
+  // Apply period filter first (sets StartDate, EndDate, Area)
   if (period) {
     const periodParams = mapPeriodToDateParams(period);
     Object.assign(v3Filters, periodParams);
@@ -58,24 +58,24 @@ export function mapFiltersToV3(
 
   // Status/area filter - only override if not already set by period
   if (filters.isArchived) {
-    v3Filters.area = 'Archived';
-  } else if (!v3Filters.area) {
-    v3Filters.area = 'NotArchived';
+    v3Filters.Area = 'Archived';
+  } else if (!v3Filters.Area) {
+    v3Filters.Area = 'NotArchived';
   }
 
   // Favorites filter (from filter modal)
   if (filters.isPinned || filters.isFavorite) {
-    v3Filters.resultCategory = 'Favorites';
+    v3Filters.ResultCategory = 'Favorites';
   }
   // Category filter (maps UI category to API resultCategory)
   else if (filters.area === 'new') {
-    v3Filters.resultCategory = 'New';
+    v3Filters.ResultCategory = 'New';
   } else if (filters.area === 'pathological') {
-    v3Filters.resultCategory = 'Pathological';
+    v3Filters.ResultCategory = 'Pathological';
   } else if (filters.area === 'highPathological') {
-    v3Filters.resultCategory = 'HighPathological';
+    v3Filters.ResultCategory = 'HighPathological';
   } else if (filters.area === 'urgent') {
-    v3Filters.resultCategory = 'Urgent';
+    v3Filters.ResultCategory = 'Urgent';
   }
 
   // Result type filter (E=Endbefund, T=Teilbefund, V=Vorläufig, N=Nachforderung, A=Archiv)
@@ -89,39 +89,39 @@ export function mapFiltersToV3(
     };
     const mappedTypes = filters.resultTypes.map(t => typeMap[t]).filter(Boolean);
     if (mappedTypes.length) {
-      v3Filters.resultTypes = mappedTypes.join(',');
+      v3Filters.ResultTypes = mappedTypes.join(',');
     }
   }
 
   // Date filter - only override if not set by period filter
-  if (filters.dateFrom && !v3Filters.startDate) {
-    v3Filters.startDate = filters.dateFrom;
+  if (filters.dateFrom && !v3Filters.StartDate) {
+    v3Filters.StartDate = filters.dateFrom;
   }
-  if (filters.dateTo && !v3Filters.endDate) {
-    v3Filters.endDate = filters.dateTo;
+  if (filters.dateTo && !v3Filters.EndDate) {
+    v3Filters.EndDate = filters.dateTo;
   }
 
   // Search query
   if (filters.search) {
-    v3Filters.query = filters.search;
+    v3Filters.Query = filters.search;
   }
 
   // Patient filter
   if (filters.patientIds?.length) {
-    v3Filters.patientIds = filters.patientIds.map(id => Number(id));
+    v3Filters.PatientIds = filters.patientIds.map(id => Number(id));
   }
 
   // Sender filter
   if (filters.senderIds?.length) {
-    v3Filters.senderIds = filters.senderIds.map(id => Number(id));
+    v3Filters.SenderIds = filters.senderIds.map(id => Number(id));
   }
 
   // Sort
   if (filters.sortColumn) {
-    v3Filters.sortColumn = filters.sortColumn as ApiQueryParams['sortColumn'];
+    v3Filters.SortColumn = filters.sortColumn as ApiQueryParams['SortColumn'];
   }
   if (filters.sortDirection) {
-    v3Filters.sortDirection = filters.sortDirection === 'asc' ? 'Ascending' : 'Descending';
+    v3Filters.SortDirection = filters.sortDirection === 'asc' ? 'Ascending' : 'Descending';
   }
 
   return v3Filters;

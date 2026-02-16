@@ -32,6 +32,8 @@ export function useAuth() {
         setTempToken(data.tempToken, data.user.username || '');
         router.push(ROUTES.TWO_FACTOR, 'forward', 'replace');
       } else if (data.token) {
+        // Clear stale cache before setting new session
+        queryClient.clear();
         // Login successful without 2FA
         setUser(data.user);
         setToken(data.token);
@@ -51,6 +53,8 @@ export function useAuth() {
       return authService.verifyTwoFactor(code, username, tempToken);
     },
     onSuccess: (data) => {
+      // Clear stale cache before setting new session
+      queryClient.clear();
       setUser(data.user);
       setToken(data.token);
       router.push(ROUTES.RESULTS, 'forward', 'replace');

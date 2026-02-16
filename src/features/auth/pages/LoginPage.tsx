@@ -138,7 +138,10 @@ export const LoginPage: React.FC = () => {
               {/* Error Message */}
               {loginError && (
                 <IonText color="danger">
-                  <p role="alert" style={{ textAlign: 'center', marginTop: '16px' }}>
+                  <p
+                    role="alert"
+                    style={{ textAlign: 'center', marginTop: '16px' }}
+                  >
                     {t('auth.invalidCredentials')}
                   </p>
                 </IonText>

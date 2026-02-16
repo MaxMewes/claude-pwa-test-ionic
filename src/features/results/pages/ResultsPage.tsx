@@ -359,7 +359,18 @@ export const ResultsPage: React.FC = () => {
                     border: 'none',
                     backgroundColor: isActive ? 'var(--labgate-selected-bg)' : 'transparent',
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: isActive ? 'scale(1)' : 'scale(1)',
+                    position: 'relative',
+                  }}
+                  onMouseDown={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.95)';
+                  }}
+                  onMouseUp={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                   }}
                 >
                   <span
@@ -373,6 +384,8 @@ export const ResultsPage: React.FC = () => {
                     {tab.label}
                   </span>
                   <span
+                    className="counter-animate"
+                    key={`${tab.key}-${tab.count}`}
                     style={{
                       fontSize: '14px',
                       fontWeight: 600,

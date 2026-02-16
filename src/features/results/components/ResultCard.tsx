@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { IonItem, IonIcon } from '@ionic/react';
 import { star, starOutline, male, female } from 'ionicons/icons';
 import { format, differenceInYears } from 'date-fns';
@@ -60,6 +60,14 @@ const getGenderIcon = (gender?: number): typeof male | typeof female | null => {
  */
 export const ResultCard = React.memo<ResultCardProps>(({ result, isFavorite = false, onClick, onToggleFavorite, selected }) => {
   const { t, i18n } = useTranslation();
+  const [isStarAnimating, setIsStarAnimating] = useState(false);
+
+  const handleToggleFavorite = useCallback(() => {
+    setIsStarAnimating(true);
+    onToggleFavorite?.();
+    // Reset animation after it completes
+    setTimeout(() => setIsStarAnimating(false), 400);
+  }, [onToggleFavorite]);
 
   // Use appropriate locale for date formatting
   const locale = i18n.language === 'de' ? de : undefined;
@@ -152,7 +160,7 @@ export const ResultCard = React.memo<ResultCardProps>(({ result, isFavorite = fa
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  onToggleFavorite?.();
+                  handleToggleFavorite();
                 }}
                 aria-label={`${t('resultCard.toggleFavorite')}: ${patientName}`}
                 aria-pressed={isFavorite}
@@ -161,7 +169,7 @@ export const ResultCard = React.memo<ResultCardProps>(({ result, isFavorite = fa
                 <IonIcon
                   icon={isFavorite ? star : starOutline}
                   aria-hidden="true"
-                  className={`${styles.favoriteIcon} ${isFavorite ? styles.active : ''}`}
+                  className={`${styles.favoriteIcon} ${isFavorite ? styles.active : ''} ${isStarAnimating ? 'favorite-star-animate' : ''}`}
                 />
               </button>
 

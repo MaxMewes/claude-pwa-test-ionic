@@ -20,6 +20,9 @@ import '@ionic/react/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 
+/* Micro interactions for modern feel */
+import './theme/micro-interactions.css';
+
 /* App Components */
 import { AppProviders } from './AppProviders';
 import { AppContent } from './AppContent';

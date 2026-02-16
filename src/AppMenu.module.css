@@ -17,6 +17,11 @@
   --min-height: 44px;
   --padding-top: 4px;
   --padding-bottom: 4px;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.menuList ion-item:active {
+  transform: scale(0.98);
 }
 
 .menuIcon {
@@ -42,8 +47,34 @@
 
 .selectedItem {
   --background: var(--labgate-selected-bg);
+  position: relative;
+}
+
+.selectedItem::before {
+  content: '';
+  position: absolute;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  background: var(--labgate-brand);
+  border-radius: 2px;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scaleY(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scaleY(1);
+  }
 }
 
 .selectedLabel {
   font-weight: 600;
+  color: var(--labgate-brand);
 }

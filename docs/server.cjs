@@ -5,7 +5,7 @@ const path = require('path');
 
 const PORT = 3333;
 const DOCS_DIR = __dirname;
-const API_HOST = 'demo.labgate.net';
+const API_HOST = 'dev.labgate.net';
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Proxy API requests to demo.labgate.net
+  // Proxy API requests to dev.labgate.net
   if (req.url.startsWith('/api/')) {
     proxyRequest(req, res);
     return;
@@ -121,7 +121,7 @@ server.listen(PORT, () => {
   console.log('║                                                        ║');
   console.log(`║   Server running at: http://localhost:${PORT}             ║`);
   console.log('║                                                        ║');
-  console.log('║   API Proxy: localhost:3333/api/* -> demo.labgate.net  ║');
+  console.log('║   API Proxy: localhost:3333/api/* -> dev.labgate.net  ║');
   console.log('║                                                        ║');
   console.log('║   Press Ctrl+C to stop the server                      ║');
   console.log('║                                                        ║');

@@ -18,7 +18,7 @@ script-src 'self' 'unsafe-inline' 'unsafe-eval';
 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
 font-src 'self' https://fonts.gstatic.com;
 img-src 'self' data: https: blob:;
-connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss: ws: http://localhost:*;
+connect-src 'self' https://dev.labgate.net https://*.labgate.net https://*.vireq.com wss: ws: http://localhost:*;
 media-src 'self' blob:;
 frame-ancestors 'none';
 base-uri 'self';
@@ -39,7 +39,7 @@ script-src 'self';
 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
 font-src 'self' https://fonts.gstatic.com;
 img-src 'self' data: https: blob:;
-connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss:;
+connect-src 'self' https://dev.labgate.net https://*.labgate.net https://*.vireq.com wss:;
 media-src 'self' blob:;
 frame-ancestors 'none';
 base-uri 'self';
@@ -194,7 +194,7 @@ partialize: (state) => ({
 When deploying to production, ensure your web server sets the CSP header. Example for nginx:
 
 ```nginx
-add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://dev.labgate.net https://*.labgate.net https://*.vireq.com wss:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" always;
 ```
 
 ---

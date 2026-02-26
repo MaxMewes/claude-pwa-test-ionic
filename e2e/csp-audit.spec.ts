@@ -246,7 +246,7 @@ test.describe('Content Security Policy Audit', () => {
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: https:;
   font-src 'self';
-  connect-src 'self' https://demo.labgate.net;
+  connect-src 'self' https://dev.labgate.net;
   frame-ancestors 'none';
   base-uri 'self';
   form-action 'self';

@@ -38,18 +38,18 @@ export default defineConfig(({ mode }) => {
         'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(self), payment=()',
         // Development CSP - allows unsafe-inline/unsafe-eval for Vite HMR
         // Note: Ionic Web Components require 'unsafe-inline' for style-src even in production
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss: ws: http://localhost:*; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://dev.labgate.net https://*.labgate.net https://*.vireq.com wss: ws: http://localhost:*; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
       },
       proxy: {
         // Proxy API requests to avoid CORS issues during development
         '/api/v3': {
-          target: env.VITE_API_URL || 'https://demo.labgate.net',
+          target: env.VITE_API_URL || 'https://dev.labgate.net',
           changeOrigin: true,
           secure: true,
         },
         // labGate API V2 endpoints (authentication)
         '/Api/V2': {
-          target: env.VITE_API_URL || 'https://demo.labgate.net',
+          target: env.VITE_API_URL || 'https://dev.labgate.net',
           changeOrigin: true,
           secure: true,
         },
@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => {
         'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(self), payment=()',
         // Production CSP - no unsafe-eval for scripts
         // Note: Ionic Web Components require 'unsafe-inline' for style-src (framework limitation)
-        'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://demo.labgate.net https://*.labgate.net https://*.vireq.com wss:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+        'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://dev.labgate.net https://*.labgate.net https://*.vireq.com wss:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
       },
     },
     plugins: [

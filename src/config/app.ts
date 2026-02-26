@@ -6,7 +6,7 @@ export const APP_CONFIG = {
   // API Configuration
   api: {
     // Base URL - uses Vite proxy in dev, env variable in prod
-    baseUrl: import.meta.env.VITE_API_URL || 'https://demo.labgate.net',
+    baseUrl: import.meta.env.VITE_API_URL || 'https://dev.labgate.net',
 
     // API Version
     version: 'v3',
@@ -29,7 +29,7 @@ export const APP_CONFIG = {
 export const getDisplayApiUrl = (): string => {
   if (import.meta.env.DEV) {
     // In development, show the proxy target
-    return import.meta.env.VITE_API_URL || 'https://demo.labgate.net';
+    return import.meta.env.VITE_API_URL || 'https://dev.labgate.net';
   }
-  return APP_CONFIG.api.baseUrl || 'https://demo.labgate.net';
+  return APP_CONFIG.api.baseUrl || 'https://dev.labgate.net';
 };

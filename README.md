@@ -218,7 +218,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # API Configuration
-VITE_API_URL=https://demo.labgate.net
+VITE_API_URL=https://dev.labgate.net
 
 # Test Credentials (for E2E tests)
 TEST_USERNAME=demo
@@ -269,7 +269,7 @@ The app connects to the labGate backend using two API versions:
 
 | Environment | URL                          |
 |-------------|------------------------------|
-| Demo        | `https://demo.labgate.net`   |
+| Demo        | `https://dev.labgate.net`    |
 | Production  | `https://api.labgate.de`     |
 
 ## License

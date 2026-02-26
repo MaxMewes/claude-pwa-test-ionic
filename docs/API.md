@@ -207,7 +207,7 @@ Full OpenAPI/Swagger specifications are available:
 For development and testing, use the demo server:
 
 ```
-https://demo.labgate.net
+https://dev.labgate.net
 ```
 
 ### Proxy Configuration
@@ -218,11 +218,11 @@ The Vite dev server proxies API requests to avoid CORS issues:
 // vite.config.ts
 proxy: {
   '/api/v3': {
-    target: 'https://demo.labgate.net',
+    target: 'https://dev.labgate.net',
     changeOrigin: true,
   },
   '/Api/V2': {
-    target: 'https://demo.labgate.net',
+    target: 'https://dev.labgate.net',
     changeOrigin: true,
   },
 }

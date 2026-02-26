@@ -8,7 +8,7 @@ import { logger } from '../../shared/utils/logger';
 // - Web development: Empty URL to use Vite proxy
 // - Web production: Full URL
 const getBaseUrl = (): string => {
-  const fullApiUrl = import.meta.env.VITE_API_URL || 'https://demo.labgate.net';
+  const fullApiUrl = import.meta.env.VITE_API_URL || 'https://dev.labgate.net';
   const isNative = Capacitor.isNativePlatform();
   const isDev = import.meta.env.DEV;
 
